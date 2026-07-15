@@ -174,9 +174,9 @@ The 500ms material-eased reorganization is intentional product feedback: the can
 **Date:** July 15, 2026
 **Decision owner:** Human
 
-Each semantic connection is rendered as five stacked SVG paths following the exact same organic horizontal cubic Bezier: a blurred atmospheric glow, wide main band, denser inner band, colored core, and a delayed white highlight shimmer. Real path-length sampling places staggered white flow dots on the ribbon after the draw animation completes, while larger endpoint markers make every source and destination legible.
+Each merged semantic stream is rendered as three stacked SVG paths following the same organic horizontal cubic Bezier: a barely visible blurred atmosphere, a translucent colored main body, and a delayed white highlight. Path-length sampling places tiny, low-opacity white flow dots only on those merged streams after the draw animation completes.
 
-This produces a translucent river-of-light treatment rather than a flat graph line. Hub-to-dashboard ribbons scale all widths and opacities by 1.3×/1.2× so the merged stream visibly carries more weight than its file-to-hub tributaries.
+This produces a translucent river-of-light treatment rather than a flat graph line without visible concentric bands. Hub-to-dashboard ribbons use a wider 48px/22px/4px variant so the merged stream visibly carries more weight than its file-to-hub tributaries.
 
 ## 020. Resilient workspace assembly after file analysis
 
@@ -187,6 +187,16 @@ This produces a translucent river-of-light treatment rather than a flat graph li
 GPT relationship discovery remains the source of a preferred cluster name and date range, but its `shouldCluster` boolean is not allowed to leave a clearly related analyzed set visually inert. Once two files have completed analysis, Aether assembles a conservative local workspace fallback from grounded locations, dates, and categories when the model does not return a positive cluster flag in time.
 
 This preserves the demo's core “canvas thinks” moment while keeping all visible content traceable to file analysis. It also makes the interaction robust to a low-confidence or delayed relationship response.
+
+## 021. Merged tributary-to-river ribbons
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+Rendering a full multi-layer band for every file-to-hub connection made otherwise correct ribbons visually noisy. Aether now creates an invisible merge anchor per active category: individual files send thin, lightly varied tendrils to that anchor, and exactly one three-layer river continues from the anchor to the hub. The same category hub then sends one prominent trunk to its matching dashboard section.
+
+This makes the connection system read as a natural data funnel instead of parallel graph edges. It also keeps the category colors and hand-drawn curve variation while substantially reducing visual weight on a five-file workspace.
 
 ## Decision Template
 

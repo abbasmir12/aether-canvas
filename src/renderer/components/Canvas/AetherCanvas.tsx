@@ -9,9 +9,10 @@ import SmartSuggestion from './SmartSuggestion';
 import SemanticRibbonEdge from './edges/SemanticRibbonEdge';
 import FileCardNode, { type FileCardNodeType } from './nodes/FileCardNode';
 import HubNode, { type HubNodeType } from './nodes/HubNode';
+import MergeNode, { type MergeNodeType } from './nodes/MergeNode';
 import SummaryCardNode, { type SummaryCardNodeType } from './nodes/SummaryCardNode';
 
-type CanvasNode = FileCardNodeType | HubNodeType | SummaryCardNodeType;
+type CanvasNode = FileCardNodeType | HubNodeType | MergeNodeType | SummaryCardNodeType;
 type Suggestion = { fileId: string; category: string; clusterName: string };
 
 const initialNodes: CanvasNode[] = [];
@@ -47,7 +48,7 @@ export default function AetherCanvas() {
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { clusterRef.current = cluster; }, [cluster]);
 
-  const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
+  const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, merge: MergeNode, summaryCard: SummaryCardNode }), []);
   const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);
 
   const applyDiscovery = useCallback(async (files = analyzedFiles.current) => {
@@ -74,12 +75,14 @@ export default function AetherCanvas() {
       const laidOutFiles = fileNodes.map((node) => ({ ...node, position: layout.filePositions.get(node.id) ?? node.position }));
       if (!shouldShowSummary) return laidOutFiles;
       const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
-      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, data: { cluster: activeCluster, files: allFiles, assemblyDelay: 1.2 } }];
+      const mergeNodes: MergeNodeType[] = layout.hubs.map((hub) => ({ id: `merge:${hub.type}`, type: 'merge', position: { x: hub.x - 84, y: hub.y + 22 }, data: {} }));
+      return [...laidOutFiles, ...mergeNodes, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, data: { cluster: activeCluster, files: allFiles, assemblyDelay: 1.2 } }];
     });
     if (!shouldShowSummary) { setEdges([]); return; }
-    const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));
+    const fileToMerge: Edge[] = layout.hubs.flatMap((hub) => allFiles.filter((file) => categoriesForFile(file).includes(hub.type)).map((file, index) => ({ id: `file:${file.id}:merge:${hub.type}`, source: file.id, target: `merge:${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'tendril', index }, style: { stroke: RIBBON_COLORS[hub.type] } })));
+    const mergeToHub: Edge[] = layout.hubs.map((hub, index) => ({ id: `merge:${hub.type}:hub`, source: `merge:${hub.type}`, target: `hub:${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'merged', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
     const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
-    setEdges([...fileToHub, ...hubToSummary]);
+    setEdges([...fileToMerge, ...mergeToHub, ...hubToSummary]);
   }, [setEdges, setNodes]);
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);

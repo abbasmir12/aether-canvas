@@ -27,8 +27,8 @@ export default function HubNode({ data }: NodeProps<HubNodeType>) {
     >
       <span className="grid h-6 w-6 place-items-center rounded-full bg-white/18 ring-1 ring-white/35"><Icon size={16} strokeWidth={2.5} /></span>
       <span className="text-[12px] font-semibold tracking-[0.035em]">{hub.label}</span>
-      <Handle className="!h-[11px] !w-[11px] !border-2 !border-white/80 !bg-white/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.14)]" position={Position.Left} type="target" />
-      <Handle className="!h-[11px] !w-[11px] !border-2 !border-white/80 !bg-white/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.14)]" position={Position.Right} type="source" />
+      <Handle className="!h-[6px] !w-[6px] !border !border-white/70 !bg-white/30 !shadow-[inset_0_0_0_1px_#fff]" position={Position.Left} type="target" />
+      <Handle className="!h-[6px] !w-[6px] !border !border-white/70 !bg-white/30 !shadow-[inset_0_0_0_1px_#fff]" position={Position.Right} type="source" />
     </motion.div>
   );
 }
