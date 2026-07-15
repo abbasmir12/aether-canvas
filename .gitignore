@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build and packaging output
+dist/
+dist-electron/
+release/
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+
+# Runtime data and generated caches
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+.cache/
+
+# Test and tooling output
+coverage/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor and operating-system metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,67 @@
+{
+  "name": "aether-canvas",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Aether Canvas Team",
+  "description": "A generative desktop where spatially grouping ordinary files creates the mini-app you need.",
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10"
+  },
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run lint && vite build && electron-builder",
+    "start": "electron .",
+    "lint": "tsc --noEmit && tsc --project tsconfig.node.json --noEmit"
+  },
+  "build": {
+    "appId": "com.aether.canvas",
+    "productName": "Aether Canvas",
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Utility"
+    },
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/sharp/**/*",
+      "node_modules/@img/**/*"
+    ]
+  },
+  "dependencies": {
+    "@xyflow/react": "^12.8.2",
+    "better-sqlite3": "^12.2.0",
+    "framer-motion": "^12.23.12",
+    "openai": "^5.10.2",
+    "pdf-parse": "^1.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sharp": "^0.34.3",
+    "tesseract.js": "^6.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.0.13",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "electron": "^37.2.3",
+    "electron-builder": "^26.0.12",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.4",
+    "vite-plugin-electron": "^0.29.0"
+  }
+}
