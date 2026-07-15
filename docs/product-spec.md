@@ -53,8 +53,9 @@ When a new file appears relevant to an existing cluster, offer a clear, reversib
 - An installable Electron desktop application with a Vite, React, and TypeScript renderer.
 - A polished infinite React Flow canvas with pan, zoom, minimap, custom file nodes, semantic edges, and summary nodes.
 - Drag-and-drop ingestion for PDF, image, spreadsheet, CSV, and text files.
-- Local parsing through `pdf-parse`, `xlsx`, `tesseract.js`, and `sharp` where appropriate.
-- GPT-5.6 structured extraction of entities, relationships, cluster intent, and dashboard content.
+- Direct GPT-5.6 Responses API file input for PDFs, spreadsheets, documents, text, and images.
+- GPT-5.6 structured extraction of entities, smart previews, relationships, cluster intent, and dashboard content.
+- Local `sharp` thumbnails for image-card presentation only; thumbnail pixels are not the AI analysis path.
 - OpenAI embeddings for semantic similarity.
 - A pragmatic clustering strategy combining embeddings, extracted entities, and spatial distance.
 - Local SQLite persistence for files, analysis, relationships, clusters, and canvas positions.

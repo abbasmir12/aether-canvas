@@ -1,5 +1,35 @@
 # Aether Canvas Architecture
 
+## Phase 2 Architecture Update
+
+GPT-5.6 native file input supersedes the originally proposed local PDF, spreadsheet, and OCR parser layer. `pdf-parse`, `xlsx`, and `tesseract.js` are no longer part of the application.
+
+```text
+OS file drop
+    │
+    ▼
+Preload resolves OS-backed File → main process authorizes absolute path
+    │
+    ├──► Sharp thumbnail (images only, local UI asset)
+    │
+    ▼
+FileReader: MIME detection + Base64 data URL
+    │
+    ▼
+GPT-5.6 Responses API
+    │  image → input_image(detail: high)
+    │  PDF   → input_file(detail: high; text + page images)
+    │  sheet → input_file(native spreadsheet augmentation)
+    │  docs  → input_file(native text extraction)
+    ▼
+JSON Schema output → runtime validation → smart preview node
+    │
+    ▼ after 2+ analyzed files
+Metadata-only GPT-5.6 relationship discovery → semantic React Flow edges
+```
+
+Raw files are uploaded once per analysis. Relationship discovery receives only the previously extracted IDs, titles, categories, entities, and summaries.
+
 ## System Overview
 
 ```text
@@ -16,12 +46,12 @@
 │  ┌──────────────────────────────────────────────────────────▼──────────────────────┐  │
 │  │ File access/orchestration                                                      │  │
 │  │                                                                                │  │
-│  │  parsers                 intelligence                 persistence              │  │
+│  │  file preparation        intelligence                 persistence              │  │
 │  │  ┌──────────────┐       ┌────────────────────┐       ┌─────────────────────┐   │  │
-│  │  │ PDF / XLSX   │──────►│ GPT-5.6 structured │──────►│ better-sqlite3      │   │  │
-│  │  │ OCR / text   │       │ analysis + summary │       │ local metadata      │   │  │
+│  │  │ Base64/MIME  │──────►│ GPT-5.6 native file│──────►│ better-sqlite3      │   │  │
+│  │  │ authorization│       │ analysis + summary │       │ local metadata      │   │  │
 │  │  │ thumbnails   │       ├────────────────────┤       │ vectors + positions │   │  │
-│  │  └──────────────┘       │ OpenAI embeddings  │       └─────────────────────┘   │  │
+│  │  └──────────────┘       │ relationship pass  │       └─────────────────────┘   │  │
 │  │                         └────────────────────┘                                  │  │
 │  └────────────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                      │
@@ -40,8 +70,8 @@ File Drop
 Main-process validation and local file registration
    │
    ▼
-Parser selected by MIME type/extension
-   │  PDF text │ spreadsheet rows │ OCR text │ plain text │ thumbnail
+MIME detection + Base64 file preparation
+   │  PDF/input_file │ spreadsheet/input_file │ image/input_image │ thumbnail
    ▼
 GPT-5.6 structured analysis
    │
@@ -267,7 +297,10 @@ CREATE INDEX idx_suggestions_space_status ON suggestions(space_id, status);
 └── src
     ├── main
     │   ├── main.ts               # BrowserWindow, authorized paths, IPC handlers
-    │   └── preload.ts            # narrow contextBridge API + OS path resolution
+    │   ├── preload.ts            # narrow contextBridge API + OS path resolution
+    │   └── services
+    │       ├── aiService.ts      # GPT-5.6 analysis + relationships
+    │       └── fileReader.ts     # MIME/Base64 preparation + thumbnails
     ├── renderer
     │   ├── App.tsx               # sidebar/canvas layout + ReactFlowProvider
     │   ├── main.tsx              # React entry
@@ -277,17 +310,18 @@ CREATE INDEX idx_suggestions_space_status ON suggestions(space_id, status);
     │       ├── Canvas
     │       │   ├── AetherCanvas.tsx
     │       │   └── nodes
-    │       │       └── FileCardNode.tsx
+    │       │       ├── FileCardNode.tsx
+    │       │       └── previews  # type-specific smart preview components
     │       └── Sidebar
     │           └── Sidebar.tsx
     └── shared
         └── types.ts              # product domain and bridge contracts
 ```
 
-### Actual Phase 1 IPC behavior
+### Actual Phase 2 IPC behavior
 
-The implemented bridge uses the user-requested channel names: `aether:read-file`, `aether:get-file-metadata`, `aether:parse-file`, `aether:get-thumbnail`, `aether:open-file-dialog`, and `aether:get-dropped-file-path`.
+The bridge includes `aether:read-file`, `aether:get-file-metadata`, `aether:get-thumbnail`, `aether:open-file-dialog`, `aether:get-dropped-file-path`, `aether:analyze-file`, and `aether:find-relationships`. Local `aether:parse-file` was removed when native GPT-5.6 file input replaced local parsing.
 
 `aether:get-dropped-file-path` is not a general path resolver. The preload obtains an OS-backed path from Electron `webUtils`, and the main handler authorizes it only after absolute-path normalization and a successful file stat. All subsequent file operations check the session authorization set. The native picker authorizes its returned paths through the same function.
 
-Text/CSV/Markdown/JSON parsing is intentionally minimal in Phase 1. PDF, spreadsheet, and OCR adapters will replace the empty non-text result during the dedicated parsing phase without changing the renderer bridge contract.
+`aether:analyze-file` accepts only a session-authorized path, prepares Base64 in the main process, and keeps the API key out of the renderer. `aether:find-relationships` accepts file IDs and resolves them against the main process's analyzed-file cache, preventing the renderer from injecting arbitrary metadata into the relationship prompt.

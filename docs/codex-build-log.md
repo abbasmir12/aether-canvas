@@ -38,6 +38,10 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Implemented the premium collapsible 240px sidebar with Aether identity, navigation hierarchy, saved spaces, restrained active states, and bottom utility actions based on the north-star mockup.
 - Added a narrow `window.aether` bridge and matching main-process handlers for authorized local paths, metadata, text reads, basic text parsing, image thumbnails, and the native file picker.
 - Diagnosed and fixed two runtime/build integration issues found during verification: Sharp must remain external to the Vite main bundle, and `better-sqlite3` must be rebuilt against Electron's ABI.
+- Replaced the planned local parsing layer with GPT-5.6 native file input through the Responses API; removed `pdf-parse`, `xlsx`, `tesseract.js`, and the obsolete parse IPC channel.
+- Built typed file preparation, MIME detection, Base64 upload, high-detail PDF/image requests, JSON Schema outputs, runtime validation, metadata-only relationship discovery, and secure IPC orchestration in the main process.
+- Built animated shimmer-to-preview FileCards for flights, hotels/images, budgets, checklists, guides, and documents, plus temporary semantic-colored relationship edges.
+- Used current official OpenAI file-input guidance and upgraded the OpenAI SDK because the installed older types did not yet expose PDF `input_file.detail`.
 
 ### Human decisions
 
@@ -46,6 +50,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Directed Phase 1 scope around the hero file-drop interaction and required design fidelity to `agent_assets/aether_design.png`.
 - Required TypeScript throughout application code, Tailwind component styling, Framer Motion animation, secure prefixed IPC, and no “coming soon” UI.
 - Clarified that development runs on an AWS EC2 Linux instance over SSH, while the local Windows PC is the authoritative UX and release-testing environment.
+- Chose GPT-5.6 native Responses API file input instead of local parsing libraries, removing three runtime dependencies and making the model—not a text extraction wrapper—the document understanding layer.
 
 ### Verification
 
@@ -60,6 +65,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - A second development-mode smoke test dropped `budget.csv` and rendered the spreadsheet-colored FileCard.
 - Electron Builder successfully rebuilds `better-sqlite3` for Electron 37 and produces `release/linux-unpacked`. The packaged executable was launched under Xvfb and successfully rendered the shell and accepted a real `city-guide.txt` drop through its packaged preload bridge. AppImage finalization remains to be confirmed in a normal interactive shell because the automated command runner detaches from the compressor subprocess.
 - The only production bundle warning is the renderer's initial 513 KB chunk; code splitting is deferred until feature boundaries exist.
+- Phase 2 strict TypeScript and Vite builds pass. Offline file preparation correctly identified and encoded `flight-ticket.txt`; non-image thumbnail generation correctly returned `null`.
+- With no EC2 API key configured, the live Electron drop test transitioned into a recoverable card-level error instead of hanging or crashing. Real GPT-5.6 sample-file assertions remain pending `OPENAI_API_KEY` configuration.
 
 ## Day 3 — July 16, 2026
 

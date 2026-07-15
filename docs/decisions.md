@@ -52,8 +52,8 @@ All durable app data stays on the user's machine. Privacy is a feature. We will 
 
 ## 007. Standardize development on Node 22
 
-**Status:** Accepted  
-**Date:** July 15, 2026  
+**Status:** Accepted
+**Date:** July 15, 2026
 **Decision owner:** Codex proposal accepted by human
 
 The project requires Node `>=22.12.0` and provides `.nvmrc` targeting Node 22. The current Electron native-module rebuild toolchain requires this floor, and using a current supported Node line avoids pinning a new hackathon project to outdated packaging dependencies. Linux development environments must also provide Python 3, GNU Make, and a C/C++ compiler for native dependencies such as `better-sqlite3`.
@@ -62,8 +62,8 @@ The consequence is a slightly stricter prerequisite, documented in the README, i
 
 ## 008. Authorize local file paths at the preload boundary
 
-**Status:** Accepted  
-**Date:** July 15, 2026  
+**Status:** Accepted
+**Date:** July 15, 2026
 **Decision owner:** Codex proposal accepted through implementation
 
 The renderer cannot access Node or arbitrary filesystem APIs. For OS drops, the preload uses Electron's `webUtils.getPathForFile`, then the main process resolves, validates, stats, and records that explicit path in an in-memory authorization set. File reading, parsing, metadata, and thumbnail handlers reject any path that did not originate from a drop or native picker action.
@@ -97,6 +97,26 @@ Linux packaging explicitly targets AppImage rather than relying on Electron Buil
 Development currently runs on a headless AWS EC2 Linux instance accessed over SSH from the human's local PC. Linux checks—strict TypeScript, builds, IPC smoke tests, Xvfb captures, and the unpacked Electron executable—provide fast engineering validation, but they are not the final UX acceptance environment.
 
 The application will be tested on the human's Windows PC before submission. Windows validation must cover native window chrome, display scaling, fonts, drag-and-drop from File Explorer, absolute path handling, minimap and animation rendering, native file dialogs, `better-sqlite3` and Sharp binaries, and Windows packaging. Platform-specific findings must be recorded separately rather than inferred from Xvfb behavior.
+
+## 012. GPT-5.6 native file input instead of local parsing libraries
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+GPT-5.6's Responses API receives files directly. For PDFs it supplies extracted text and page images; for spreadsheets it parses up to the first 1,000 rows per sheet and adds generated summary/header metadata; for text documents it extracts text; and for images it provides full vision understanding. We removed `pdf-parse`, `xlsx`, and `tesseract.js`. Sharp remains only for local UI thumbnails.
+
+This reduces bundle surface and orchestration complexity while improving contextual extraction: GPT-5.6 sees the document representation used for reasoning instead of consuming locally flattened parser output. Non-PDF embedded charts are a known API limitation; important chart-heavy Office documents should be converted to PDF for visual fidelity.
+
+## 013. Responses API instead of Chat Completions
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+Aether uses `client.responses.create()` for file analysis and relationship discovery. Responses provides native `input_file`, PDF detail control, multimodal content, JSON Schema structured output, and a path to stateful/tool-using workflows. Chat Completions is not used by the runtime intelligence layer.
+
+The originally proposed “40–80% better cache utilization” figure was not recorded as evidence because current official documentation reviewed during implementation did not substantiate that exact range. We will cite measured Aether latency/caching data or an exact official source if this becomes a submission claim.
 
 ## Decision Template
 

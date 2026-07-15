@@ -1,20 +1,41 @@
-import { useCallback, useMemo, useState, type DragEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
 import {
   Background,
   BackgroundVariant,
   MiniMap,
   Panel,
   ReactFlow,
+  useEdgesState,
   useNodesState,
   useReactFlow,
   useViewport,
   type NodeTypes,
+  type Edge,
 } from '@xyflow/react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import FileCardNode, { type FileCardNodeType } from './nodes/FileCardNode';
+import type { AnalyzedFile, RelationshipType } from '../../../shared/types';
 
 const initialNodes: FileCardNodeType[] = [];
+const RIBBON_COLORS: Record<RelationshipType, string> = {
+  dates: '#4A90D9',
+  cost: '#34A853',
+  place: '#EA4335',
+  tasks: '#9B72CF',
+};
+
+function readableError(error: unknown): string {
+  const fallback = 'Aether could not analyze this file.';
+  if (!(error instanceof Error)) return fallback;
+
+  const message = error.message
+    .replace(/^Error invoking remote method '[^']+':\s*/i, '')
+    .replace(/^Error:\s*/i, '')
+    .trim();
+
+  return message || fallback;
+}
 
 function ControlIcon({ name }: { name: 'minus' | 'plus' | 'fit' }) {
   if (name === 'fit') {
@@ -69,8 +90,11 @@ function CanvasControls() {
 
 export default function AetherCanvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isDragActive, setIsDragActive] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
+  const analyzedFiles = useRef(new Map<string, AnalyzedFile>());
+  const relationshipRequest = useRef(0);
   const { screenToFlowPosition } = useReactFlow();
 
   const nodeTypes = useMemo<NodeTypes>(
@@ -107,50 +131,139 @@ export default function AetherCanvas() {
         y: event.clientY,
       });
 
-      const results = await Promise.allSettled(
-        droppedFiles.map(async (file, index): Promise<FileCardNodeType> => {
+      const registrations = await Promise.allSettled(
+        droppedFiles.map(async (file, index) => {
           const filePath = await window.aether.getDroppedFilePath(file);
           const metadata = await window.aether.getFileMetadata(filePath);
+          const id = `file:${crypto.randomUUID()}`;
 
           return {
-            id: crypto.randomUUID(),
-            type: 'fileCard',
-            position: {
-              x: basePosition.x + index * 22,
-              y: basePosition.y + index * 58,
-            },
-            data: {
-              fileName: metadata.name,
-              mimeType: metadata.type,
-              filePath: metadata.path,
-            },
+            node: {
+              id,
+              type: 'fileCard',
+              position: {
+                x: basePosition.x + index * 24,
+                y: basePosition.y + index * 64,
+              },
+              data: {
+                fileName: metadata.name,
+                mimeType: metadata.type,
+                filePath: metadata.path,
+                status: 'loading',
+                analysis: null,
+                thumbnailUrl: null,
+                errorMessage: null,
+              },
+            } satisfies FileCardNodeType,
+            filePath,
+            id,
           };
         }),
       );
 
-      const acceptedNodes = results.flatMap((result) =>
+      const accepted = registrations.flatMap((result) =>
         result.status === 'fulfilled' ? [result.value] : [],
       );
-      const firstFailure = results.find(
+      const firstRegistrationFailure = registrations.find(
         (result): result is PromiseRejectedResult => result.status === 'rejected',
       );
 
-      if (acceptedNodes.length > 0) {
+      if (accepted.length > 0) {
         setNodes((currentNodes: FileCardNodeType[]) => [
           ...currentNodes,
-          ...acceptedNodes,
+          ...accepted.map(({ node }) => node),
         ]);
       }
 
-      if (firstFailure) {
+      if (firstRegistrationFailure) {
         setDropError(
-          firstFailure.reason instanceof Error
-            ? firstFailure.reason.message
+          firstRegistrationFailure.reason instanceof Error
+            ? firstRegistrationFailure.reason.message
             : 'Aether could not add one of the dropped files.',
         );
       }
+
+      await Promise.allSettled(
+        accepted.map(async ({ filePath, id }) => {
+          try {
+            const [analysis, thumbnailUrl] = await Promise.all([
+              window.aether.analyzeFile(filePath, id),
+              window.aether.getThumbnail(filePath),
+            ]);
+
+            analyzedFiles.current.set(id, analysis);
+            setNodes((currentNodes: FileCardNodeType[]) =>
+              currentNodes.map((node) =>
+                node.id === id
+                  ? {
+                      ...node,
+                      data: {
+                        ...node.data,
+                        status: 'ready',
+                        analysis,
+                        thumbnailUrl,
+                        errorMessage: null,
+                      },
+                    }
+                  : node,
+              ),
+            );
+
+            const fileIds = [...analyzedFiles.current.keys()];
+            if (fileIds.length < 2) return;
+
+            const requestId = ++relationshipRequest.current;
+            const discovery = await window.aether.findRelationships(fileIds);
+            if (requestId !== relationshipRequest.current) return;
+
+            setEdges(
+              discovery.relationships.map((relationship, index): Edge => ({
+                id: `relationship:${relationship.sourceFileId}:${relationship.targetFileId}:${relationship.type}:${index}`,
+                source: relationship.sourceFileId,
+                target: relationship.targetFileId,
+                type: 'default',
+                label: relationship.label,
+                animated: true,
+                style: {
+                  stroke: RIBBON_COLORS[relationship.type],
+                  strokeWidth: 3,
+                  opacity: 0.72,
+                },
+                labelStyle: {
+                  fill: RIBBON_COLORS[relationship.type],
+                  fontSize: 9,
+                  fontWeight: 600,
+                },
+                labelBgStyle: {
+                  fill: '#FFFFFF',
+                  fillOpacity: 0.92,
+                },
+                labelBgPadding: [5, 3],
+                labelBgBorderRadius: 10,
+              })),
+            );
+          } catch (error) {
+            const message = readableError(error);
+            setNodes((currentNodes: FileCardNodeType[]) =>
+              currentNodes.map((node) =>
+                node.id === id
+                  ? {
+                      ...node,
+                      data: {
+                        ...node.data,
+                        status: 'error',
+                        errorMessage: message,
+                      },
+                    }
+                  : node,
+              ),
+            );
+            setDropError(message);
+          }
+        }),
+      );
     },
-    [screenToFlowPosition, setNodes],
+    [screenToFlowPosition, setEdges, setNodes],
   );
 
   return (
@@ -169,6 +282,8 @@ export default function AetherCanvas() {
         minZoom={0.25}
         nodeTypes={nodeTypes}
         nodes={nodes}
+        edges={edges}
+        onEdgesChange={onEdgesChange}
         onNodesChange={onNodesChange}
         panOnDrag
         panOnScroll

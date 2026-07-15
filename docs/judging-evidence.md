@@ -26,10 +26,11 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 
 ### GPT-5.6 runtime integration
 
-- _Show structured file understanding with input, schema, validated output, and visible UI result._
+- GPT-5.6 is the product's file-understanding layer: files are sent directly through Responses `input_file` or `input_image`; PDFs include actual page images, spreadsheets use native augmentation, and images use vision. This is not a wrapper around local text extraction.
+- _Show structured file understanding with input, JSON Schema, runtime-validated output, and visible smart preview result._
 - _Show relationship or cluster reasoning that cannot be reduced to file extensions._
 - _Show generated Summary Dashboard content grounded in multiple source files._
-- _Show OpenAI embeddings contributing to similarity, with spatial proximity remaining a user-controlled signal._
+- _Show metadata-only relationship discovery after two or more files and explain how spatial proximity will remain a user-controlled signal._
 
 ### Verification evidence
 

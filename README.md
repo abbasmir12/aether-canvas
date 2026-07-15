@@ -33,6 +33,19 @@ Select the repository's Node version and install dependencies:
 ```bash
 nvm use
 npm install
+npm run lint
+```
+
+Configure runtime intelligence:
+
+```bash
+cp .env.example .env
+# Replace the placeholder in .env with your OpenAI API key.
+```
+
+Start Aether:
+
+```bash
 npm run dev
 ```
 
@@ -64,7 +77,7 @@ Deterministic Tokyo Trip placeholders live in `agent_assets/sample-files/`:
 - `packing-list.txt`
 - `city-guide.txt`
 
-These stand in for real PDFs, images, and spreadsheets during early parser and clustering work. The north-star mockup is `agent_assets/aether_design.png`.
+These exercise GPT-5.6 native file analysis and relationship discovery before richer demo assets are added. The north-star mockup is `agent_assets/aether_design.png`.
 
 ## Tech Stack
 
@@ -72,8 +85,8 @@ These stand in for real PDFs, images, and spreadsheets during early parser and c
 - Vite, vite-plugin-electron, React, and TypeScript
 - React Flow (`@xyflow/react`) for the infinite canvas
 - Tailwind CSS and Framer Motion
-- `pdf-parse`, `xlsx`, `tesseract.js`, and `sharp` for file understanding and previews
-- OpenAI GPT-5.6 and OpenAI embeddings
+- OpenAI GPT-5.6 Responses API for native PDF, spreadsheet, document, text, and image understanding
+- `sharp` only for local UI thumbnails
 - `better-sqlite3` for local metadata, embeddings, and canvas state
 - React Context + `useReducer` for renderer state
 
@@ -82,11 +95,13 @@ These stand in for real PDFs, images, and spreadsheets during early parser and c
 The intended pipeline is:
 
 ```text
-File Drop → Parser → GPT-5.6 → Structured JSON → React Flow Nodes
+File Drop → Authorized local read → GPT-5.6 native file input
                                       ↓
-                               Embeddings + Space
+                         Structured analysis JSON
                                       ↓
-                         Clustering → Summary Dashboard
+                      Smart preview React Flow node
+                                      ↓
+                   Metadata-only relationship discovery
 ```
 
 See [`docs/product-spec.md`](docs/product-spec.md) for scope and [`docs/architecture.md`](docs/architecture.md) for the process boundary, IPC design, component tree, and proposed SQLite schema.
@@ -111,10 +126,10 @@ This separation is deliberate: the final submission will show where Codex accele
 
 ## How GPT-5.6 Powers the Runtime
 
-GPT-5.6 will transform parsed file content into validated structured data: document type, salient entities, preview content, relationship evidence, cluster intent, and dashboard modules. OpenAI embeddings will provide semantic similarity, while canvas proximity supplies the user's spatial intent. Together they create explainable connections and grounded, goal-specific Summary Dashboard Cards.
+GPT-5.6 receives the actual file through the Responses API. PDFs contribute extracted text and page images, spreadsheets use native spreadsheet augmentation, text documents are extracted by the API, and images use vision input. JSON Schema output supplies entities, preview content, and summaries; a second metadata-only call discovers relationships and possible clusters. This avoids local content parsers while keeping local thumbnail generation and explicit path authorization on-device.
 
 Runtime OpenAI calls will remain in the Electron main process so credentials never enter the renderer. Durable metadata and workspace state stay local in SQLite.
 
 ## Privacy
 
-Aether is local-first: it references source files without moving or modifying them and stores derived workspace state on the user's machine. Before the runtime integration is considered complete, the app will clearly disclose which parsed content is sent to OpenAI for analysis.
+Aether references source files without moving or modifying them and keeps the API key in the Electron main process. When a user drops a supported file, its bytes are sent to the OpenAI Responses API for analysis; relationship discovery sends only the extracted metadata. Durable workspace state remains local. The product UI must clearly disclose this API boundary before submission.
