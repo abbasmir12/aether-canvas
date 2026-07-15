@@ -4,12 +4,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 
 import type { AnalyzedFile, RelationshipDiscovery, RelationshipType, SuggestedCluster } from '../../../shared/types';
+import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
 import SmartSuggestion from './SmartSuggestion';
 import SemanticRibbonEdge from './edges/SemanticRibbonEdge';
 import FileCardNode, { type FileCardNodeType } from './nodes/FileCardNode';
+import HubNode, { type HubNodeType } from './nodes/HubNode';
 import SummaryCardNode, { type SummaryCardNodeType } from './nodes/SummaryCardNode';
 
-type CanvasNode = FileCardNodeType | SummaryCardNodeType;
+type CanvasNode = FileCardNodeType | HubNodeType | SummaryCardNodeType;
 type Suggestion = { fileId: string; category: string; clusterName: string };
 
 const initialNodes: CanvasNode[] = [];
@@ -18,13 +20,6 @@ const RIBBON_COLORS: Record<RelationshipType, string> = { dates: '#4A90D9', cost
 function readableError(error: unknown): string {
   if (!(error instanceof Error)) return 'Aether could not analyze this file.';
   return error.message.replace(/^Error invoking remote method '[^']+':\s*/i, '').replace(/^Error:\s*/i, '').trim() || 'Aether could not analyze this file.';
-}
-
-function relationshipFor(file: AnalyzedFile): RelationshipType {
-  if (file.entities.tasks.length) return 'tasks';
-  if (file.entities.costs.length) return 'cost';
-  if (file.entities.locations.length) return 'place';
-  return 'dates';
 }
 
 function CanvasControls() {
@@ -52,7 +47,7 @@ export default function AetherCanvas() {
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { clusterRef.current = cluster; }, [cluster]);
 
-  const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, summaryCard: SummaryCardNode }), []);
+  const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
   const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);
 
   const applyDiscovery = useCallback(async (files = analyzedFiles.current) => {
@@ -60,22 +55,22 @@ export default function AetherCanvas() {
     const requestId = ++relationshipRequest.current;
     const discovery: RelationshipDiscovery = await window.aether.findRelationships([...files.keys()]);
     if (requestId !== relationshipRequest.current) return;
-    const summaryId = 'summary:active';
     const allFiles = [...files.values()];
     const shouldShowSummary = discovery.shouldCluster && discovery.suggestedCluster;
     setCluster(shouldShowSummary ? discovery.suggestedCluster : null);
+    const layout = calculateAutoLayout(allFiles);
+    const summaryId = 'summary:active';
     setNodes((current) => {
       const fileNodes = current.filter((node): node is FileCardNodeType => node.type === 'fileCard');
-      const retained = current.filter((node) => node.type !== 'summaryCard');
-      if (!shouldShowSummary) return retained;
-      const clusteredNodes = fileNodes.filter((node) => files.has(node.id));
-      const maxX = Math.max(...clusteredNodes.map((node) => node.position.x + 220), 0);
-      const averageY = clusteredNodes.reduce((sum, node) => sum + node.position.y, 0) / Math.max(clusteredNodes.length, 1);
-      return [...retained, { id: summaryId, type: 'summaryCard', position: { x: maxX + 105, y: averageY - 35 }, data: { cluster: discovery.suggestedCluster!, files: allFiles } }];
+      const laidOutFiles = fileNodes.map((node) => ({ ...node, position: layout.filePositions.get(node.id) ?? node.position }));
+      if (!shouldShowSummary) return laidOutFiles;
+      const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
+      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, data: { cluster: discovery.suggestedCluster!, files: allFiles, assemblyDelay: 1.2 } }];
     });
-    const relationshipEdges: Edge[] = discovery.relationships.map((relationship, index) => ({ id: `relationship:${relationship.sourceFileId}:${relationship.targetFileId}:${relationship.type}:${index}`, source: relationship.sourceFileId, target: relationship.targetFileId, type: 'semanticRibbon', data: { relationshipType: relationship.type, label: relationship.label }, style: { stroke: RIBBON_COLORS[relationship.type] } }));
-    const summaryEdges: Edge[] = shouldShowSummary ? allFiles.map((file) => { const type = relationshipFor(file); return { id: `summary:${file.id}`, source: file.id, target: summaryId, type: 'semanticRibbon', data: { relationshipType: type, label: `Included in ${discovery.suggestedCluster!.name}` }, style: { stroke: RIBBON_COLORS[type] } }; }) : [];
-    setEdges([...relationshipEdges, ...summaryEdges]);
+    if (!shouldShowSummary) { setEdges([]); return; }
+    const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));
+    const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
+    setEdges([...fileToHub, ...hubToSummary]);
   }, [setEdges, setNodes]);
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);

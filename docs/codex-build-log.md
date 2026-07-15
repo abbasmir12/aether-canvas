@@ -71,6 +71,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Phase 3: replaced default React Flow edges with animated custom SVG semantic ribbons; added Lucide-only visual language, a generated and auto-positioned Summary Dashboard Card, and an explicit nearby-file Connect / Keep separate flow.
 - Derived dashboard journey, budget ring, packing progress, and stylized map sections exclusively from GPT-5.6 analysis data. Strict TypeScript checks pass after the new node and edge types were added.
 - A headless Electron smoke capture on EC2 confirmed the Phase 3 shell renders and accepts a real native drag/drop. The capture reached the existing recoverable missing-key card state because this checkout has no local `.env`; live multi-file ribbon/dashboard verification remains pending the API key being configured on EC2.
+- Visual overhaul: rebuilt the relationship system into a funnel of `files → category hubs → section-specific dashboard handles`; added a three-column auto-layout hook and a timed 2.5-second assembly sequence for cards, hubs, ribbons, dashboard, and dashboard sections.
+- Re-reviewed `agent_assets/aether_design.png` to align the wide semi-transparent ribbon treatment, centered hubs, restrained dashboard placement, color language, and connection-point hierarchy with the north-star reference.
 
 ### Human decisions — runtime model configuration
 

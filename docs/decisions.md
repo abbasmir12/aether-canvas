@@ -148,6 +148,26 @@ When GPT-5.6 determines that analyzed files form a cluster, Aether generates and
 
 This changes the product from a file organizer into a workspace generator: the user sees a useful mini-app emerge from files they spatially grouped, while the source cards and ribbons make every dashboard datum traceable.
 
+## 017. Hub mediator node architecture instead of direct connections
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+Direct file-to-file and file-to-dashboard edges create visual spaghetti as a cluster grows. Aether now routes each extracted entity category through one colored mediator hub: source files flow into DATES, COST, PLACE, or TASKS; each hub then flows to the matching Journey, Budget, Map, or Packing section of the generated dashboard.
+
+The funnel makes the synthesis process legible in one glance—raw files are categorized, then compiled into a workspace—and gives the demo a stronger visual narrative. Hubs are only created when at least one analyzed file contains the corresponding entity type.
+
+## 018. Auto-layout with animated organization
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+After clustering, Aether moves source cards into an ordered left column, category hubs into an evenly spaced middle column, and the generated dashboard into a right column. This replaces arbitrary drop coordinates with a stable, explainable composition while preserving the initial free-form drop interaction.
+
+The 500ms material-eased reorganization is intentional product feedback: the canvas appears to think through the files, reinforcing the core message that “Space is the prompt.”
+
 ## Decision Template
 
 ## NNN. Decision title
