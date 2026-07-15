@@ -1,7 +1,8 @@
 import { promises as fs } from 'node:fs';
-import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import 'dotenv/config';
 import {
   app,
   BrowserWindow,
@@ -9,30 +10,18 @@ import {
   ipcMain,
   type OpenDialogOptions,
 } from 'electron';
-import sharp from 'sharp';
 
-import type { LocalFileMetadata } from '../shared/types';
+import type { AnalyzedFile, LocalFileMetadata } from '../shared/types';
+import { analyzeFile, findRelationships } from './services/aiService';
+import {
+  generateThumbnail,
+  mimeTypeForPath,
+  prepareFileForAPI,
+} from './services/fileReader';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const authorizedFilePaths = new Set<string>();
-
-const MIME_TYPES: Record<string, string> = {
-  '.csv': 'text/csv',
-  '.gif': 'image/gif',
-  '.jpeg': 'image/jpeg',
-  '.jpg': 'image/jpeg',
-  '.json': 'application/json',
-  '.md': 'text/markdown',
-  '.pdf': 'application/pdf',
-  '.png': 'image/png',
-  '.txt': 'text/plain',
-  '.webp': 'image/webp',
-  '.xls': 'application/vnd.ms-excel',
-  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-};
-
-const TEXT_EXTENSIONS = new Set(['.csv', '.json', '.md', '.txt']);
-const IMAGE_EXTENSIONS = new Set(['.gif', '.jpeg', '.jpg', '.png', '.webp']);
+const analyzedFiles = new Map<string, AnalyzedFile>();
 
 function normalizedPath(filePath: string): string {
   if (typeof filePath !== 'string' || !isAbsolute(filePath)) {
@@ -67,12 +56,10 @@ function requireAuthorizedFile(filePath: string): string {
 async function metadataFor(filePath: string): Promise<LocalFileMetadata> {
   const normalized = requireAuthorizedFile(filePath);
   const stats = await fs.stat(normalized);
-  const extension = extname(normalized).toLowerCase();
-
   return {
     name: basename(normalized),
     path: normalized,
-    type: MIME_TYPES[extension] ?? 'application/octet-stream',
+    type: mimeTypeForPath(normalized),
     size: stats.size,
     modifiedAt: stats.mtime.toISOString(),
   };
@@ -141,6 +128,9 @@ function registerIpcHandlers(): void {
             'csv',
             'txt',
             'md',
+            'tsv',
+            'docx',
+            'pptx',
           ],
         },
       ],
@@ -163,32 +153,34 @@ function registerIpcHandlers(): void {
     return fs.readFile(normalized, 'utf8');
   });
 
-  ipcMain.handle('aether:parse-file', async (_event, filePath: string) => {
-    const normalized = requireAuthorizedFile(filePath);
-    const extension = extname(normalized).toLowerCase();
-
-    if (TEXT_EXTENSIONS.has(extension)) {
-      return fs.readFile(normalized, 'utf8');
-    }
-
-    return '';
-  });
-
   ipcMain.handle('aether:get-thumbnail', async (_event, filePath: string) => {
     const normalized = requireAuthorizedFile(filePath);
-    const extension = extname(normalized).toLowerCase();
+    const thumbnail = await generateThumbnail(normalized);
+    return thumbnail ? `data:image/jpeg;base64,${thumbnail}` : null;
+  });
 
-    if (!IMAGE_EXTENSIONS.has(extension)) {
-      return null;
+  ipcMain.handle(
+    'aether:analyze-file',
+    async (_event, filePath: string, fileId: string) => {
+      const normalized = requireAuthorizedFile(filePath);
+      const preparedFile = prepareFileForAPI(normalized);
+      const analysis = await analyzeFile(preparedFile, fileId, normalized);
+      analyzedFiles.set(fileId, analysis);
+      return analysis;
+    },
+  );
+
+  ipcMain.handle('aether:find-relationships', async (_event, fileIds: string[]) => {
+    if (!Array.isArray(fileIds)) {
+      throw new Error('Relationship discovery requires a list of file IDs.');
     }
 
-    const thumbnail = await sharp(normalized)
-      .rotate()
-      .resize(360, 240, { fit: 'cover' })
-      .jpeg({ quality: 80 })
-      .toBuffer();
+    const files = fileIds.flatMap((id) => {
+      const file = analyzedFiles.get(id);
+      return file ? [file] : [];
+    });
 
-    return `data:image/jpeg;base64,${thumbnail.toString('base64')}`;
+    return findRelationships(files);
   });
 }
 

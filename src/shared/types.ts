@@ -9,6 +9,73 @@ export interface ExtractedEntity {
   confidence?: number;
 }
 
+export type FileCategory =
+  | 'travel'
+  | 'finance'
+  | 'health'
+  | 'work'
+  | 'education'
+  | 'personal';
+
+export interface AnalysisEntities {
+  dates: Array<{ label: string; date: string; display: string }>;
+  costs: Array<{ label: string; amount: number; currency: string }>;
+  locations: Array<{ name: string; type: string }>;
+  people: string[];
+  tasks: Array<{ item: string; completed: boolean }>;
+}
+
+export type SmartPreviewType =
+  | 'flight'
+  | 'hotel'
+  | 'budget'
+  | 'checklist'
+  | 'guide'
+  | 'document'
+  | 'image';
+
+export interface SmartPreview {
+  type: SmartPreviewType;
+  displayData: Record<string, unknown>;
+}
+
+export interface FileAnalysis {
+  title: string;
+  category: FileCategory;
+  entities: AnalysisEntities;
+  summary: string;
+  smartPreview: SmartPreview;
+}
+
+export interface AnalyzedFile extends FileAnalysis {
+  id: string;
+  filePath: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+}
+
+export interface DiscoveredRelationship {
+  sourceFileId: string;
+  targetFileId: string;
+  type: RelationshipType;
+  label: string;
+  strength: number;
+}
+
+export interface SuggestedCluster {
+  name: string;
+  dateRange: string;
+  icon: string;
+  category: string;
+}
+
+export interface RelationshipDiscovery {
+  relationships: DiscoveredRelationship[];
+  suggestedCluster: SuggestedCluster | null;
+  shouldCluster: boolean;
+}
+
 export interface AetherFile {
   id: string;
   name: string;
@@ -83,8 +150,9 @@ export interface OpenFileDialogResult {
 export interface AetherBridge {
   readFile: (filePath: string) => Promise<string>;
   getFileMetadata: (filePath: string) => Promise<LocalFileMetadata>;
-  parseFile: (filePath: string) => Promise<string>;
   getThumbnail: (filePath: string) => Promise<string | null>;
   openFileDialog: () => Promise<OpenFileDialogResult>;
   getDroppedFilePath: (file: File) => Promise<string>;
+  analyzeFile: (filePath: string, fileId: string) => Promise<AnalyzedFile>;
+  findRelationships: (fileIds: string[]) => Promise<RelationshipDiscovery>;
 }

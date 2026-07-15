@@ -20,7 +20,9 @@
     "appId": "com.aether.canvas",
     "productName": "Aether Canvas",
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Utility"
     },
     "directories": {
@@ -40,20 +42,17 @@
   "dependencies": {
     "@xyflow/react": "^12.8.2",
     "better-sqlite3": "^12.2.0",
+    "dotenv": "^17.4.2",
     "framer-motion": "^12.23.12",
-    "openai": "^5.10.2",
-    "pdf-parse": "^1.1.1",
+    "openai": "^6.47.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "sharp": "^0.34.3",
-    "tesseract.js": "^6.0.1",
-    "xlsx": "^0.18.5"
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.0.13",
-    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",

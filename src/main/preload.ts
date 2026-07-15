@@ -6,10 +6,13 @@ const aetherBridge: AetherBridge = {
   readFile: (filePath) => ipcRenderer.invoke('aether:read-file', filePath),
   getFileMetadata: (filePath) =>
     ipcRenderer.invoke('aether:get-file-metadata', filePath),
-  parseFile: (filePath) => ipcRenderer.invoke('aether:parse-file', filePath),
   getThumbnail: (filePath) =>
     ipcRenderer.invoke('aether:get-thumbnail', filePath),
   openFileDialog: () => ipcRenderer.invoke('aether:open-file-dialog'),
+  analyzeFile: (filePath, fileId) =>
+    ipcRenderer.invoke('aether:analyze-file', filePath, fileId),
+  findRelationships: (fileIds) =>
+    ipcRenderer.invoke('aether:find-relationships', fileIds),
   getDroppedFilePath: async (file) => {
     const filePath = webUtils.getPathForFile(file);
 

@@ -13,7 +13,7 @@ export default defineConfig({
         vite: {
           build: {
             rollupOptions: {
-              external: ['better-sqlite3', 'sharp'],
+              external: ['better-sqlite3', 'dotenv', 'openai', 'sharp'],
             },
           },
         },
