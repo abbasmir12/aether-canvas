@@ -68,6 +68,9 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Phase 2 strict TypeScript and Vite builds pass. Offline file preparation correctly identified and encoded `flight-ticket.txt`; non-image thumbnail generation correctly returned `null`.
 - With no EC2 API key configured, the live Electron drop test transitioned into a recoverable card-level error instead of hanging or crashing. Real GPT-5.6 sample-file assertions remain pending `OPENAI_API_KEY` configuration.
 - Added environment-configurable GPT-5.6 model and reasoning settings to both intelligence calls, defaulting to `gpt-5.6-luna` and `low` reasoning with validation for all supported effort values.
+- Phase 3: replaced default React Flow edges with animated custom SVG semantic ribbons; added Lucide-only visual language, a generated and auto-positioned Summary Dashboard Card, and an explicit nearby-file Connect / Keep separate flow.
+- Derived dashboard journey, budget ring, packing progress, and stylized map sections exclusively from GPT-5.6 analysis data. Strict TypeScript checks pass after the new node and edge types were added.
+- A headless Electron smoke capture on EC2 confirmed the Phase 3 shell renders and accepts a real native drag/drop. The capture reached the existing recoverable missing-key card state because this checkout has no local `.env`; live multi-file ribbon/dashboard verification remains pending the API key being configured on EC2.
 
 ### Human decisions — runtime model configuration
 

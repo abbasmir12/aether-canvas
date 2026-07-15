@@ -1,0 +1,85 @@
+import { motion } from 'framer-motion';
+import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
+import { CheckSquare, Map, MapPin, MoreHorizontal, Plane, Sparkles, Wallet } from 'lucide-react';
+
+import type { AnalyzedFile, SuggestedCluster } from '../../../../shared/types';
+
+export type SummaryCardNodeData = {
+  cluster: SuggestedCluster;
+  files: AnalyzedFile[];
+};
+
+export type SummaryCardNodeType = Node<SummaryCardNodeData, 'summaryCard'>;
+
+function value(data: Record<string, unknown>, key: string): string {
+  const item = data[key];
+  return typeof item === 'string' ? item : '';
+}
+
+function numberValue(data: Record<string, unknown>, key: string): number {
+  const item = data[key];
+  return typeof item === 'number' && Number.isFinite(item) ? item : 0;
+}
+
+function Section({ children, index }: { children: React.ReactNode; index: number }) {
+  return (
+    <motion.section
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-[11px] border border-[#DFDFE2] bg-[#FEFEFF] px-3 py-2.5"
+      initial={{ opacity: 0, y: 8 }}
+      transition={{ delay: 0.12 + index * 0.1, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.section>
+  );
+}
+
+function SectionHeading({ children, Icon }: { children: string; Icon: typeof Plane }) {
+  return <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold text-[#333337]"><span className="grid h-5 w-5 place-items-center rounded-full bg-[#EDF4FC] text-[#4A90D9]"><Icon size={13} strokeWidth={2.4} /></span>{children}</div>;
+}
+
+export default function SummaryCardNode({ data, selected }: NodeProps<SummaryCardNodeType>) {
+  const flight = data.files.find((file) => file.smartPreview.type === 'flight');
+  const hotel = data.files.find((file) => file.smartPreview.type === 'hotel');
+  const checklist = data.files.find((file) => file.smartPreview.type === 'checklist');
+  const allCosts = data.files.flatMap((file) => file.entities.costs);
+  const locations = [...new Set(data.files.flatMap((file) => file.entities.locations.map((location) => location.name)))].slice(0, 3);
+  const hasBudget = allCosts.length > 0;
+  const total = allCosts.reduce((sum, cost) => sum + cost.amount, 0);
+  const budgetPreview = data.files.find((file) => file.smartPreview.type === 'budget')?.smartPreview.displayData ?? {};
+  const budgetLimit = numberValue(budgetPreview, 'total') || Math.ceil(total / 100) * 100 || 1;
+  const spent = Math.min(total, budgetLimit);
+  const remaining = Math.max(budgetLimit - spent, 0);
+  const progress = checklist?.smartPreview.displayData ?? {};
+  const packed = numberValue(progress, 'checkedCount');
+  const packTotal = numberValue(progress, 'totalCount');
+  const flightData = flight?.smartPreview.displayData ?? {};
+  const hotelData = hotel?.smartPreview.displayData ?? {};
+  const percent = Math.min(100, Math.round((spent / budgetLimit) * 100));
+  const circumference = 2 * Math.PI * 31;
+
+  let sectionIndex = 0;
+
+  return (
+    <motion.article
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className={`w-[286px] rounded-[16px] border bg-white p-3 shadow-[0_5px_18px_rgba(0,0,0,0.12)] ${selected ? 'border-[#4A90D9]' : 'border-[#D5D5D9]'}`}
+      initial={{ opacity: 0, scale: 0.96, y: 10 }}
+      transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Handle className="!h-3 !w-3 !border-2 !border-white !bg-[#4A90D9]" position={Position.Left} type="target" />
+      <header className="mb-3 flex items-start gap-2.5 px-1 pt-1">
+        <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[#FFF0EA] text-[#EA6335]"><MapPin size={21} strokeWidth={2.25} /></span>
+        <div className="min-w-0 flex-1"><h2 className="truncate text-[23px] font-semibold tracking-[-0.035em] text-[#29292C]">{data.cluster.name}</h2><p className="mt-0.5 text-[12px] font-medium text-[#77777D]">{data.cluster.dateRange || 'Aether space'}</p></div>
+        <button aria-label="Summary options" className="grid h-7 w-7 place-items-center rounded-md text-[#77777D] hover:bg-[#F2F2F4]" type="button"><MoreHorizontal size={18} /></button>
+      </header>
+      <div className="space-y-2">
+        {flight && <Section index={sectionIndex++}><SectionHeading Icon={Plane}>Journey</SectionHeading><div className="grid grid-cols-[1fr_auto_1fr] items-center text-center"><div><p className="text-[16px] font-semibold text-[#303034]">{value(flightData, 'origin') || '—'}</p><p className="text-[10px] text-[#77777D]">{value(flightData, 'departDate')}</p></div><Plane className="mx-2 text-[#55555A]" size={19} /><div><p className="text-[16px] font-semibold text-[#303034]">{value(flightData, 'destination') || '—'}</p><p className="text-[10px] text-[#77777D]">{value(flightData, 'arriveDate')}</p></div></div>{hotel && <p className="mt-2 border-t border-[#E8E8EB] pt-2 text-[10px] text-[#77777D]">Check-in <span className="ml-1 font-medium text-[#4D4D52]">{value(hotelData, 'checkIn')}</span></p>}</Section>}
+        {hasBudget && <Section index={sectionIndex++}><SectionHeading Icon={Wallet}>Budget</SectionHeading><div className="flex items-center gap-3"><div className="relative grid h-[78px] w-[78px] place-items-center"><svg className="h-[78px] w-[78px] -rotate-90"><circle cx="39" cy="39" fill="none" r="31" stroke="#E9E9E7" strokeWidth="9" /><circle cx="39" cy="39" fill="none" r="31" stroke="#34A853" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - percent / 100)} strokeLinecap="round" strokeWidth="9" /></svg><div className="absolute text-center"><p className="text-[13px] font-semibold text-[#323237]">${Math.round(spent).toLocaleString()}</p><p className="text-[8px] text-[#77777D]">of ${Math.round(budgetLimit).toLocaleString()}</p></div></div><div className="space-y-2 text-[10px]"><p className="flex items-center gap-1.5 text-[#55555A]"><i className="h-2 w-2 rounded-full bg-[#34A853]" />Spent <b className="ml-auto pl-4 text-[#333337]">${Math.round(spent).toLocaleString()}</b></p><p className="flex items-center gap-1.5 text-[#55555A]"><i className="h-2 w-2 rounded-full bg-[#B5B3AC]" />Remaining <b className="ml-auto pl-4 text-[#333337]">${Math.round(remaining).toLocaleString()}</b></p></div></div></Section>}
+        {checklist && <Section index={sectionIndex++}><SectionHeading Icon={CheckSquare}>Packing</SectionHeading><div className="flex items-end justify-between"><p className="text-[12px] text-[#444449]"><b className="text-[22px] leading-none text-[#303034]">{packed}</b> / {packTotal} packed</p></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[#E7E5E9]"><motion.div animate={{ width: `${packTotal ? (packed / packTotal) * 100 : 0}%` }} className="h-full rounded-full bg-[#9B72CF]" initial={{ width: 0 }} transition={{ delay: 0.45, duration: 0.45 }} /></div></Section>}
+        {locations.length > 0 && <Section index={sectionIndex++}><SectionHeading Icon={Map}>Map</SectionHeading><div className="relative h-[83px] overflow-hidden rounded-[7px] border border-[#E5E2D9] bg-[#F1EEE6]" style={{ backgroundImage: 'linear-gradient(26deg, transparent 47%, rgba(255,255,255,.8) 48%, rgba(255,255,255,.8) 51%, transparent 52%), linear-gradient(112deg, transparent 42%, rgba(255,255,255,.75) 43%, rgba(255,255,255,.75) 46%, transparent 47%)' }}>{locations.map((location, index) => <span className="absolute flex items-center gap-0.5 text-[9px] font-medium text-[#4A4A4E]" key={location} style={{ left: `${16 + index * 29}%`, top: `${53 - index * 17}%` }}><MapPin className="fill-[#EA6335] text-white" size={19} strokeWidth={2.5} />{location}</span>)}</div></Section>}
+      </div>
+      <footer className="mt-3 flex justify-center"><span className="flex items-center gap-1.5 rounded-full border border-[#E2E2E5] bg-[#FAFAFB] px-3 py-1.5 text-[10px] font-medium text-[#6F6F74]"><Sparkles size={13} />Generated from {data.files.length} files</span></footer>
+    </motion.article>
+  );
+}

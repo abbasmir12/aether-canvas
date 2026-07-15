@@ -128,6 +128,26 @@ Aether defaults runtime file analysis and relationship discovery to `gpt-5.6-lun
 
 Official GPT-5.6 options remain available for evaluation: Terra balances intelligence and cost, while Sol targets frontier capability. Supported effort values are `none`, `low`, `medium`, `high`, `xhigh`, and `max`; invalid configuration fails early with an actionable error instead of silently changing behavior. We will raise model capability or reasoning effort only when representative sample-file tests show a quality benefit worth the added latency and cost.
 
+## 015. Custom SVG semantic ribbons instead of React Flow default edges
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+Default graph edges read as implementation scaffolding and make relationship labels compete with the source documents. Aether now renders a custom SVG edge for each semantic relationship: a three-pixel animated Bezier stroke, a restrained colored glow, terminal dots, and an icon-led relationship badge. The full relationship statement moves to the badge tooltip, preserving the canvas's visual calm.
+
+This makes meaning immediately scannable—dates blue, cost green, place coral, and tasks purple—and turns the connection system into a product-defining visual language rather than generic diagram chrome.
+
+## 016. Auto-generated Summary Dashboard Card
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+When GPT-5.6 determines that analyzed files form a cluster, Aether generates and auto-positions a functional dashboard to the right of the group. Its Journey, Budget, Packing, and Map sections are conditionally assembled from the grounded file-analysis entities, then linked back to source files by semantic ribbons.
+
+This changes the product from a file organizer into a workspace generator: the user sees a useful mini-app emerge from files they spatially grouped, while the source cards and ribbons make every dashboard datum traceable.
+
 ## Decision Template
 
 ## NNN. Decision title

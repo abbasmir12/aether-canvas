@@ -44,6 +44,7 @@
     "better-sqlite3": "^12.2.0",
     "dotenv": "^17.4.2",
     "framer-motion": "^12.23.12",
+    "lucide-react": "^1.24.0",
     "openai": "^6.47.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

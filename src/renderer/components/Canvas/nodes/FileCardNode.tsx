@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
+import { File, FileText, Image, Table } from 'lucide-react';
 
 import type { AnalyzedFile } from '../../../../shared/types';
 import BudgetPreview from './previews/BudgetPreview';
@@ -25,29 +26,30 @@ export type FileCardNodeType = Node<FileCardNodeData, 'fileCard'>;
 type FileKind = {
   label: string;
   color: string;
-  glyph: string;
+  Icon: typeof File;
 };
 
 function fileKind(fileName: string, mimeType: string): FileKind {
   const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
 
   if (mimeType === 'application/pdf' || extension === 'pdf') {
-    return { label: 'PDF', color: '#D64035', glyph: 'A' };
+    return { label: 'PDF', color: '#EA4335', Icon: FileText };
   }
 
   if (mimeType.startsWith('image/')) {
-    return { label: 'IMG', color: '#4A90D9', glyph: '◇' };
+    return { label: 'IMG', color: '#34A853', Icon: Image };
   }
 
   if (['csv', 'xls', 'xlsx'].includes(extension)) {
-    return { label: 'SHEET', color: '#24965B', glyph: '▦' };
+    return { label: 'SHEET', color: '#34A853', Icon: Table };
   }
 
-  return { label: 'TEXT', color: '#6E63B6', glyph: '≡' };
+  return { label: 'TEXT', color: '#4A90D9', Icon: FileText };
 }
 
 export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeType>) {
   const kind = fileKind(data.fileName, data.mimeType);
+  const FileIcon = kind.Icon;
   const preview = data.analysis?.smartPreview;
 
   const smartPreview = preview ? (() => {
@@ -79,7 +81,7 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
           ? 'border-[#4A90D9] shadow-[0_5px_18px_rgba(74,144,217,0.18)]'
           : 'border-[#D8D8DC]'
       }`}
-      initial={{ opacity: 0, scale: 0.96, y: 6 }}
+      initial={{ opacity: 0, scale: 0.8, y: 6 }}
       layout
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
@@ -100,7 +102,7 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
           style={{ backgroundColor: kind.color }}
           title={kind.label}
         >
-          {kind.glyph}
+          <FileIcon size={12} strokeWidth={2.5} />
         </span>
         <div className="min-w-0">
           <p className="truncate text-[12px] font-medium leading-5 text-[#2B2B2E]">
@@ -121,6 +123,12 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
       <Handle
         className="!h-3 !w-3 !border-2 !border-white !bg-[#4A90D9] !shadow-[0_0_0_1px_rgba(0,0,0,0.15)]"
         position={Position.Right}
+        type="source"
+      />
+      <Handle
+        className="!h-3 !w-3 !border-2 !border-white !bg-[#4A90D9] !shadow-[0_0_0_1px_rgba(0,0,0,0.15)]"
+        id="bottom"
+        position={Position.Bottom}
         type="source"
       />
     </motion.article>
