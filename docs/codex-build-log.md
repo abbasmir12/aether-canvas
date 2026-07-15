@@ -73,6 +73,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - A headless Electron smoke capture on EC2 confirmed the Phase 3 shell renders and accepts a real native drag/drop. The capture reached the existing recoverable missing-key card state because this checkout has no local `.env`; live multi-file ribbon/dashboard verification remains pending the API key being configured on EC2.
 - Visual overhaul: rebuilt the relationship system into a funnel of `files → category hubs → section-specific dashboard handles`; added a three-column auto-layout hook and a timed 2.5-second assembly sequence for cards, hubs, ribbons, dashboard, and dashboard sections.
 - Re-reviewed `agent_assets/aether_design.png` to align the wide semi-transparent ribbon treatment, centered hubs, restrained dashboard placement, color language, and connection-point hierarchy with the north-star reference.
+- Ribbon refinement: implemented the five-layer SVG stack (blurred outer glow, main/inner bands, colored core, delayed white shimmer) and path-length-derived, staggered flow dots. Hub-to-summary trunks are now deliberately wider and more opaque than their tributaries.
+- Ran the complete five-file GPT-5.6 Electron capture after the local API key was configured. The first capture exposed a negative/delayed clustering result and an incomplete summary entrance; Codex added a grounded fallback workspace and corrected the motion transform, then verified the final capture renders all hubs, multi-layer ribbons, flowing dots, and dashboard-section trunks.
 
 ### Human decisions — runtime model configuration
 

@@ -67,32 +67,33 @@ async function metadataFor(filePath: string): Promise<LocalFileMetadata> {
 
 async function runSmokeCapture(window: BrowserWindow): Promise<void> {
   const capturePath = process.env.AETHER_SMOKE_CAPTURE;
-  const smokeFilePath = process.env.AETHER_SMOKE_FILE;
+  const smokeFilePaths = (process.env.AETHER_SMOKE_FILES ?? process.env.AETHER_SMOKE_FILE ?? '')
+    .split(',')
+    .map((filePath) => filePath.trim())
+    .filter(Boolean);
 
-  if (!capturePath || !smokeFilePath) return;
+  if (!capturePath || smokeFilePaths.length === 0) return;
 
   window.webContents.once('did-finish-load', async () => {
     try {
       window.webContents.debugger.attach('1.3');
-      const dragData = {
-        items: [],
-        files: [resolve(smokeFilePath)],
-        dragOperationsMask: 1,
-      };
+      for (const [index, smokeFilePath] of smokeFilePaths.entries()) {
+        const dragData = { items: [], files: [resolve(smokeFilePath)], dragOperationsMask: 1 };
+        const x = 440 + (index % 2) * 80;
+        const y = 220 + index * 85;
+        await window.webContents.debugger.sendCommand('Input.dispatchDragEvent', { type: 'dragEnter', x, y, data: dragData });
+        await window.webContents.debugger.sendCommand('Input.dispatchDragEvent', { type: 'drop', x, y, data: dragData });
+        await new Promise((done) => setTimeout(done, 900));
+      }
+      await new Promise((done) => setTimeout(done, 9000));
 
-      await window.webContents.debugger.sendCommand('Input.dispatchDragEvent', {
-        type: 'dragEnter',
-        x: 520,
-        y: 340,
-        data: dragData,
-      });
-      await window.webContents.debugger.sendCommand('Input.dispatchDragEvent', {
-        type: 'drop',
-        x: 520,
-        y: 340,
-        data: dragData,
-      });
-      await new Promise((done) => setTimeout(done, 800));
+      if (process.env.AETHER_SMOKE_DEBUG) {
+        const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
+          ribbons: document.querySelectorAll('.semantic-ribbon').length,
+          paths: Array.from(document.querySelectorAll('.semantic-ribbon path')).map((path) => ({ d: path.getAttribute('d'), stroke: path.getAttribute('stroke'), opacity: path.getAttribute('stroke-opacity') }))
+        })`);
+        console.log(`AETHER_SMOKE_EDGE_DEBUG ${edgeDebug}`);
+      }
 
       const screenshot = await window.webContents.capturePage();
       await fs.writeFile(resolve(capturePath), screenshot.toPNG());

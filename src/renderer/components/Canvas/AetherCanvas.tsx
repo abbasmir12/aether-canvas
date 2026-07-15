@@ -56,8 +56,17 @@ export default function AetherCanvas() {
     const discovery: RelationshipDiscovery = await window.aether.findRelationships([...files.keys()]);
     if (requestId !== relationshipRequest.current) return;
     const allFiles = [...files.values()];
-    const shouldShowSummary = discovery.shouldCluster && discovery.suggestedCluster;
-    setCluster(shouldShowSummary ? discovery.suggestedCluster : null);
+    const firstLocation = allFiles.flatMap((file) => file.entities.locations).find((location) => location.type === 'city')?.name;
+    const firstDate = allFiles.flatMap((file) => file.entities.dates)[0]?.display;
+    const fallbackCluster: SuggestedCluster = {
+      name: firstLocation ? `${firstLocation} Trip` : 'Aether Space',
+      dateRange: firstDate || 'Generated workspace',
+      icon: '',
+      category: allFiles[0]?.category ?? 'personal',
+    };
+    const activeCluster = discovery.shouldCluster && discovery.suggestedCluster ? discovery.suggestedCluster : fallbackCluster;
+    const shouldShowSummary = allFiles.length >= 2;
+    setCluster(activeCluster);
     const layout = calculateAutoLayout(allFiles);
     const summaryId = 'summary:active';
     setNodes((current) => {
@@ -65,7 +74,7 @@ export default function AetherCanvas() {
       const laidOutFiles = fileNodes.map((node) => ({ ...node, position: layout.filePositions.get(node.id) ?? node.position }));
       if (!shouldShowSummary) return laidOutFiles;
       const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
-      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, data: { cluster: discovery.suggestedCluster!, files: allFiles, assemblyDelay: 1.2 } }];
+      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, data: { cluster: activeCluster, files: allFiles, assemblyDelay: 1.2 } }];
     });
     if (!shouldShowSummary) { setEdges([]); return; }
     const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));

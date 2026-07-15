@@ -168,6 +168,26 @@ After clustering, Aether moves source cards into an ordered left column, categor
 
 The 500ms material-eased reorganization is intentional product feedback: the canvas appears to think through the files, reinforcing the core message that “Space is the prompt.”
 
+## 019. Multi-layer SVG ribbon rendering
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+Each semantic connection is rendered as five stacked SVG paths following the exact same organic horizontal cubic Bezier: a blurred atmospheric glow, wide main band, denser inner band, colored core, and a delayed white highlight shimmer. Real path-length sampling places staggered white flow dots on the ribbon after the draw animation completes, while larger endpoint markers make every source and destination legible.
+
+This produces a translucent river-of-light treatment rather than a flat graph line. Hub-to-dashboard ribbons scale all widths and opacities by 1.3×/1.2× so the merged stream visibly carries more weight than its file-to-hub tributaries.
+
+## 020. Resilient workspace assembly after file analysis
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Codex proposal accepted through implementation
+
+GPT relationship discovery remains the source of a preferred cluster name and date range, but its `shouldCluster` boolean is not allowed to leave a clearly related analyzed set visually inert. Once two files have completed analysis, Aether assembles a conservative local workspace fallback from grounded locations, dates, and categories when the model does not return a positive cluster flag in time.
+
+This preserves the demo's core “canvas thinks” moment while keeping all visible content traceable to file analysis. It also makes the interaction robust to a low-confidence or delayed relationship response.
+
 ## Decision Template
 
 ## NNN. Decision title

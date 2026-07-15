@@ -86,12 +86,12 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
       <Handle
-        className="!h-3 !w-3 !border-2 !border-white !bg-[#4A90D9] !shadow-[0_0_0_1px_rgba(0,0,0,0.15)]"
+        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
         position={Position.Left}
         type="target"
       />
       <Handle
-        className="!h-3 !w-3 !border-2 !border-white !bg-[#4A90D9] !shadow-[0_0_0_1px_rgba(0,0,0,0.15)]"
+        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
         id="top"
         position={Position.Top}
         type="target"
@@ -121,12 +121,12 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
         </div>
       )}
       <Handle
-        className="!h-3 !w-3 !border-2 !border-white !bg-[#4A90D9] !shadow-[0_0_0_1px_rgba(0,0,0,0.15)]"
+        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
         position={Position.Right}
         type="source"
       />
       <Handle
-        className="!h-3 !w-3 !border-2 !border-white !bg-[#4A90D9] !shadow-[0_0_0_1px_rgba(0,0,0,0.15)]"
+        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
         id="bottom"
         position={Position.Bottom}
         type="source"
