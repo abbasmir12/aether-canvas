@@ -40,8 +40,18 @@ Configure runtime intelligence:
 
 ```bash
 cp .env.example .env
-# Replace the placeholder in .env with your OpenAI API key.
+# Add your OpenAI API key. Aether defaults to GPT-5.6 Luna with low reasoning.
 ```
+
+Runtime model settings are environment-configurable:
+
+```env
+OPENAI_API_KEY=sk-your-key-here
+AI_MODEL=gpt-5.6-luna
+AI_REASONING_EFFORT=low
+```
+
+Supported GPT-5.6 reasoning efforts are `none`, `low`, `medium`, `high`, `xhigh`, and `max`. Aether calls the quick UI-facing setting “light,” which maps to the API's `low` value. Use `gpt-5.6-terra` for a stronger cost/capability balance or `gpt-5.6-sol` for the hardest quality-first analysis.
 
 Start Aether:
 
@@ -56,7 +66,7 @@ npm run build
 npm start
 ```
 
-`npm run build` type-checks the main and renderer processes, creates production bundles, rebuilds native dependencies for Electron, and currently packages a Linux AppImage on EC2. A Windows packaging target and Windows-native verification will be added before submission. Runtime OpenAI environment variables will be documented when the intelligence layer is implemented.
+`npm run build` type-checks the main and renderer processes, creates production bundles, rebuilds native dependencies for Electron, and currently packages a Linux AppImage on EC2. A Windows packaging target and Windows-native verification will be added before submission.
 
 ### Available commands
 

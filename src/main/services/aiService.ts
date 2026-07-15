@@ -9,7 +9,31 @@ import type {
 } from '../../shared/types';
 import type { PreparedFile } from './fileReader';
 
-const MODEL = 'gpt-5.6';
+const DEFAULT_MODEL = 'gpt-5.6-luna';
+const DEFAULT_REASONING_EFFORT = 'low';
+const REASONING_EFFORTS = ['none', 'low', 'medium', 'high', 'xhigh', 'max'] as const;
+
+type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+
+function configuredModel(): string {
+  return process.env.AI_MODEL?.trim() || DEFAULT_MODEL;
+}
+
+function configuredReasoningEffort(): ReasoningEffort {
+  const configured = process.env.AI_REASONING_EFFORT?.trim().toLowerCase();
+
+  if (!configured) {
+    return DEFAULT_REASONING_EFFORT;
+  }
+
+  if (!REASONING_EFFORTS.includes(configured as ReasoningEffort)) {
+    throw new Error(
+      `Invalid AI_REASONING_EFFORT "${configured}". Use ${REASONING_EFFORTS.join(', ')}.`,
+    );
+  }
+
+  return configured as ReasoningEffort;
+}
 
 export const ANALYSIS_PROMPT = `You are the file analysis engine for Aether Canvas, a spatial desktop where grouping files expresses user intent.
 
@@ -214,7 +238,8 @@ export async function analyzeFile(
         };
 
   const response = await client().responses.create({
-    model: MODEL,
+    model: configuredModel(),
+    reasoning: { effort: configuredReasoningEffort() },
     input: [
       {
         role: 'user',
@@ -261,7 +286,8 @@ export async function findRelationships(
   }));
 
   const response = await client().responses.create({
-    model: MODEL,
+    model: configuredModel(),
+    reasoning: { effort: configuredReasoningEffort() },
     input: [
       {
         role: 'user',

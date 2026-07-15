@@ -72,8 +72,8 @@ This preserves the first-try native drop experience without exposing unrestricte
 
 ## 009. Keep native modules external to the Electron main bundle
 
-**Status:** Accepted  
-**Date:** July 15, 2026  
+**Status:** Accepted
+**Date:** July 15, 2026
 **Decision owner:** Codex proposal accepted through verification
 
 Vite must not bundle `sharp` or `better-sqlite3` into the Electron main-process JavaScript. Their native bindings rely on runtime module resolution and Electron-specific ABI artifacts. Both remain external dependencies, and electron-builder unpacks their native files from ASAR and rebuilds `better-sqlite3` for the selected Electron version.
@@ -117,6 +117,16 @@ This reduces bundle surface and orchestration complexity while improving context
 Aether uses `client.responses.create()` for file analysis and relationship discovery. Responses provides native `input_file`, PDF detail control, multimodal content, JSON Schema structured output, and a path to stateful/tool-using workflows. Chat Completions is not used by the runtime intelligence layer.
 
 The originally proposed “40–80% better cache utilization” figure was not recorded as evidence because current official documentation reviewed during implementation did not substantiate that exact range. We will cite measured Aether latency/caching data or an exact official source if this becomes a submission claim.
+
+## 014. GPT-5.6 Luna with low reasoning as the configurable default
+
+**Status:** Accepted
+**Date:** July 15, 2026
+**Decision owner:** Human
+
+Aether defaults runtime file analysis and relationship discovery to `gpt-5.6-luna` with `reasoning.effort: "low"`. Luna fits the repeated, latency-sensitive analysis performed during live file drops, while low reasoning is the API equivalent of the product's “light” setting. Both values are configurable through `AI_MODEL` and `AI_REASONING_EFFORT` without a rebuild.
+
+Official GPT-5.6 options remain available for evaluation: Terra balances intelligence and cost, while Sol targets frontier capability. Supported effort values are `none`, `low`, `medium`, `high`, `xhigh`, and `max`; invalid configuration fails early with an actionable error instead of silently changing behavior. We will raise model capability or reasoning effort only when representative sample-file tests show a quality benefit worth the added latency and cost.
 
 ## Decision Template
 

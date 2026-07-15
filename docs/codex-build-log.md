@@ -67,6 +67,12 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - The only production bundle warning is the renderer's initial 513 KB chunk; code splitting is deferred until feature boundaries exist.
 - Phase 2 strict TypeScript and Vite builds pass. Offline file preparation correctly identified and encoded `flight-ticket.txt`; non-image thumbnail generation correctly returned `null`.
 - With no EC2 API key configured, the live Electron drop test transitioned into a recoverable card-level error instead of hanging or crashing. Real GPT-5.6 sample-file assertions remain pending `OPENAI_API_KEY` configuration.
+- Added environment-configurable GPT-5.6 model and reasoning settings to both intelligence calls, defaulting to `gpt-5.6-luna` and `low` reasoning with validation for all supported effort values.
+
+### Human decisions — runtime model configuration
+
+- Funded the direct OpenAI API account and selected GPT-5.6 Luna as Aether's default runtime model.
+- Selected a “light” reasoning default, implemented using the Responses API's official `low` effort value, while retaining environment switches for higher-capability models and reasoning levels.
 
 ## Day 3 — July 16, 2026
 
