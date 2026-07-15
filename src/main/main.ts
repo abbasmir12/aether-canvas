@@ -85,12 +85,12 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         await window.webContents.debugger.sendCommand('Input.dispatchDragEvent', { type: 'drop', x, y, data: dragData });
         await new Promise((done) => setTimeout(done, 900));
       }
-      await new Promise((done) => setTimeout(done, 18000));
+      await new Promise((done) => setTimeout(done, 9000));
 
       if (process.env.AETHER_SMOKE_DEBUG) {
         const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
           ribbons: document.querySelectorAll('.semantic-ribbon').length,
-          paths: Array.from(document.querySelectorAll('.semantic-ribbon--river path')).map((path) => ({ d: path.getAttribute('d'), stroke: path.getAttribute('stroke'), opacity: path.getAttribute('stroke-opacity'), style: path.getAttribute('style') }))
+          paths: Array.from(document.querySelectorAll('.semantic-ribbon path')).map((path) => ({ d: path.getAttribute('d'), stroke: path.getAttribute('stroke'), opacity: path.getAttribute('stroke-opacity') }))
         })`);
         console.log(`AETHER_SMOKE_EDGE_DEBUG ${edgeDebug}`);
       }

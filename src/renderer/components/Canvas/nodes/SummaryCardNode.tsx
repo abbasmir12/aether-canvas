@@ -31,7 +31,7 @@ function Section({ children, index, relationshipType }: { children: React.ReactN
       initial={{ opacity: 0, y: 8 }}
       transition={{ delay: 2.2 + index * 0.1, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Handle id={`summary-${relationshipType}`} className="!h-[6px] !w-[6px] !border !border-white/90 !shadow-[inset_0_0_0_1px_#fff]" position={Position.Left} style={{ backgroundColor: colors[relationshipType], top: '50%' }} type="target" />
+      <Handle id={`summary-${relationshipType}`} className="!h-[11px] !w-[11px] !border-2 !border-white/90 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.16)]" position={Position.Left} style={{ backgroundColor: colors[relationshipType], top: '50%' }} type="target" />
       {children}
     </motion.section>
   );
