@@ -1,0 +1,115 @@
+# Architecture and Product Decisions
+
+Use this log for consequential technical, product, design, algorithm, and scope choices. Preserve superseded decisions and link the replacement rather than silently rewriting history.
+
+## 001. Electron instead of a native OS shell
+
+**Status:** Accepted  
+**Date:** July 14, 2026  
+**Decision owner:** Human
+
+We chose Electron for a real installable desktop experience within the hackathon timeline. A true OS shell replacement would add risk without improving the core demonstration.
+
+## 002. React Flow instead of raw Canvas/SVG
+
+**Status:** Accepted  
+**Date:** July 14, 2026  
+**Decision owner:** Human
+
+React Flow provides custom nodes, custom edges, built-in minimap, pan/zoom, and drag-drop—exactly what our mockup needs. Building from raw canvas would take days we do not have.
+
+## 003. GPT-5.6 for both build tool and runtime intelligence
+
+**Status:** Accepted  
+**Date:** July 14, 2026  
+**Decision owner:** Human
+
+Codex (powered by GPT-5.6) builds the app. The GPT-5.6 API also powers file understanding and clustering at runtime. This dual usage demonstrates deep integration, which judges specifically evaluate.
+
+## 004. Semantic ribbons instead of plain graph edges
+
+**Status:** Accepted  
+**Date:** July 14, 2026  
+**Decision owner:** Human
+
+Color-coded flowing bezier curves categorized by relationship type (dates, cost, place, tasks) communicate meaning at a glance. Plain lines would make this look like every other graph tool.
+
+## 005. Summary Dashboard Cards instead of simple labels
+
+**Status:** Accepted  
+**Date:** July 14, 2026  
+**Decision owner:** Human
+
+Auto-generating a functional dashboard—with budget charts, packing progress, maps, and other goal-specific modules—from raw files is the “wow moment” that separates this from a file organizer.
+
+## 006. Local-first with SQLite
+
+**Status:** Accepted  
+**Date:** July 14, 2026  
+**Decision owner:** Human
+
+All durable app data stays on the user's machine. Privacy is a feature. We will not add cloud sync complexity during the hackathon. Content required for runtime intelligence may be sent explicitly to the OpenAI API, while metadata, embeddings, canvas positions, and generated workspace state persist locally.
+
+## 007. Standardize development on Node 22
+
+**Status:** Accepted  
+**Date:** July 15, 2026  
+**Decision owner:** Codex proposal accepted by human
+
+The project requires Node `>=22.12.0` and provides `.nvmrc` targeting Node 22. The current Electron native-module rebuild toolchain requires this floor, and using a current supported Node line avoids pinning a new hackathon project to outdated packaging dependencies. Linux development environments must also provide Python 3, GNU Make, and a C/C++ compiler for native dependencies such as `better-sqlite3`.
+
+The consequence is a slightly stricter prerequisite, documented in the README, in exchange for deterministic installation and compatibility with the selected Electron toolchain.
+
+## 008. Authorize local file paths at the preload boundary
+
+**Status:** Accepted  
+**Date:** July 15, 2026  
+**Decision owner:** Codex proposal accepted through implementation
+
+The renderer cannot access Node or arbitrary filesystem APIs. For OS drops, the preload uses Electron's `webUtils.getPathForFile`, then the main process resolves, validates, stats, and records that explicit path in an in-memory authorization set. File reading, parsing, metadata, and thumbnail handlers reject any path that did not originate from a drop or native picker action.
+
+This preserves the first-try native drop experience without exposing unrestricted filesystem capability through `window.aether`. Authorization is session-scoped for Phase 1; persisted permissions can be designed alongside saved spaces.
+
+## 009. Keep native modules external to the Electron main bundle
+
+**Status:** Accepted  
+**Date:** July 15, 2026  
+**Decision owner:** Codex proposal accepted through verification
+
+Vite must not bundle `sharp` or `better-sqlite3` into the Electron main-process JavaScript. Their native bindings rely on runtime module resolution and Electron-specific ABI artifacts. Both remain external dependencies, and electron-builder unpacks their native files from ASAR and rebuilds `better-sqlite3` for the selected Electron version.
+
+This adds a native rebuild step to packaging but prevents dynamic binding failures and keeps development and packaged execution aligned.
+
+## 010. Package Linux as AppImage for the hackathon
+
+**Status:** Accepted  
+**Date:** July 15, 2026  
+**Decision owner:** Codex proposal accepted through implementation
+
+Linux packaging explicitly targets AppImage rather than relying on Electron Builder's platform defaults, which attempted multiple formats. A single portable artifact minimizes packaging variability for EC2 smoke builds. Windows packaging is a required pre-submission validation target; macOS remains future work.
+
+## 011. Develop remotely on EC2 and validate the product on Windows
+
+**Status:** Accepted  
+**Date:** July 15, 2026  
+**Decision owner:** Human
+
+Development currently runs on a headless AWS EC2 Linux instance accessed over SSH from the human's local PC. Linux checks—strict TypeScript, builds, IPC smoke tests, Xvfb captures, and the unpacked Electron executable—provide fast engineering validation, but they are not the final UX acceptance environment.
+
+The application will be tested on the human's Windows PC before submission. Windows validation must cover native window chrome, display scaling, fonts, drag-and-drop from File Explorer, absolute path handling, minimap and animation rendering, native file dialogs, `better-sqlite3` and Sharp binaries, and Windows packaging. Platform-specific findings must be recorded separately rather than inferred from Xvfb behavior.
+
+## Decision Template
+
+## NNN. Decision title
+
+**Status:** Proposed / Accepted / Superseded  
+**Date:** YYYY-MM-DD  
+**Decision owner:** Human / Codex proposal accepted by human
+
+**Context:** What forced a choice?
+
+**Decision:** What did we choose?
+
+**Reasoning:** Why is it appropriate for the product and deadline?
+
+**Consequences:** What tradeoffs or follow-up work does it create?
