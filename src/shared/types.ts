@@ -147,6 +147,29 @@ export interface OpenFileDialogResult {
   filePaths: string[];
 }
 
+export interface WorkspaceListItem {
+  id: string;
+  name: string;
+  icon: string;
+  iconColor: string;
+  createdAt: string;
+  updatedAt: string;
+  fileCount: number;
+}
+
+export interface WorkspaceIndex {
+  workspaces: WorkspaceListItem[];
+  activeWorkspaceId: string | null;
+}
+
+export interface WorkspaceData extends WorkspaceListItem {
+  nodes: unknown[];
+  edges: unknown[];
+  analyzedFiles: AnalyzedFile[];
+  relationships: DiscoveredRelationship[];
+  viewport: CanvasViewport;
+}
+
 export interface AetherBridge {
   readFile: (filePath: string) => Promise<string>;
   getFileMetadata: (filePath: string) => Promise<LocalFileMetadata>;
@@ -158,4 +181,13 @@ export interface AetherBridge {
   minimizeWindow: () => Promise<void>;
   maximizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;
+  workspace: {
+    list: () => Promise<WorkspaceIndex>;
+    create: (name?: string) => Promise<WorkspaceData>;
+    load: (id: string) => Promise<WorkspaceData>;
+    save: (workspace: WorkspaceData) => Promise<void>;
+    delete: (id: string) => Promise<void>;
+    rename: (id: string, name: string) => Promise<void>;
+    setIcon: (id: string, icon: string, color: string) => Promise<void>;
+  };
 }

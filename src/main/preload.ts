@@ -16,6 +16,15 @@ const aetherBridge: AetherBridge = {
   minimizeWindow: () => ipcRenderer.invoke('aether:window-minimize'),
   maximizeWindow: () => ipcRenderer.invoke('aether:window-maximize'),
   closeWindow: () => ipcRenderer.invoke('aether:window-close'),
+  workspace: {
+    list: () => ipcRenderer.invoke('aether:workspace-list'),
+    create: (name) => ipcRenderer.invoke('aether:workspace-create', name),
+    load: (id) => ipcRenderer.invoke('aether:workspace-load', id),
+    save: (workspace) => ipcRenderer.invoke('aether:workspace-save', workspace),
+    delete: (id) => ipcRenderer.invoke('aether:workspace-delete', id),
+    rename: (id, name) => ipcRenderer.invoke('aether:workspace-rename', id, name),
+    setIcon: (id, icon, color) => ipcRenderer.invoke('aether:workspace-set-icon', id, icon, color),
+  },
   getDroppedFilePath: async (file) => {
     const filePath = webUtils.getPathForFile(file);
 

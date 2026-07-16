@@ -3,13 +3,14 @@ import { Background, BackgroundVariant, MiniMap, Panel, ReactFlow, useEdgesState
 import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 
-import type { AnalyzedFile, RelationshipDiscovery, RelationshipType, SuggestedCluster } from '../../../shared/types';
+import type { AnalyzedFile, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
 import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
 import SmartSuggestion from './SmartSuggestion';
 import SemanticRibbonEdge from './edges/SemanticRibbonEdge';
 import FileCardNode, { type FileCardNodeType } from './nodes/FileCardNode';
 import HubNode, { type HubNodeType } from './nodes/HubNode';
 import SummaryCardNode, { type SummaryCardNodeType } from './nodes/SummaryCardNode';
+import EmptyCanvasState from './EmptyCanvasState';
 
 type CanvasNode = FileCardNodeType | HubNodeType | SummaryCardNodeType;
 type Suggestion = { fileId: string; category: string; clusterName: string };
@@ -29,7 +30,7 @@ function CanvasControls() {
   return <Panel className="!bottom-5 !left-4 !m-0" position="bottom-left"><div className="flex h-7 items-stretch overflow-hidden rounded-[8px] border border-[#DEDCD9] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]"><button aria-label="Zoom out" className={button} onClick={() => zoomOut({ duration: 180 })} type="button"><Minus size={14} /></button><div className="grid min-w-[52px] place-items-center border-x border-[#E5E3E0] px-2 text-[12px] font-medium tabular-nums text-[#55555A]">{Math.round(zoom * 100)}%</div><button aria-label="Zoom in" className={button} onClick={() => zoomIn({ duration: 180 })} type="button"><Plus size={14} /></button><button aria-label="Fit canvas to content" className={`${button} border-l border-[#E5E3E0]`} onClick={() => fitView({ duration: 300, padding: 0.25 })} type="button"><Maximize2 size={14} /></button></div></Panel>;
 }
 
-export default function AetherCanvas({ focusRequest = 0 }: { focusRequest?: number }) {
+export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceSnapshot }: { focusRequest?: number; workspace: WorkspaceData | null; onWorkspaceSnapshot: (workspace: WorkspaceData) => void }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -42,10 +43,28 @@ export default function AetherCanvas({ focusRequest = 0 }: { focusRequest?: numb
   const nodesRef = useRef<CanvasNode[]>([]);
   const clusterRef = useRef<SuggestedCluster | null>(null);
   const relationshipRequest = useRef(0);
-  const { fitView, screenToFlowPosition } = useReactFlow();
+  const workspaceRef = useRef<WorkspaceData | null>(workspace);
+  const hydratedWorkspaceId = useRef<string | null>(null);
+  const workspaceReady = useRef(false);
+  const { fitView, getViewport, screenToFlowPosition, setViewport } = useReactFlow();
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { clusterRef.current = cluster; }, [cluster]);
+  useEffect(() => { workspaceRef.current = workspace; }, [workspace]);
+  useEffect(() => {
+    if (!workspace || hydratedWorkspaceId.current === workspace.id) return;
+    hydratedWorkspaceId.current = workspace.id;
+    workspaceReady.current = false;
+    analyzedFiles.current = new Map(workspace.analyzedFiles.map((file) => [file.id, file]));
+    setNodes(workspace.nodes as CanvasNode[]);
+    setEdges(workspace.edges as Edge[]);
+    requestAnimationFrame(() => { setViewport(workspace.viewport); workspaceReady.current = true; });
+  }, [setEdges, setNodes, setViewport, workspace]);
+  useEffect(() => {
+    const active = workspaceRef.current;
+    if (!active || !workspaceReady.current || hydratedWorkspaceId.current !== active.id) return;
+    onWorkspaceSnapshot({ ...active, nodes, edges, analyzedFiles: [...analyzedFiles.current.values()], viewport: getViewport(), fileCount: analyzedFiles.current.size });
+  }, [edges, getViewport, nodes, onWorkspaceSnapshot]);
   useEffect(() => {
     if (focusRequest === 0) return;
     const frame = requestAnimationFrame(() => fitView({ duration: 420, padding: 0.2 }));
@@ -70,6 +89,9 @@ export default function AetherCanvas({ focusRequest = 0 }: { focusRequest?: numb
       category: allFiles[0]?.category ?? 'personal',
     };
     const activeCluster = discovery.shouldCluster && discovery.suggestedCluster ? discovery.suggestedCluster : fallbackCluster;
+    if (workspace?.name === 'Untitled Space' && allFiles.length >= 2 && activeCluster.name !== 'Untitled Space') {
+      onWorkspaceSnapshot({ ...workspace, name: activeCluster.name, icon: activeCluster.category === 'travel' ? 'map-pin' : workspace.icon, iconColor: activeCluster.category === 'travel' ? '#EA4335' : workspace.iconColor });
+    }
     const shouldShowSummary = allFiles.length >= 2;
     setCluster(activeCluster);
     const layout = calculateAutoLayout(allFiles);
@@ -85,7 +107,7 @@ export default function AetherCanvas({ focusRequest = 0 }: { focusRequest?: numb
     const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));
     const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
     setEdges([...fileToHub, ...hubToSummary]);
-  }, [setEdges, setNodes]);
+  }, [onWorkspaceSnapshot, setEdges, setNodes, workspace]);
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);
   const onDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => { if (event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) return; setIsDragActive(false); }, []);
@@ -121,7 +143,7 @@ export default function AetherCanvas({ focusRequest = 0 }: { focusRequest?: numb
       <Background bgColor="#F4F1E9" color="#DBD5C6" gap={18} size={1} variant={BackgroundVariant.Dots} />
       <MiniMap className="!bottom-5 !right-5 !m-0 !h-[112px] !w-[176px] !rounded-[13px] !border !border-[#D3D3D8] !bg-white/90 !shadow-[0_3px_14px_rgba(33,33,36,0.08)]" maskColor="rgba(242, 242, 245, 0.58)" nodeBorderRadius={5} nodeColor={(node) => node.type === 'summaryCard' ? '#E7A271' : '#8AB99A'} pannable zoomable />
       <CanvasControls />
-      {nodes.length === 0 && !isDragActive && <Panel className="!m-0" position="top-center"><motion.div animate={{ opacity: 1, y: 0 }} className="mt-7 flex items-center gap-2 rounded-full border border-[#E1E0DD] bg-white/70 px-4 py-2 text-[12px] font-medium text-[#77777D] shadow-[0_2px_10px_rgba(0,0,0,0.035)] backdrop-blur-md" initial={{ opacity: 0, y: -4 }}><span className="h-1.5 w-1.5 rounded-full bg-[#4A90D9]" />Drop local files anywhere on the canvas</motion.div></Panel>}
+      {nodes.length === 0 && !isDragActive && <EmptyCanvasState />}
       <AnimatePresence>{suggestion && <Panel className="!bottom-[145px] !right-5 !m-0" position="bottom-right"><SmartSuggestion category={suggestion.category} clusterName={suggestion.clusterName} onConnect={() => void connectSuggestion()} onKeepSeparate={keepSeparate} /></Panel>}</AnimatePresence>
     </ReactFlow>
     <AnimatePresence>{isDragActive && <motion.div animate={{ opacity: 1 }} className="pointer-events-none absolute inset-3 z-30 grid place-items-center rounded-[18px] border-2 border-dashed border-[#4A90D9]/55 bg-[#EAF3FC]/50 backdrop-blur-[2px]" exit={{ opacity: 0 }} initial={{ opacity: 0 }}><motion.div animate={{ scale: 1, y: 0 }} className="rounded-[16px] border border-white/90 bg-white/90 px-7 py-5 text-center shadow-[0_12px_38px_rgba(42,91,137,0.14)]" initial={{ scale: 0.97, y: 4 }}><div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-[12px] bg-[#4A90D9] text-white shadow-[0_4px_12px_rgba(74,144,217,0.28)]"><Plus size={22} /></div><p className="text-[14px] font-semibold text-[#2B2B2E]">Place files in this space</p><p className="mt-1 text-[11px] text-[#7D7D83]">Release to add them at this position</p></motion.div></motion.div>}</AnimatePresence>
