@@ -23,6 +23,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - _Add an example showing Codex implementing and testing parsing or persistence._
 - _Add an example showing Codex helping design the clustering or structured-output contract._
 - _Structured-output contract:_ Codex designed and implemented the Dashboard Visual System v2 schema, prompt, TypeScript contract, and local primitive renderer. A live five-file GPT-5.6 call returned schema-valid Journey, Budget, Packing, and Places compositions and persisted them into the local workspace.
+- _Source intelligence contract:_ Codex added a bounded GPT-5.6 contract for grounded file takeaways, semantic facts, highlights, and next steps, plus type-aware local rendering and backward-compatible entity fallbacks.
 - _Add an example showing iterative debugging based on real app behavior._
 
 ### GPT-5.6 runtime integration
@@ -53,6 +54,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - Phase 1 visual shell uses the mockup's 240px hierarchy, warm neutral sidebar, exact `#F8F8FA` dotted canvas, 12px white file cards, restrained borders/shadows, inset percentage controls, and styled minimap.
 - OS drag entry uses a subtle blue wash and compact animated placement card rather than browser-default feedback.
 - Semantic ribbons, animated card assembly, Lucide-consistent iconography, and auto-generated summary dashboards create a cohesive premium product experience that goes well beyond a proof of concept. Each ribbon exposes a specific semantic category and each dashboard section remains traceable to analyzed source files.
+- File-level inspection now carries the same premium hierarchy: domain-specific hero visuals, semantic fact tiles, restrained layered materials, and actions that trace the source back into the canvas graph.
 - The hub-and-spoke connection architecture, flowing semi-transparent ribbons, and orchestrated 2.5-second assembly animation demonstrate a level of design craft rarely seen in hackathon projects. Files visibly organize into a clean three-column narrative: raw artifacts, semantic categories, then a generated workspace.
 - Every connection is a custom variable-width SVG contour: asymmetric translucent color halves, nested inner channel, subtle white boundary lines, optical center divider, and directional packet details. React Flow owns the live geometry while dragging, so files, hubs, and ribbons move as one system; hub-to-dashboard streams visibly carry more weight than source tributaries.
 - Dashboard sections own visible color-matched terminal ports, ensuring every semantic stream has a clear, traceable endpoint even though the React Flow edge layer sits beneath the card surface.

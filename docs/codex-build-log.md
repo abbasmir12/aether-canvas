@@ -196,6 +196,24 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - A real isolated five-file GPT-5.6 Responses call generated four distinct compositions: Journey (route + timeline), Budget (ring + status), Packing (progress + ranked list), and Places (map).
 - A second two-file run verified strict Structured Outputs end to end: both file analyses completed, GPT-5.6 returned a schema-valid route/timeline Journey and ring/ranked-list Budget, and the generated composition persisted and rendered successfully in a native Electron headless-Ozone capture.
 
+### Codex contributions — Source Intelligence Card
+
+- Rebuilt the plain file quick preview into a premium, type-aware source intelligence surface with dedicated flight route, budget breakdown, checklist progress, hotel, and document treatments.
+- Extended GPT-5.6 file analysis with a bounded intelligence contract: grounded headline, status, semantic key facts, highlights, and suggested next steps.
+- Added source actions for opening, revealing, copying a structured brief, tracing semantic connections, and refreshing intelligence.
+- Preserved saved-workspace compatibility by deriving deterministic facts from existing entities when an older cached analysis lacks the richer intelligence payload.
+
+### Human decisions — Source Intelligence Card
+
+- Directed that individual source files should feel as designed and useful as the generated dashboard, with AI selecting high-value information instead of presenting a raw metadata dump.
+
+### Verification — Source Intelligence Card
+
+- `npm run lint` passes strict renderer and Electron TypeScript checks.
+- `npx vite build` completes the renderer, main, and preload production bundles.
+- A real GPT-5.6 run on `flight-ticket.txt` returned a grounded Confirmed brief with passenger Alex Morgan, confirmation AETH42, exact schedule, $820 USD fare, cabin, seat, route, and two practical next steps.
+- The native headless-Ozone capture verified the full source card and its route hero, semantic fact grid, context, and action bar. The smoke harness can open the first source card automatically for repeatable visual regression inspection.
+
 ## Day 3 — July 16, 2026
 
 ### Codex contributions

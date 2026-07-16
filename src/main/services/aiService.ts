@@ -50,12 +50,19 @@ Choose one smart preview type: flight, hotel, budget, checklist, guide, document
 - image displayData: description, detectedText.
 - document displayData: title, keyPoints (up to 5), wordCount when known.
 
+Also create a compact source-intelligence layer for the file detail panel:
+- headline: the single most useful grounded takeaway, not a repeat of the title.
+- status: a brief state such as "Confirmed", "8 of 14 complete", "Within estimate", or an empty string when no state is supported.
+- keyFacts: 2–4 high-signal label/value facts, each assigned dates, cost, place, tasks, or neutral. Prefer identifiers, times, totals, parties, deadlines, and progress that help the user act.
+- highlights: up to 3 concise important details that do not fit the key facts.
+- suggestedActions: up to 3 short, file-specific next actions phrased as commands. Only suggest sensible actions grounded in this file; do not claim they were completed.
+
 Never invent missing values. Return data matching the supplied JSON schema.`;
 
 const FILE_ANALYSIS_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['title', 'category', 'entities', 'summary', 'smartPreview'],
+  required: ['title', 'category', 'entities', 'summary', 'smartPreview', 'intelligence'],
   properties: {
     title: { type: 'string' },
     category: {
@@ -133,6 +140,31 @@ const FILE_ANALYSIS_SCHEMA = {
           enum: ['flight', 'hotel', 'budget', 'checklist', 'guide', 'document', 'image'],
         },
         displayData: { type: 'object', additionalProperties: true },
+      },
+    },
+    intelligence: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['headline', 'status', 'keyFacts', 'highlights', 'suggestedActions'],
+      properties: {
+        headline: { type: 'string' },
+        status: { type: 'string' },
+        keyFacts: {
+          type: 'array',
+          maxItems: 4,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['label', 'value', 'accent'],
+            properties: {
+              label: { type: 'string' },
+              value: { type: 'string' },
+              accent: { type: 'string', enum: ['dates', 'cost', 'place', 'tasks', 'neutral'] },
+            },
+          },
+        },
+        highlights: { type: 'array', maxItems: 3, items: { type: 'string' } },
+        suggestedActions: { type: 'array', maxItems: 3, items: { type: 'string' } },
       },
     },
   },

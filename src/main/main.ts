@@ -90,6 +90,20 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
       }
       await new Promise((done) => setTimeout(done, Number(process.env.AETHER_SMOKE_WAIT_MS) || 9000));
 
+      if (process.env.AETHER_SMOKE_PREVIEW) {
+        const target = await window.webContents.executeJavaScript(`(() => {
+          const node = document.querySelector('.react-flow__node-fileCard');
+          if (!node) return null;
+          const rect = node.getBoundingClientRect();
+          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        })()`);
+        if (target) {
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mousePressed', x: target.x, y: target.y, button: 'left', clickCount: 2 });
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseReleased', x: target.x, y: target.y, button: 'left', clickCount: 2 });
+          await new Promise((done) => setTimeout(done, 700));
+        }
+      }
+
       if (process.env.AETHER_SMOKE_DEBUG) {
         const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
           ribbons: document.querySelectorAll('.semantic-ribbon').length,

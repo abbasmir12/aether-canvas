@@ -460,6 +460,16 @@ GPT-5.6 can now choose additional declarative visual metaphors—stat grids, pri
 
 Each GPT-planned module now has two layers: a dominant visual that preserves detailed interactive behavior, and a compact composition of one to three bounded primitives. GPT-5.6 may select a layout and grounded primitive values, but it cannot emit HTML, CSS, React, or arbitrary component names. Aether renders the strict Structured Output through its own component library. This expands expressive range combinatorially while retaining type safety, visual coherence, backwards compatibility, and authoritative live state.
 
+## 049. Source intelligence cards instead of metadata inspectors
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+Opening a source file should explain why it matters, not repeat raw extraction output. GPT-5.6 therefore returns a bounded intelligence layer—headline, status, semantic facts, highlights, and suggested next steps—while Aether owns a type-aware local renderer. Older cached analyses fall back to deterministic entity-derived facts, so the upgrade is backwards compatible and never requires invented UI or data.
+
 ## Decision Template
 
 ## NNN. Decision title

@@ -39,12 +39,23 @@ export interface SmartPreview {
   displayData: Record<string, unknown>;
 }
 
+export type FileInsightAccent = 'dates' | 'cost' | 'place' | 'tasks' | 'neutral';
+
+export interface FileIntelligence {
+  headline: string;
+  status: string;
+  keyFacts: Array<{ label: string; value: string; accent: FileInsightAccent }>;
+  highlights: string[];
+  suggestedActions: string[];
+}
+
 export interface FileAnalysis {
   title: string;
   category: FileCategory;
   entities: AnalysisEntities;
   summary: string;
   smartPreview: SmartPreview;
+  intelligence?: FileIntelligence;
 }
 
 export interface AnalyzedFile extends FileAnalysis {
