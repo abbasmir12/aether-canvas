@@ -420,6 +420,16 @@ GPT-5.6 compiles the source files into a typed presentation plan: each module in
 
 The summary card should communicate a complete workspace at a glance without exposing every editor and source row. Each GPT-planned module therefore supplies three short compact facts, which Aether presents through the Tokyo reference’s route rail, ring/legend, progress, map, or contextual preview pattern. Detailed controls are disclosed only after an explicit section expansion.
 
+## 045. Detached detail cards with traceable tethers
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The summary card remains a concise, high-signal generated dashboard. When a user opens a section, Aether pulls its detailed mini-app into a neighboring floating panel attached by a short, semantic-color dotted tether. This avoids a tall, visually noisy accordion while making the relationship between the compact card and its working detail explicit. The Journey panel uses a route rail and chronological source-linked timeline so related travel data reads as a plan rather than a scattered list.
+
 ## Decision Template
 
 ## NNN. Decision title

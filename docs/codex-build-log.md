@@ -127,6 +127,20 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - `npm run build` completes renderer, Electron main/preload, and electron-builder production compilation after adding Leaflet and the dashboard IPC contract.
 - The production renderer reports a 761 KB initial JavaScript chunk after the map dependency; code splitting remains a deliberate follow-up before submission packaging rather than a correctness failure.
 
+### Codex contributions — detached dashboard details
+
+- Reworked Summary Card disclosure so the reference-inspired compact Journey, Budget, Packing, and Map modules remain in place; opening one now reveals a separate detail panel connected by a short semantic dotted tether instead of growing the dashboard into a dense editor.
+- Compiled Journey detail into an ordered source-linked travel timeline with a clear route rail, check-in/next-step row, and copy action, replacing the previously scattered date rows.
+- Kept the detail panels mutually exclusive and animated their entrance/exit, preserving canvas readability while retaining direct access to editable and interactive content.
+
+### Human decisions — detached dashboard details
+
+- The human directed that expansion should feel like pulling a useful mini-app out of the generated card, with a simple dotted connector, rather than an ordinary accordion expansion.
+
+### Verification — detached dashboard details
+
+- `npm run lint` passes strict renderer and main-process TypeScript checks after the detached-detail implementation.
+
 ## Day 3 — July 16, 2026
 
 ### Codex contributions
