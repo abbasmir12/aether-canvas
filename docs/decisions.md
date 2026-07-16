@@ -400,6 +400,16 @@ The relationship compiler prompt now includes the original Summary Card’s visu
 
 The Tokyo Trip design is the reference for the entire generated dashboard, not merely a loose icon treatment. GPT’s dashboard plan is explicitly conditioned on its header hierarchy, route rail, budget ring/legend, completion progress, mini-map, section terminal ports, and provenance footer, then instructed to translate those interaction and visual patterns to the actual domain. The model also returns a constrained header icon/accent, so the card identity itself is context-aware.
 
+## 043. Declarative AI dashboard compiler, not AI-generated executable UI
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+GPT-5.6 compiles the source files into a typed presentation plan: each module includes its visual treatment and an allow-list of interactive capabilities. Aether renders that plan with its own local component library. This gives the model meaningful control over structure, visual metaphor, and interaction intent while preserving performance, security, accessibility, and a coherent design system.
+
 ## Decision Template
 
 ## NNN. Decision title

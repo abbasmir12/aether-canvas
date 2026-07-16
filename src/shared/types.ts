@@ -80,6 +80,8 @@ export interface RelationshipDiscovery {
 export type DashboardModuleKind = 'overview' | 'timeline' | 'budget' | 'checklist' | 'map' | 'tasks' | 'topics' | 'resources' | 'results';
 export type DashboardModuleIcon = 'sparkles' | 'plane' | 'wallet' | 'check-square' | 'map' | 'list-checks' | 'book-open' | 'file-text';
 export type DashboardModuleAccent = 'dates' | 'cost' | 'place' | 'tasks' | 'neutral';
+export type DashboardModuleVisual = 'source-list' | 'route-rail' | 'ring-metric' | 'progress' | 'pin-map' | 'milestone-list' | 'key-points';
+export type DashboardModuleInteraction = 'expand' | 'focus-source' | 'copy' | 'edit-values' | 'add-item' | 'toggle-item' | 'export' | 'open-map' | 'ai-insights';
 
 export interface DashboardModule {
   id: string;
@@ -88,6 +90,8 @@ export interface DashboardModule {
   summary: string;
   icon: DashboardModuleIcon;
   accent: DashboardModuleAccent;
+  visual: DashboardModuleVisual;
+  interactions: DashboardModuleInteraction[];
   sourceFileIds: string[];
 }
 
