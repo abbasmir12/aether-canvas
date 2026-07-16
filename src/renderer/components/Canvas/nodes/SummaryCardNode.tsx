@@ -4,6 +4,7 @@ import { BookOpen, CarFront, Check, CheckSquare, ChevronDown, Clipboard, Downloa
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 
 import type { AnalyzedFile, DashboardBudgetRow, DashboardModule, DashboardModuleKind, DashboardPackingItem, DashboardPlan, DashboardState, RelationshipType, SuggestedCluster } from '../../../../shared/types';
+import DashboardComposition from './DashboardComposition';
 import InteractiveMap, { type DashboardLocation } from './InteractiveMap';
 
 export type SummaryCardNodeData = { cluster: SuggestedCluster; files: AnalyzedFile[]; dashboard?: DashboardState; dashboardPlan?: DashboardPlan; assemblyDelay?: number };
@@ -39,6 +40,8 @@ function fallbackPlan(files: AnalyzedFile[], cluster: SuggestedCluster): Dashboa
 
 function CompactPreview({ module, color }: { module: DashboardModule; color: string }) {
   const compact = module.compact;
+
+  if (module.composition?.primitives.length) return <DashboardComposition color={color} composition={module.composition} />;
 
   if (module.visual === 'route-rail') return (
     <div className="mt-3">
@@ -146,7 +149,17 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
   const focus = (module: DashboardModule, active: boolean) => emit('aether:summary-section-focus', active ? relationshipFor(module.kind) : null);
   const sourceFiles = (module: DashboardModule) => data.files.filter((file) => module.sourceFileIds.includes(file.id));
   const displayModules = plan.modules.map((module) => {
-    if (module.visual === 'progress') return { ...module, compact: { ...module.compact, primary: `${packed} / ${items.length}`, secondary: module.title.toLowerCase() === 'packing' ? 'packed' : 'complete' } };
+    if (module.visual === 'progress') {
+      const secondary = module.title.toLowerCase() === 'packing' ? 'packed' : 'complete';
+      return {
+        ...module,
+        compact: { ...module.compact, primary: `${packed} / ${items.length}`, secondary },
+        composition: module.composition ? {
+          ...module.composition,
+          primitives: module.composition.primitives.map((primitive) => primitive.type === 'progress' ? { ...primitive, primary: `${packed} / ${items.length}`, secondary, tertiary: `${Math.max(0, items.length - packed)} remaining` } : primitive),
+        } : undefined,
+      };
+    }
     return module;
   });
   useEffect(() => { requestAnimationFrame(() => updateNodeInternals(id)); }, [id, openModule, updateNodeInternals]);

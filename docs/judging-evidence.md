@@ -22,6 +22,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - _Debugging evidence:_ Codex reproduced a Sharp native-binding failure in the built main process, identified Vite bundling as the cause, externalized native modules, rebuilt `better-sqlite3` for Electron 37, and reran live smoke tests.
 - _Add an example showing Codex implementing and testing parsing or persistence._
 - _Add an example showing Codex helping design the clustering or structured-output contract._
+- _Structured-output contract:_ Codex designed and implemented the Dashboard Visual System v2 schema, prompt, TypeScript contract, and local primitive renderer. A live five-file GPT-5.6 call returned schema-valid Journey, Budget, Packing, and Places compositions and persisted them into the local workspace.
 - _Add an example showing iterative debugging based on real app behavior._
 
 ### GPT-5.6 runtime integration
@@ -77,6 +78,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - The Summary Card demonstrates deliberate visual craft beyond a generic dashboard: semantic header tile, layered desktop materials, tuned compact information visualizations, hairline separators, controlled elevation, and low-friction hover/focus feedback make generated workspaces presentation-ready.
 - The final Summary Card art-direction pass was evaluated in the actual Electron/React Flow runtime with the five-file sample cluster—not only from component code. Its compact and expanded states now share one cohesive material, typography, icon, metric, checklist, and map language suitable for close-up demo footage.
 - The GPT-5.6 dashboard compiler has a deliberately broad yet safe visual vocabulary: it can select route, metric, progress, map, milestone, brief, stat-grid, priority, calendar, activity, and comparison presentations while Aether preserves a coherent local design system and authoritative live values.
+- Dashboard Visual System v2 turns that vocabulary into a composable grammar: GPT-5.6 combines up to three grounded primitives per module while Aether renders every pixel locally. The same renderer can produce route+timeline, ring+status, progress+ranked-list, or future cross-domain compositions without arbitrary model-authored UI.
 - Ribbon interaction is performance-aware rather than decorative: hover changes a stable edge’s opacity in place, and direct manipulation uses a single-path live representation before returning to the full material treatment on release.
 - **Quality of Idea:** The workspace model shows that users do not need to pre-organize files into folders. Aether locally preserves the evolving canvas, its AI analysis cache, and its semantic workspace identity, so the product organizes itself around the user’s projects.
 - **Visual verification:** A live five-file GPT-5.6 Electron capture on July 15 shows blue, green, coral, and purple tributaries converging into semantic hubs, then heavier trunks entering their matching dashboard sections. This is captured from the actual native drag/drop and analysis flow, not a static design mockup.

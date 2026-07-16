@@ -92,7 +92,13 @@ Clustering: semantic similarity + shared entities + spatial proximity
 GPT-5.6 cluster synthesis
    │
    ▼
-Validated dashboard JSON ─────────► React Flow Summary Dashboard Card
+Validated dashboard JSON
+   │
+   ├──► information architecture (modules, accents, provenance, interactions)
+   └──► bounded visual composition (layout + 1–3 primitives per module)
+            │
+            ▼
+      local Aether primitive renderer ─────────► React Flow Summary Dashboard Card
 ```
 
 Each expensive stage persists its result so moving a node does not reparse or re-embed a file. Position changes can cheaply rerun only the clustering score and suggestion logic.
@@ -115,10 +121,13 @@ App
 │   │   ├── FileNode
 │   │   │   └── SmartFilePreview
 │   │   ├── SummaryDashboardNode
-│   │   │   ├── JourneySection
-│   │   │   ├── BudgetSection
-│   │   │   ├── PackingSection
-│   │   │   └── MapSection
+│   │   │   ├── DashboardComposition
+│   │   │   │   └── 1–3 bounded visual primitives
+│   │   │   │       ├── Metric / Ring / Progress / Status
+│   │   │   │       ├── Route / Timeline / Calendar
+│   │   │   │       ├── Map / Ranked List / Comparison
+│   │   │   │       └── Source Evidence
+│   │   │   └── Detached interactive detail panel
 │   │   ├── SemanticRibbonEdge
 │   │   │   └── RelationshipPill
 │   │   ├── SmartSuggestion
@@ -310,7 +319,9 @@ CREATE INDEX idx_suggestions_space_status ON suggestions(space_id, status);
     │       ├── Canvas
     │       │   ├── AetherCanvas.tsx
     │       │   └── nodes
+    │       │       ├── DashboardComposition.tsx # bounded visual-grammar renderer
     │       │       ├── FileCardNode.tsx
+    │       │       ├── SummaryCardNode.tsx
     │       │       └── previews  # type-specific smart preview components
     │       └── Sidebar
     │           └── Sidebar.tsx

@@ -178,6 +178,24 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - `npx vite build` completes the renderer, Electron main process, and preload production bundles.
 - Native headless-Ozone Electron captures verified the real five-file card at runtime, including its detached Journey detail panel; no Xvfb was used.
 
+### Codex contributions — Dashboard Visual System v2
+
+- Replaced the one-template-per-module ceiling with a bounded visual grammar: GPT-5.6 now composes each module from one to three safe primitives using stack, split, hero-stack, or grid layouts, while Aether retains full ownership of React, styling, motion, and interactions.
+- Added a reusable local renderer for metric, route, ring, progress, map, timeline, ranked-list, comparison, source-evidence, status, and calendar primitives.
+- Extended the Responses API Structured Output schema and grounding prompt with the composition contract, domain examples, compact-width constraints, and explicit instructions not to invent decorative values.
+- Preserved compatibility with saved workspaces: modules without a composition continue through their existing premium template renderers. Live checklist state also updates both legacy compact data and generated progress primitives.
+
+### Human decisions — Dashboard Visual System v2
+
+- The human authorized Codex to evolve the dashboard system in whichever direction produced the strongest result, following discussion of composable primitives versus accumulating isolated templates.
+
+### Verification — Dashboard Visual System v2
+
+- `npm run lint` passes strict renderer and Electron TypeScript checks.
+- `npx vite build` completes all renderer, main, and preload production bundles.
+- A real isolated five-file GPT-5.6 Responses call generated four distinct compositions: Journey (route + timeline), Budget (ring + status), Packing (progress + ranked list), and Places (map).
+- A second two-file run verified strict Structured Outputs end to end: both file analyses completed, GPT-5.6 returned a schema-valid route/timeline Journey and ring/ranked-list Budget, and the generated composition persisted and rendered successfully in a native Electron headless-Ozone capture.
+
 ## Day 3 — July 16, 2026
 
 ### Codex contributions

@@ -82,6 +82,23 @@ export type DashboardModuleIcon = 'sparkles' | 'plane' | 'wallet' | 'check-squar
 export type DashboardModuleAccent = 'dates' | 'cost' | 'place' | 'tasks' | 'neutral';
 export type DashboardModuleVisual = 'source-list' | 'route-rail' | 'ring-metric' | 'progress' | 'pin-map' | 'milestone-list' | 'key-points' | 'stat-grid' | 'priority-stack' | 'calendar-strip' | 'activity-stream' | 'comparison-bars';
 export type DashboardModuleInteraction = 'expand' | 'focus-source' | 'copy' | 'edit-values' | 'add-item' | 'toggle-item' | 'export' | 'open-map' | 'ai-insights';
+export type DashboardCompositionLayout = 'stack' | 'split' | 'hero-stack' | 'grid';
+export type DashboardPrimitiveType = 'metric' | 'route' | 'ring' | 'progress' | 'map' | 'timeline' | 'ranked-list' | 'comparison' | 'source-evidence' | 'status' | 'calendar';
+
+export interface DashboardPrimitive {
+  id: string;
+  type: DashboardPrimitiveType;
+  label: string;
+  primary: string;
+  secondary: string;
+  tertiary: string;
+  values: string[];
+}
+
+export interface DashboardComposition {
+  layout: DashboardCompositionLayout;
+  primitives: DashboardPrimitive[];
+}
 
 export interface DashboardModuleCompact {
   primary: string;
@@ -99,6 +116,7 @@ export interface DashboardModule {
   visual: DashboardModuleVisual;
   interactions: DashboardModuleInteraction[];
   compact: DashboardModuleCompact;
+  composition?: DashboardComposition;
   sourceFileIds: string[];
 }
 

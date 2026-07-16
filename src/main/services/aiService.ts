@@ -185,7 +185,7 @@ const RELATIONSHIP_SCHEMA = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['id', 'kind', 'title', 'summary', 'icon', 'accent', 'visual', 'interactions', 'compact', 'sourceFileIds'],
+            required: ['id', 'kind', 'title', 'summary', 'icon', 'accent', 'visual', 'interactions', 'compact', 'composition', 'sourceFileIds'],
             properties: {
               id: { type: 'string' },
               kind: { type: 'string', enum: ['overview', 'timeline', 'budget', 'checklist', 'map', 'tasks', 'topics', 'resources', 'results'] },
@@ -196,6 +196,33 @@ const RELATIONSHIP_SCHEMA = {
               visual: { type: 'string', enum: ['source-list', 'route-rail', 'ring-metric', 'progress', 'pin-map', 'milestone-list', 'key-points', 'stat-grid', 'priority-stack', 'calendar-strip', 'activity-stream', 'comparison-bars'] },
               interactions: { type: 'array', items: { type: 'string', enum: ['expand', 'focus-source', 'copy', 'edit-values', 'add-item', 'toggle-item', 'export', 'open-map', 'ai-insights'] } },
               compact: { type: 'object', additionalProperties: false, required: ['primary', 'secondary', 'tertiary'], properties: { primary: { type: 'string' }, secondary: { type: 'string' }, tertiary: { type: 'string' } } },
+              composition: {
+                type: 'object',
+                additionalProperties: false,
+                required: ['layout', 'primitives'],
+                properties: {
+                  layout: { type: 'string', enum: ['stack', 'split', 'hero-stack', 'grid'] },
+                  primitives: {
+                    type: 'array',
+                    minItems: 1,
+                    maxItems: 3,
+                    items: {
+                      type: 'object',
+                      additionalProperties: false,
+                      required: ['id', 'type', 'label', 'primary', 'secondary', 'tertiary', 'values'],
+                      properties: {
+                        id: { type: 'string' },
+                        type: { type: 'string', enum: ['metric', 'route', 'ring', 'progress', 'map', 'timeline', 'ranked-list', 'comparison', 'source-evidence', 'status', 'calendar'] },
+                        label: { type: 'string' },
+                        primary: { type: 'string' },
+                        secondary: { type: 'string' },
+                        tertiary: { type: 'string' },
+                        values: { type: 'array', maxItems: 4, items: { type: 'string' } },
+                      },
+                    },
+                  },
+                },
+              },
               sourceFileIds: { type: 'array', items: { type: 'string' } },
             },
           },
@@ -211,17 +238,45 @@ const DASHBOARD_INSIGHT_SCHEMA = {
   },
 } as const;
 
-const DASHBOARD_COMPACT_RULES = `Every dashboard module must include a compact object with three short display strings: primary, secondary, tertiary. This compact object is rendered before expansion, so it must be specific, useful, and grounded—not a generic summary. Keep additional rows, editors, and explanations for the expanded state.
+const DASHBOARD_COMPACT_RULES = `Aether renders generated workspaces through a safe visual grammar. Every module must include both:
+1. compact: three short grounded fallback strings (primary, secondary, tertiary).
+2. composition: a layout plus 1–3 reusable visual primitives. The composition is the preferred compact presentation; the legacy visual field controls detailed behavior when the module is opened.
 
-Tokyo Trip compact example:
-- Journey / route-rail: { primary: "JFK", secondary: "HND", tertiary: "Check-in Jul 19" }. Aether renders primary → plane icon → secondary and a small hotel/transport detail.
-- Budget / ring-metric: { primary: "$1,460", secondary: "Spent", tertiary: "$540 remaining" }. Aether renders this in a premium ring with a two-value legend.
-- Packing / progress: { primary: "8 / 14", secondary: "packed", tertiary: "" }. Aether renders an oversized fraction and progress rail.
-- Map / pin-map: { primary: "Shinjuku", secondary: "Shibuya", tertiary: "Asakusa" }. Aether renders a bounded pin map.
+Composition layouts:
+- stack: full-width primitives in sequence; best for narrative or one dominant flow.
+- split: two balanced columns; best for two complementary facts.
+- hero-stack: one dominant first primitive followed by supporting primitives.
+- grid: compact equal-weight facts.
 
-For non-travel workspaces, preserve the same information density and visual confidence: use the compact strings to express the most important two or three facts for that section.
+Primitive vocabulary:
+- metric: one headline value with short context.
+- route: a meaningful start → destination/process transition.
+- ring: part-to-whole, spent/remaining, score/target, or completion ratio.
+- progress: completion fraction or percentage with a goal.
+- map: 2–4 grounded location names in values.
+- timeline: 2–4 ordered milestones in values.
+- ranked-list: 2–4 priorities, findings, concepts, or next actions in values.
+- comparison: 2–3 genuinely comparable options/categories in values.
+- source-evidence: contributing filenames or evidence labels in values.
+- status: a meaningful current state plus supporting context.
+- calendar: 2–3 dates/deadlines in values.
 
-Additional visual vocabulary: stat-grid = three compact headline metrics; priority-stack = ranked layered work or findings; calendar-strip = compact date blocks; activity-stream = chronological pulse/event trail; comparison-bars = relative magnitude or option comparison. Use these only when they genuinely fit the extracted data.`;
+Every primitive must provide id, type, label, primary, secondary, tertiary, and values. Use empty strings/arrays for fields that do not apply. Never invent decorative metrics, percentages, comparisons, dates, or locations. Prefer one excellent primitive over three weak ones.
+
+Tokyo Trip reference compositions:
+- Journey: layout stack; route { primary: "JFK", secondary: "HND", tertiary: "Check-in Jul 19", values: [] }; timeline values ["Depart Jul 18", "Arrive Jul 19", "Check-out Jul 25"].
+- Budget: layout split; ring { primary: "$1,460", secondary: "$540 remaining", tertiary: "of $2,000", values: [] }; status { primary: "On track", secondary: "73% allocated" }.
+- Packing: layout hero-stack; progress { primary: "8 / 14", secondary: "packed", tertiary: "6 remaining" }; ranked-list values ["Passport", "Adapter", "Rain jacket"].
+- Map: layout stack; map values ["Shinjuku", "Shibuya", "Asakusa"].
+
+Non-travel examples:
+- Study: metric + progress + ranked-list for grade/readiness/key concepts.
+- Work: status + timeline + source-evidence for delivery state/milestones/provenance.
+- Health: status + calendar + timeline for results/appointments/history; never manufacture medical conclusions.
+- Renovation: ring + comparison + timeline for cost/quotes/schedule.
+- Recipes: ranked-list + timeline + progress for ingredients/cooking sequence/preparation.
+
+Keep all visible strings concise enough for a 300px-wide desktop card. Preserve traceability by grounding every module and primitive in its sourceFileIds and extracted metadata.`;
 
 let openAIClient: OpenAI | null = null;
 
@@ -361,7 +416,7 @@ export async function findRelationships(
         name: 'aether_relationships',
         description: 'Relationships and a possible cluster among analyzed canvas files.',
         schema: RELATIONSHIP_SCHEMA,
-        strict: false,
+        strict: true,
       },
       verbosity: 'low',
     },

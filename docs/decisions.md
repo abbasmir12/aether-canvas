@@ -450,6 +450,16 @@ The Summary Card uses a restrained layered-material system rather than flat nest
 
 GPT-5.6 can now choose additional declarative visual metaphors—stat grids, priority stacks, calendar strips, activity streams, and comparison bars—when source data supports them. Aether still renders every option locally from a fixed vocabulary. Live user state, such as packing completion, overrides stale compact model text so the generated dashboard remains both adaptive and numerically trustworthy.
 
+## 048. Composable visual grammar instead of isolated dashboard templates
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Codex proposal accepted by human
+
+Each GPT-planned module now has two layers: a dominant visual that preserves detailed interactive behavior, and a compact composition of one to three bounded primitives. GPT-5.6 may select a layout and grounded primitive values, but it cannot emit HTML, CSS, React, or arbitrary component names. Aether renders the strict Structured Output through its own component library. This expands expressive range combinatorially while retaining type safety, visual coherence, backwards compatibility, and authoritative live state.
+
 ## Decision Template
 
 ## NNN. Decision title
