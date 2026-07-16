@@ -54,6 +54,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - The hub-and-spoke connection architecture, flowing semi-transparent ribbons, and orchestrated 2.5-second assembly animation demonstrate a level of design craft rarely seen in hackathon projects. Files visibly organize into a clean three-column narrative: raw artifacts, semantic categories, then a generated workspace.
 - Every connection is a five-layer SVG data stream with glow, colored depth bands, a white shimmer center, and animated path-sampled flow dots; merged hub-to-dashboard streams increase in visual weight, making the data-synthesis story legible before reading any text.
 - **Visual verification:** A live five-file GPT-5.6 Electron capture on July 15 shows blue, green, coral, and purple tributaries converging into semantic hubs, then heavier trunks entering their matching dashboard sections. This is captured from the actual native drag/drop and analysis flow, not a static design mockup.
+- **Demo reliability:** Summary section handles are explicitly remeasured after their Framer Motion entrance, preventing hub-to-dashboard ribbons from anchoring at the card’s pre-animation offset.
 - _Add before/after screenshots proving fidelity for the shell, nodes, ribbons, dashboard, and minimap._
 - _Add animation, loading, empty, error, accessibility, and keyboard-navigation evidence._
 - _Add demo timestamp showing the complete polished interaction loop._

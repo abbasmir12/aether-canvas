@@ -188,6 +188,16 @@ GPT relationship discovery remains the source of a preferred cluster name and da
 
 This preserves the demo's core “canvas thinks” moment while keeping all visible content traceable to file analysis. It also makes the interaction robust to a low-confidence or delayed relationship response.
 
+## 021. Synchronize React Flow handles after summary entrance
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Codex implementation, prompted by human testing
+
+React Flow measures handle coordinates independently from Framer Motion. Animating the summary card’s container from `x: 100` can leave the section handles—and therefore hub-to-summary ribbons—anchored at the pre-animation location.
+
+The summary node now calls `useUpdateNodeInternals(id)` on entrance completion, while section wrappers animate opacity only so their handle coordinates never move. Summary trunks begin after this remeasurement point. This preserves the dashboard entrance without sacrificing deterministic, section-specific connections in the demo or normal use.
+
 ## Decision Template
 
 ## NNN. Decision title

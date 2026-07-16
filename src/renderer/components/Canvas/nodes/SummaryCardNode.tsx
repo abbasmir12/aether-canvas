@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
+import { Handle, Position, useUpdateNodeInternals, type Node, type NodeProps } from '@xyflow/react';
 import { CheckSquare, Map, MapPin, MoreHorizontal, Plane, Sparkles, Wallet } from 'lucide-react';
+import { useCallback } from 'react';
 
 import type { AnalyzedFile, SuggestedCluster } from '../../../../shared/types';
 
@@ -26,9 +27,9 @@ function Section({ children, index, relationshipType }: { children: React.ReactN
   const colors = { dates: '#4A90D9', cost: '#34A853', tasks: '#9B72CF', place: '#EA4335' };
   return (
     <motion.section
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: 1 }}
       className="relative rounded-[11px] border border-[#DFDFE2] bg-[#FEFEFF] px-3 py-2.5"
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0 }}
       transition={{ delay: 2.2 + index * 0.1, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
       <Handle id={`summary-${relationshipType}`} className="!h-[11px] !w-[11px] !border-2 !border-white/90 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.16)]" position={Position.Left} style={{ backgroundColor: colors[relationshipType], top: '50%' }} type="target" />
@@ -41,7 +42,11 @@ function SectionHeading({ children, Icon }: { children: string; Icon: typeof Pla
   return <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold text-[#333337]"><span className="grid h-5 w-5 place-items-center rounded-full bg-[#EDF4FC] text-[#4A90D9]"><Icon size={13} strokeWidth={2.4} /></span>{children}</div>;
 }
 
-export default function SummaryCardNode({ data, selected }: NodeProps<SummaryCardNodeType>) {
+export default function SummaryCardNode({ id, data, selected }: NodeProps<SummaryCardNodeType>) {
+  const updateNodeInternals = useUpdateNodeInternals();
+  const syncHandlesAfterEntrance = useCallback(() => {
+    requestAnimationFrame(() => updateNodeInternals(id));
+  }, [id, updateNodeInternals]);
   const flight = data.files.find((file) => file.smartPreview.type === 'flight');
   const hotel = data.files.find((file) => file.smartPreview.type === 'hotel');
   const checklist = data.files.find((file) => file.smartPreview.type === 'checklist');
@@ -68,6 +73,7 @@ export default function SummaryCardNode({ data, selected }: NodeProps<SummaryCar
       animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
       className={`w-[286px] rounded-[16px] border bg-white p-3 shadow-[0_5px_18px_rgba(0,0,0,0.12)] ${selected ? 'border-[#4A90D9]' : 'border-[#D5D5D9]'}`}
       initial={{ opacity: 0, x: 100, y: 10 }}
+      onAnimationComplete={syncHandlesAfterEntrance}
       transition={{ delay: data.assemblyDelay ?? 1.2, duration: 0.42, ease: [0.4, 0, 0.2, 1] }}
     >
       <header className="mb-3 flex items-start gap-2.5 px-1 pt-1">

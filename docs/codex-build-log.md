@@ -75,6 +75,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Re-reviewed `agent_assets/aether_design.png` to align the wide semi-transparent ribbon treatment, centered hubs, restrained dashboard placement, color language, and connection-point hierarchy with the north-star reference.
 - Ribbon refinement: implemented the five-layer SVG stack (blurred outer glow, main/inner bands, colored core, delayed white shimmer) and path-length-derived, staggered flow dots. Hub-to-summary trunks are now deliberately wider and more opaque than their tributaries.
 - Ran the complete five-file GPT-5.6 Electron capture after the local API key was configured. The first capture exposed a negative/delayed clustering result and an incomplete summary entrance; Codex added a grounded fallback workspace and corrected the motion transform, then verified the final capture renders all hubs, multi-layer ribbons, flowing dots, and dashboard-section trunks.
+- Fixed a summary-card entrance race found during human testing: React Flow now remeasures section handles after Framer Motion finishes the card’s horizontal entrance, and summary trunks wait until that refresh has occurred.
 
 ### Human decisions — runtime model configuration
 

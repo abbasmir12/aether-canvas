@@ -26,7 +26,7 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   const isTrunk = ribbon?.phase === 'summary';
   const scale = isTrunk ? 1.3 : 1;
   const opacityScale = isTrunk ? 1.2 : 1;
-  const drawDelay = (isTrunk ? 1.5 : 0.5) + (ribbon?.index ?? 0) * 0.1;
+  const drawDelay = (isTrunk ? 1.72 : 0.5) + (ribbon?.index ?? 0) * 0.1;
   const path = organicHorizontalPath(sourceX, sourceY, targetX, targetY);
   const measurementPath = useRef<SVGPathElement>(null);
   const [dots, setDots] = useState<Dot[]>([]);
