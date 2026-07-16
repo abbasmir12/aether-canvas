@@ -105,28 +105,34 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
       }
 
       if (process.env.AETHER_SMOKE_SUMMARY_MAP) {
-        const fitTarget = await window.webContents.executeJavaScript(`(() => {
+        const fitted = await window.webContents.executeJavaScript(`(() => {
           const button = document.querySelector('button[aria-label="Fit canvas to content"]');
-          if (!button) return null;
-          const rect = button.getBoundingClientRect();
-          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+          if (!button) return false;
+          button.click();
+          return true;
         })()`);
-        if (fitTarget) {
-          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mousePressed', x: fitTarget.x, y: fitTarget.y, button: 'left', clickCount: 1 });
-          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseReleased', x: fitTarget.x, y: fitTarget.y, button: 'left', clickCount: 1 });
-          await new Promise((done) => setTimeout(done, 500));
-        }
-        const target = await window.webContents.executeJavaScript(`(() => {
+        if (fitted) await new Promise((done) => setTimeout(done, 500));
+        const opened = await window.webContents.executeJavaScript(`(() => {
           const button = Array.from(document.querySelectorAll('.react-flow__node-summaryCard button')).find((item) => /^(map|places)/i.test((item.textContent || '').trim()));
-          if (!button) return null;
-          const rect = button.getBoundingClientRect();
-          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+          if (!button) return false;
+          button.click();
+          return true;
         })()`);
-        if (target) {
-          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mousePressed', x: target.x, y: target.y, button: 'left', clickCount: 1 });
-          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseReleased', x: target.x, y: target.y, button: 'left', clickCount: 1 });
-          await new Promise((done) => setTimeout(done, 900));
-        }
+        if (opened) await new Promise((done) => setTimeout(done, 900));
+      }
+
+      if (process.env.AETHER_SMOKE_MAP_INTERACTION) {
+        await window.webContents.executeJavaScript(`(() => {
+          const button = document.querySelector('.aether-map .leaflet-control-zoom-in');
+          button?.click();
+          const marker = document.querySelector('.aether-map-marker-shell');
+          marker?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        })()`);
+        await new Promise((done) => setTimeout(done, 900));
+        const firstState = await window.webContents.executeJavaScript(`JSON.stringify({ zoom: document.querySelector('.aether-map .leaflet-tile-loaded')?.src.match(/light_all\\/(\\d+)\\//)?.[1] || '', popup: Boolean(document.querySelector('.aether-map-popup')), directions: Boolean(Array.from(document.querySelectorAll('.aether-map-popup button')).find((button) => /directions|nearby/i.test(button.textContent || ''))) })`);
+        await new Promise((done) => setTimeout(done, 900));
+        const secondState = await window.webContents.executeJavaScript(`JSON.stringify({ zoom: document.querySelector('.aether-map .leaflet-tile-loaded')?.src.match(/light_all\\/(\\d+)\\//)?.[1] || '', popup: Boolean(document.querySelector('.aether-map-popup')), directions: Boolean(Array.from(document.querySelectorAll('.aether-map-popup button')).find((button) => /directions|nearby/i.test(button.textContent || ''))) })`);
+        console.log(`AETHER_SMOKE_MAP_INTERACTION ${firstState} ${secondState}`);
       }
 
       if (process.env.AETHER_SMOKE_DEBUG) {

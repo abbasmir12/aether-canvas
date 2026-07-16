@@ -20,10 +20,17 @@ function markerIcon(index: number, ai = false) {
 
 function FitLocations({ points }: { points: Array<{ lat: number; lng: number }> }) {
   const map = useMap();
+  const fittedSignature = useRef('');
+  const signature = points
+    .map((point) => `${point.lat.toFixed(5)},${point.lng.toFixed(5)}`)
+    .sort()
+    .join('|');
   useEffect(() => {
+    if (!signature || fittedSignature.current === signature) return;
+    fittedSignature.current = signature;
     if (points.length === 1) map.flyTo([points[0].lat, points[0].lng], 12, { duration: .8 });
     if (points.length > 1) map.fitBounds(points.map((point) => [point.lat, point.lng] as LatLngTuple), { padding: [38, 38], maxZoom: 13, animate: true, duration: .8 });
-  }, [map, points]);
+  }, [map, points, signature]);
   return null;
 }
 
@@ -39,8 +46,8 @@ export default function InteractiveMap({ locations, suggestions, expanded, onLoc
     <MapContainer center={center} className="h-full w-full saturate-[.82] contrast-[.96] sepia-[.04]" doubleClickZoom={expanded} ref={mapRef} scrollWheelZoom={expanded} zoom={allPoints.length ? 11 : 2} zoomControl={expanded}>
       <TileLayer attribution="© OpenStreetMap contributors © CARTO" url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
       <FitLocations points={allPoints} />
-      {pins.map((location, index) => <Marker eventHandlers={{ click: () => { focusPoint(location); onLocationFocus(location); } }} icon={markerIcon(index)} key={`${location.name}-${location.fileName}`} position={[location.lat, location.lng]}><Popup><div className="aether-map-popup"><div className="flex items-center justify-between"><span className="rounded-full bg-[#FFF0EC] px-2 py-1 text-[8px] font-semibold uppercase tracking-[.1em] text-[#C94B38]">Source · {String(index + 1).padStart(2, '0')}</span><Navigation size={12} className="text-[#EA4335]" /></div><b className="mt-2 block text-[13px] font-semibold tracking-[-.02em] text-[#302E33]">{location.name}</b><p className="mt-1 truncate text-[9px] text-[#858188]">Found in {location.fileName}</p><button className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] bg-[#2F2D32] px-2.5 py-2 text-[9px] font-semibold text-white transition hover:bg-[#444047]" onClick={() => onOpenDirections(location.name)} type="button"><Navigation size={11} />Get directions</button></div></Popup></Marker>)}
-      {aiPins.map((item, index) => <Marker eventHandlers={{ click: () => focusPoint(item) }} icon={markerIcon(index, true)} key={`ai-${item.title}`} position={[item.lat, item.lng]}><Popup><div className="aether-map-popup"><div className="flex items-center justify-between"><span className="rounded-full bg-[#F2ECF8] px-2 py-1 text-[8px] font-semibold uppercase tracking-[.1em] text-[#805DA7]">AI discovery</span><Sparkles size={12} className="text-[#9B72CF]" /></div><b className="mt-2 block text-[13px] font-semibold tracking-[-.02em] text-[#302E33]">{item.title}</b><p className="mt-1 text-[9px] leading-4 text-[#77737B]">{item.body}</p><button className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] bg-[#8060A5] px-2.5 py-2 text-[9px] font-semibold text-white transition hover:bg-[#6F5194]" onClick={() => onOpenDirections(item.title)} type="button"><Navigation size={11} />Explore nearby</button></div></Popup></Marker>)}
+      {pins.map((location, index) => <Marker eventHandlers={{ mouseover: (event) => event.target.openPopup(), click: () => { focusPoint(location); onLocationFocus(location); } }} icon={markerIcon(index)} key={`${location.name}-${location.fileName}`} position={[location.lat, location.lng]}><Popup autoPan={false} closeButton={false}><div className="aether-map-popup"><div className="flex items-center justify-between"><span className="rounded-full bg-[#FFF0EC] px-2 py-1 text-[8px] font-semibold uppercase tracking-[.1em] text-[#C94B38]">Source · {String(index + 1).padStart(2, '0')}</span><Navigation size={12} className="text-[#EA4335]" /></div><b className="mt-2 block text-[13px] font-semibold tracking-[-.02em] text-[#302E33]">{location.name}</b><p className="mt-1 truncate text-[9px] text-[#858188]">Found in {location.fileName}</p><button className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] bg-[#2F2D32] px-2.5 py-2 text-[9px] font-semibold text-white transition hover:bg-[#444047]" onClick={() => onOpenDirections(location.name)} type="button"><Navigation size={11} />Get directions</button></div></Popup></Marker>)}
+      {aiPins.map((item, index) => <Marker eventHandlers={{ mouseover: (event) => event.target.openPopup(), click: () => focusPoint(item) }} icon={markerIcon(index, true)} key={`ai-${item.title}`} position={[item.lat, item.lng]}><Popup autoPan={false} closeButton={false}><div className="aether-map-popup"><div className="flex items-center justify-between"><span className="rounded-full bg-[#F2ECF8] px-2 py-1 text-[8px] font-semibold uppercase tracking-[.1em] text-[#805DA7]">AI discovery</span><Sparkles size={12} className="text-[#9B72CF]" /></div><b className="mt-2 block text-[13px] font-semibold tracking-[-.02em] text-[#302E33]">{item.title}</b><p className="mt-1 text-[9px] leading-4 text-[#77737B]">{item.body}</p><button className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] bg-[#8060A5] px-2.5 py-2 text-[9px] font-semibold text-white transition hover:bg-[#6F5194]" onClick={() => onOpenDirections(item.title)} type="button"><Navigation size={11} />Explore nearby</button></div></Popup></Marker>)}
     </MapContainer>
 
     <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between bg-gradient-to-b from-white/72 via-white/24 to-transparent px-2.5 pb-7 pt-2.5">

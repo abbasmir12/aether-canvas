@@ -24,7 +24,8 @@
 .aether-map .leaflet-popup-tip { background: rgba(255,255,255,.96); box-shadow: 3px 3px 8px rgba(35,31,38,.08); }
 .aether-map-popup { width: 184px; padding: 12px; font-family: system-ui, sans-serif; }
 .aether-map-marker-shell { border: 0 !important; background: transparent !important; }
-.aether-map-marker { position: relative; display: grid; place-items: center; color: white; filter: drop-shadow(0 4px 6px rgba(54,42,36,.22)); }
+.aether-map-marker { position: relative; display: grid; place-items: center; color: white; cursor: pointer; filter: drop-shadow(0 4px 6px rgba(54,42,36,.22)); transition: transform 160ms cubic-bezier(.22,1,.36,1); }
+.aether-map-marker:hover { transform: translateY(-2px) scale(1.08); }
 .aether-map-marker > i { position: absolute; inset: -5px; border: 1px solid currentColor; border-radius: 50%; opacity: .24; animation: aether-map-pulse 2.6s ease-out infinite; }
 .aether-map-marker > b { position: relative; display: grid; place-items: center; border: 2px solid white; color: white; font: 700 8px/1 system-ui; box-shadow: inset 0 1px 1px rgba(255,255,255,.42); }
 .aether-map-marker > b > em { font-style: normal; }

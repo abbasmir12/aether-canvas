@@ -229,6 +229,9 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - `npm run lint` passes strict renderer and Electron TypeScript checks.
 - `npx vite build` completes renderer, main, and preload production bundles.
 - A native headless-Ozone capture opened the persisted five-file Places module and verified the new map surface without additional AI usage.
+- Fixed user navigation snap-back by keying auto-fit to the normalized coordinate set; ordinary parent rerenders no longer override user pan or zoom.
+- Added hover-open source and AI place cards with persistent, clickable directions actions, plus an automated zoom-stability and hover-action smoke check.
+- The interaction smoke result remained at the user-selected tile zoom across consecutive samples and reported both `popup: true` and `directions: true` after synthetic marker hover.
 
 ## Day 3 — July 16, 2026
 

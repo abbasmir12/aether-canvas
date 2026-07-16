@@ -484,6 +484,8 @@ Generic source intelligence is rendered as an editorial composition rather than 
 
 The hackathon build retains the no-key Leaflet map but treats its provider as cartographic infrastructure rather than the product UI. Aether owns the location hierarchy, animated markers, AI-versus-source language, HUD, focus behavior, popovers, and surrounding material system. Required provider attribution stays clearly visible in a compact frosted control. This improves demo polish without introducing Google billing, key distribution, or judge setup friction.
 
+Automatic bounds fitting is initialization behavior, not a continuously enforced layout. Aether records the normalized coordinate signature it has fitted; it only reframes the map when that set genuinely changes. Hovering a marker opens an interactive card without auto-panning, so users can move into the card and launch directions while retaining their chosen viewport.
+
 ## Decision Template
 
 ## NNN. Decision title
