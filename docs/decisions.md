@@ -228,6 +228,22 @@ Aether applies a Liquid Glass material model to its SVG connectors: translucent 
 
 Drag performance is part of the material design. When a node moves, every connector collapses to a single inexpensive two-pixel semantic path with no filter, marker, or layer work. When the drag ends, the glass material fades back over 200ms. Auto-positioned hubs are non-draggable, node transforms opt into `will-change`, and layout position writes are scheduled with `requestAnimationFrame`.
 
+## 027. Custom top bar instead of native Electron frame
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+The default Electron title bar breaks the product’s premium, calm visual hierarchy. Aether now uses a frameless secure BrowserWindow and a renderer-owned 44px titlebar with a visual search surface, privacy status, user identity, navigation affordances, and platform-style window actions. The bar preserves window dragging with `-webkit-app-region: drag`, while controls and search explicitly opt out; minimize, maximize/unmaximize, and close remain narrow IPC calls in the preload boundary.
+
+## 028. Lucide React as the single icon system
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+All visual UI symbols use Lucide React, including the top bar, sidebar, canvas controls, nodes, hubs, and dashboard. Aether does not mix emoji, icon fonts, or unrelated icon sets. This keeps stroke weights, sizing, hover feedback, and semantic color treatment coherent across the desktop experience.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted

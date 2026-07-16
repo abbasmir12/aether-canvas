@@ -183,6 +183,21 @@ function registerIpcHandlers(): void {
 
     return findRelationships(files);
   });
+
+  ipcMain.handle('aether:window-minimize', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.minimize();
+  });
+
+  ipcMain.handle('aether:window-maximize', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window) return;
+    if (window.isMaximized()) window.unmaximize();
+    else window.maximize();
+  });
+
+  ipcMain.handle('aether:window-close', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close();
+  });
 }
 
 function createWindow(): BrowserWindow {
@@ -193,6 +208,8 @@ function createWindow(): BrowserWindow {
     minHeight: 700,
     title: 'Aether Canvas',
     backgroundColor: '#F4F1E9',
+    frame: false,
+    titleBarStyle: 'hidden',
     show: false,
     autoHideMenuBar: true,
     webPreferences: {

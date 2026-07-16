@@ -155,4 +155,7 @@ export interface AetherBridge {
   getDroppedFilePath: (file: File) => Promise<string>;
   analyzeFile: (filePath: string, fileId: string) => Promise<AnalyzedFile>;
   findRelationships: (fileIds: string[]) => Promise<RelationshipDiscovery>;
+  minimizeWindow: () => Promise<void>;
+  maximizeWindow: () => Promise<void>;
+  closeWindow: () => Promise<void>;
 }
