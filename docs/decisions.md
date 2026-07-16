@@ -218,6 +218,16 @@ Semantic ribbons are one defined pipe rather than an atmospheric color spread. T
 
 The white center rail sits inside a lightweight charcoal border and shares the normal card-equivalent drop shadow. Outer edge weights respond to the ribbon’s vertical direction so the outside of a curve reads slightly stronger than its inside, echoing the dimensional line treatment in the reference.
 
+## 026. Liquid Glass ribbon design
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+Aether applies a Liquid Glass material model to its SVG connectors: translucent semantic glass halves, refractive white exterior and interior edges, a nested internal color channel, bright center specular rail, caustic diamonds, and a low-opacity atmospheric glow. Variable-width filled contours taper at file exits, swell through the curve, and contract toward hubs; the asymmetrical halves catch light differently.
+
+Drag performance is part of the material design. When a node moves, every connector collapses to a single inexpensive two-pixel semantic path with no filter, marker, or layer work. When the drag ends, the glass material fades back over 200ms. Auto-positioned hubs are non-draggable, node transforms opt into `will-change`, and layout position writes are scheduled with `requestAnimationFrame`.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted

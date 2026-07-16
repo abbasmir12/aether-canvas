@@ -33,6 +33,7 @@ export default function AetherCanvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isDragActive, setIsDragActive] = useState(false);
+  const [isNodeDragging, setIsNodeDragging] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
   const [cluster, setCluster] = useState<SuggestedCluster | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
@@ -69,18 +70,18 @@ export default function AetherCanvas() {
     setCluster(activeCluster);
     const layout = calculateAutoLayout(allFiles);
     const summaryId = 'summary:active';
-    setNodes((current) => {
+    requestAnimationFrame(() => setNodes((current) => {
       const fileNodes = current.filter((node): node is FileCardNodeType => node.type === 'fileCard');
-      const laidOutFiles = fileNodes.map((node) => ({ ...node, position: layout.filePositions.get(node.id) ?? node.position }));
+      const laidOutFiles = fileNodes.map((node) => ({ ...node, position: layout.filePositions.get(node.id) ?? node.position, style: { ...node.style, willChange: 'transform' } }));
       if (!shouldShowSummary) return laidOutFiles;
-      const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
-      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, data: { cluster: activeCluster, files: allFiles, assemblyDelay: 1.2 } }];
-    });
+      const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', draggable: false, position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
+      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: activeCluster, files: allFiles, assemblyDelay: 1.2 } }];
+    }));
     if (!shouldShowSummary) { setEdges([]); return; }
-    const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));
-    const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
+    const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index, isDragging: isNodeDragging }, style: { stroke: RIBBON_COLORS[type] } })));
+    const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index, isDragging: isNodeDragging }, style: { stroke: RIBBON_COLORS[hub.type] } }));
     setEdges([...fileToHub, ...hubToSummary]);
-  }, [setEdges, setNodes]);
+  }, [isNodeDragging, setEdges, setNodes]);
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);
   const onDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => { if (event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) return; setIsDragActive(false); }, []);
@@ -93,7 +94,7 @@ export default function AetherCanvas() {
     const nearCluster = Boolean(clusterRef.current && clusterFileNodes.some((node) => Math.hypot(node.position.x - basePosition.x, node.position.y - basePosition.y) < 240));
     const registrations = await Promise.allSettled(droppedFiles.map(async (file, index) => {
       const filePath = await window.aether.getDroppedFilePath(file); const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`;
-      return { id, filePath, nearCluster, node: { id, type: 'fileCard' as const, position: { x: basePosition.x + index * 24, y: basePosition.y + index * 64 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath: metadata.path, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } };
+      return { id, filePath, nearCluster, node: { id, type: 'fileCard' as const, position: { x: basePosition.x + index * 24, y: basePosition.y + index * 64 }, style: { willChange: 'transform' }, data: { fileName: metadata.name, mimeType: metadata.type, filePath: metadata.path, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } };
     }));
     const accepted = registrations.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
     if (accepted.length) setNodes((current) => [...current, ...accepted.map(({ node }) => node)]);
@@ -110,9 +111,13 @@ export default function AetherCanvas() {
 
   const connectSuggestion = useCallback(async () => { if (!suggestion) return; const file = pendingFiles.current.get(suggestion.fileId); if (file) { analyzedFiles.current.set(file.id, file); pendingFiles.current.delete(file.id); candidateIds.current.delete(file.id); await applyDiscovery(); } setSuggestion(null); }, [applyDiscovery, suggestion]);
   const keepSeparate = useCallback(() => { if (suggestion) { pendingFiles.current.delete(suggestion.fileId); candidateIds.current.delete(suggestion.fileId); } setSuggestion(null); }, [suggestion]);
+  const setRibbonDragMode = useCallback((dragging: boolean) => {
+    setIsNodeDragging(dragging);
+    setEdges((current) => current.map((edge) => ({ ...edge, data: { ...edge.data, isDragging: dragging } })));
+  }, [setEdges]);
 
   return <div className="relative h-full w-full bg-[#F8F8FA]" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
-    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
+    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onEdgesChange={onEdgesChange} onNodeDragStart={() => setRibbonDragMode(true)} onNodeDragStop={() => requestAnimationFrame(() => setRibbonDragMode(false))} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
       <Background bgColor="#F8F8FA" color="#D8D6D1" gap={18} size={1} variant={BackgroundVariant.Dots} />
       <MiniMap className="!bottom-5 !right-5 !m-0 !h-[112px] !w-[176px] !rounded-[13px] !border !border-[#D3D3D8] !bg-white/90 !shadow-[0_3px_14px_rgba(33,33,36,0.08)]" maskColor="rgba(242, 242, 245, 0.58)" nodeBorderRadius={5} nodeColor={(node) => node.type === 'summaryCard' ? '#E7A271' : '#8AB99A'} pannable zoomable />
       <CanvasControls />

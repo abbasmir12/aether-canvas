@@ -84,6 +84,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Refined hub pills into framed semantic gradients without drop shadows and added visible circular destination ports inside summary sections so ribbons end cleanly at the dashboard rather than disappearing behind it.
 - Contrast and elevation pass: restored the mockup’s restrained card-equivalent black shadow to ribbons, hubs, flow packets, and ports; increased semantic fill/center-rail contrast; and built the hub’s narrow white gap ring. Flow dots, arrows, and square packets now use deterministic irregular placement and layered faces for a small 3D appearance.
 - Defined-pipe pass: removed the broad atmospheric color spread and replaced it with a source-to-destination opacity gradient inside one bold semantic pipe. Added structural color rims, direction-sensitive fine white outer edges, and a white center rail seated in a lightweight dark border with normal card-level elevation.
+- Liquid Glass redesign: replaced the pipe renderer with a refractive SVG material stack—translucent asymmetric glass body, exterior/interior white refraction lines, internal channel, bright specular rail, caustic diamonds, and restrained atmospheric glow. Built an interaction-quality branch that renders only one 2px path while a node is dragged, then restores the material over 200ms; hubs are now explicitly non-draggable and position writes are frame-scheduled.
 
 ### Human decisions — runtime model configuration
 
