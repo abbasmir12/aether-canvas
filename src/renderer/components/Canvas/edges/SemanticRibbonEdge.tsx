@@ -71,12 +71,13 @@ function buildGeometry(
   steadyWidth: boolean,
 ): Geometry {
   const dx = targetX - sourceX;
-  // Lazy horizontal S-curve; asymmetric control points keep the exit from the
-  // card gentler than the turn into the hub, so bends read hand-drawn.
-  const c1x = sourceX + dx * 0.42;
-  const c1y = sourceY + (seed % 2 ? 6 : -5);
-  const c2x = targetX - dx * 0.24;
-  const c2y = targetY;
+  // Pronounced hand-drawn S: opposing vertical pulls on the two control
+  // points guarantee an inflection even on near-horizontal runs.
+  const sway = (14 + (seed % 3) * 7) * (seed % 2 ? 1 : -1);
+  const c1x = sourceX + dx * 0.34;
+  const c1y = sourceY + sway;
+  const c2x = targetX - dx * 0.3;
+  const c2y = targetY - sway * 0.9;
 
   const raw: Sample[] = [];
   for (let index = 0; index <= SAMPLES; index += 1) {
@@ -91,7 +92,7 @@ function buildGeometry(
     const cross = dxdt * d2y - dydt * d2x;
     const curvature = cross / (speed * speed * speed);
     // River profile: narrow at the source, widest mid-flow, medium at the mouth.
-    const profile = steadyWidth ? 0.82 : 0.52 + 0.48 * Math.sin(Math.PI * t) + 0.16 * t;
+    const profile = steadyWidth ? 0.82 : 0.5 + 0.42 * Math.sin(Math.PI * t) + 0.18 * t;
     raw.push({
       x,
       y,
@@ -122,22 +123,37 @@ function buildGeometry(
   const right: { x: number; y: number }[] = [];
   const innerL: { x: number; y: number }[] = [];
   const innerR: { x: number; y: number }[] = [];
-  const sat: { x: number; y: number }[] = [];
+  const satA: { x: number; y: number }[] = [];
+  const satB: { x: number; y: number }[] = [];
   const center: { x: number; y: number }[] = [];
+
+  // The ribbon swells where it turns, like liquid banking through a bend;
+  // smooth the final half-widths so the outline never steps.
+  const halfLefts = smoothPass(raw.map((sample, index) => {
+    const swell = 1 + 0.55 * Math.tanh(Math.abs(smoothBend[index]) * 4);
+    return sample.width * swell * (0.5 + (smoothBend[index] + bias) * 0.5);
+  }));
+  const halfRights = smoothPass(raw.map((sample, index) => {
+    const swell = 1 + 0.55 * Math.tanh(Math.abs(smoothBend[index]) * 4);
+    return sample.width * swell * (0.5 - (smoothBend[index] + bias) * 0.5);
+  }));
 
   raw.forEach((sample, index) => {
     const lean = smoothBend[index] + bias; // >0 pushes mass to the left edge
-    const halfLeft = sample.width * (0.5 + lean * 0.5);
-    const halfRight = sample.width * (0.5 - lean * 0.5);
+    const halfLeft = halfLefts[index];
+    const halfRight = halfRights[index];
     left.push({ x: sample.x + sample.nx * halfLeft, y: sample.y + sample.ny * halfLeft });
     right.push({ x: sample.x - sample.nx * halfRight, y: sample.y - sample.ny * halfRight });
     const innerHalfL = halfLeft * 0.42;
     const innerHalfR = halfRight * 0.42;
     innerL.push({ x: sample.x + sample.nx * innerHalfL, y: sample.y + sample.ny * innerHalfL });
     innerR.push({ x: sample.x - sample.nx * innerHalfR, y: sample.y - sample.ny * innerHalfR });
-    // Saturated half hugs the outside of the current bend.
-    const satOffset = (lean >= 0 ? halfLeft : -halfRight) * 0.85;
-    sat.push({ x: sample.x + sample.nx * satOffset, y: sample.y + sample.ny * satOffset });
+    // Primary band: its own stream drifting to the outside of each bend,
+    // with an independent breathing width.
+    const drift = lean * (halfLeft + halfRight) * 0.62;
+    const satHalf = (halfLeft + halfRight) * (0.17 + 0.1 * Math.sin(Math.PI * (index / SAMPLES) * 1.7 + seed));
+    satA.push({ x: sample.x + sample.nx * (drift + satHalf), y: sample.y + sample.ny * (drift + satHalf) });
+    satB.push({ x: sample.x + sample.nx * (drift - satHalf), y: sample.y + sample.ny * (drift - satHalf) });
     center.push({ x: sample.x, y: sample.y });
   });
 
@@ -158,9 +174,18 @@ function buildGeometry(
     return { x: point.x, y: point.y, angle: sample.angle, size: 2.2 + ((index + seed) % 2) * 0.7 };
   });
 
+  const cap = (a: { x: number; y: number }, b: { x: number; y: number }, sweep: 0 | 1) => {
+    const radius = Math.hypot(b.x - a.x, b.y - a.y) / 2;
+    return `A ${radius.toFixed(2)} ${radius.toFixed(2)} 0 0 ${sweep} ${b.x.toFixed(2)},${b.y.toFixed(2)}`;
+  };
+  const reversedRight = [...right].reverse();
+  const body = `${polyline(left)} ${cap(left[left.length - 1], reversedRight[0], 1)} ${reversedRight
+    .map((point) => `L ${point.x.toFixed(2)},${point.y.toFixed(2)}`)
+    .join(' ')} ${cap(reversedRight[reversedRight.length - 1], left[0], 1)} Z`;
+
   return {
-    body: polygon(left, [...right].reverse()),
-    saturated: polygon(center, [...sat].reverse()),
+    body,
+    saturated: polygon(satA, [...satB].reverse()),
     inner: polygon(innerL, [...innerR].reverse()),
     edgeLeft: polyline(left),
     edgeRight: polyline(right),
@@ -189,10 +214,15 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   const index = ribbon?.index ?? 0;
   const drawDelay = (isSummary ? 1.4 : 0.45) + index * 0.08;
 
+  // Every ribbon carries a different weight, like strands of unequal flow.
+  const baseWidth = isSummary ? [22, 26, 20, 24][index % 4] : [24, 30, 20, 33, 26][index % 5];
   const geometry = useMemo(
-    () => buildGeometry(sourceX, sourceY, targetX, targetY, isSummary ? 24 : 27, index, isSummary),
-    [index, isSummary, sourceX, sourceY, targetX, targetY],
+    () => buildGeometry(sourceX, sourceY, targetX, targetY, baseWidth, index, isSummary),
+    [baseWidth, index, isSummary, sourceX, sourceY, targetX, targetY],
   );
+  const safeId = String(id).replace(/[^a-z0-9]/gi, '');
+  const gradientId = `aether-ribbon-ramp-${safeId}`;
+  const satGradientId = `aether-ribbon-sat-ramp-${safeId}`;
 
   return (
     <motion.g
@@ -201,14 +231,27 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
       initial={{ opacity: 0 }}
       transition={{ delay: drawDelay, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
     >
+      <defs>
+        {/* Opacity ramps from a near-transparent source to strong color at the hub. */}
+        <linearGradient gradientUnits="userSpaceOnUse" id={gradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
+          <stop offset="0%" stopColor={color} stopOpacity={0.05} />
+          <stop offset="55%" stopColor={color} stopOpacity={0.14} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.3} />
+        </linearGradient>
+        <linearGradient gradientUnits="userSpaceOnUse" id={satGradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
+          <stop offset="0%" stopColor={color} stopOpacity={0.07} />
+          <stop offset="55%" stopColor={color} stopOpacity={0.2} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.42} />
+        </linearGradient>
+      </defs>
       {/* soft grounded shadow under the whole ribbon */}
       <path d={geometry.body} fill="#3B382F" opacity={0.03} transform="translate(0,2)" />
-      {/* glass main body */}
-      <path d={geometry.body} fill={color} opacity={0.13} />
-      {/* saturated half — pools on the outside of each bend */}
-      <path d={geometry.saturated} fill={color} opacity={0.16} />
+      {/* glass main body, rounded caps at both ends */}
+      <path d={geometry.body} fill={`url(#${gradientId})`} />
+      {/* primary band — its own stream pooling on the outside of each bend */}
+      <path d={geometry.saturated} fill={`url(#${satGradientId})`} />
       {/* secondary inner ribbon */}
-      <path d={geometry.inner} fill={color} opacity={0.12} />
+      <path d={geometry.inner} fill={color} opacity={0.1} />
       {/* white light lines: outer edges, inner edges */}
       <path d={geometry.edgeLeft} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.75} strokeWidth={1.6} />
       <path d={geometry.edgeRight} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.6} strokeWidth={1.2} />
