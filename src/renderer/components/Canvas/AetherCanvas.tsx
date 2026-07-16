@@ -73,6 +73,19 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
 
   const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
   const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);
+  const importPaths = useCallback(async (paths: string[]) => {
+    const base = screenToFlowPosition({ x: 460, y: 240 });
+    const entries = await Promise.all(paths.map(async (filePath, index) => { const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`; return { id, filePath, node: { id, type: 'fileCard' as const, position: { x: base.x + index * 28, y: base.y + index * 72 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } }; }));
+    setNodes((current) => [...current, ...entries.map((entry) => entry.node)]);
+    await Promise.all(entries.map(async ({ id, filePath }) => { const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(filePath, id), window.aether.getThumbnail(filePath)]); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null } } as FileCardNodeType : node)); analyzedFiles.current.set(id, analysis); }));
+  }, [screenToFlowPosition, setNodes]);
+
+  useEffect(() => {
+    const open = async () => { const selected = await window.aether.openFileDialog(); if (!selected.canceled && selected.filePaths.length) await importPaths(selected.filePaths); };
+    const search = (event: Event) => { const query = String((event as CustomEvent<string>).detail ?? '').toLowerCase(); setNodes((current) => current.map((node) => node.type === 'fileCard' ? { ...node, hidden: Boolean(query) && !node.data.fileName.toLowerCase().includes(query) && !(node.data.analysis?.summary ?? '').toLowerCase().includes(query) } : node)); };
+    window.addEventListener('aether:open-dialog', open); window.addEventListener('aether:search', search);
+    return () => { window.removeEventListener('aether:open-dialog', open); window.removeEventListener('aether:search', search); };
+  }, [importPaths, setNodes]);
 
   const applyDiscovery = useCallback(async (files = analyzedFiles.current) => {
     if (files.size < 2) return;
