@@ -94,6 +94,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Replaced the Local Files placeholder with a persistent pinned-folder workflow: a native `openDirectory` picker, local `pinned-folders.json` store, safe immediate-directory indexing, extension filtering, modified-date sorting, expand/collapse sections, unpin confirmation, and direct add-to-canvas actions through the existing analysis pipeline.
 - Refined pinned-folder presentation with concise folder-only labels, an on-demand information popover for the full path and pin details, plus detailed-list, visual-grid, and compact layout modes for different browsing density preferences.
 - Made Grid the default presentation for Local Files and Recent, persisted each view’s List/Grid/Compact choice locally, and upgraded Recent with extension-aware semantic icons so PDFs, spreadsheets, images, documents, and text are distinguishable before a workspace is opened.
+- Updated Spaces cards to reuse each workspace’s saved semantic icon and color, and replaced fixed decorative marks with extension-derived file dots. Cards show up to nine actual file-color dots and a leading `+X` overflow count for larger spaces.
 
 ### Human decisions — runtime model configuration
 
