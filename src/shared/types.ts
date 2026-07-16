@@ -95,6 +95,8 @@ export interface DashboardPlan {
   title: string;
   subtitle: string;
   category: string;
+  headerIcon: DashboardModuleIcon;
+  headerAccent: DashboardModuleAccent;
   modules: DashboardModule[];
 }
 

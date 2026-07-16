@@ -390,6 +390,16 @@ Hover state must never replace React Flow’s custom edge component. A shared in
 
 The relationship compiler prompt now includes the original Summary Card’s visual grammar—colored circular Lucide icon, semantic accent, compact useful preview, and expanded detailed module. GPT chooses the specific icon and accent from a closed design-system vocabulary for each planned module. This preserves the intentional premium template while allowing the information architecture to adapt to any coherent cluster.
 
+## 042. Use the Tokyo Trip card as the complete adaptive dashboard reference
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human correction, Codex implementation
+
+The Tokyo Trip design is the reference for the entire generated dashboard, not merely a loose icon treatment. GPT’s dashboard plan is explicitly conditioned on its header hierarchy, route rail, budget ring/legend, completion progress, mini-map, section terminal ports, and provenance footer, then instructed to translate those interaction and visual patterns to the actual domain. The model also returns a constrained header icon/accent, so the card identity itself is context-aware.
+
 ## Decision Template
 
 ## NNN. Decision title

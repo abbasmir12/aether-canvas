@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Handle, Position, useUpdateNodeInternals, type Node, type NodeProps } from '@xyflow/react';
-import { BookOpen, Check, CheckSquare, ChevronDown, Clipboard, Download, FileText, ListChecks, Map, MapPin, MoreHorizontal, Plane, Plus, Sparkles, Wallet, X } from 'lucide-react';
+import { BookOpen, Check, CheckSquare, ChevronDown, Clipboard, Download, FileText, ListChecks, Map, MapPin, MoreHorizontal, Plane, Plus, Sparkles as SparklesIcon, Wallet, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 
 import type { AnalyzedFile, DashboardBudgetRow, DashboardModule, DashboardModuleKind, DashboardPackingItem, DashboardPlan, DashboardState, RelationshipType, SuggestedCluster } from '../../../../shared/types';
@@ -10,8 +10,8 @@ export type SummaryCardNodeData = { cluster: SuggestedCluster; files: AnalyzedFi
 export type SummaryCardNodeType = Node<SummaryCardNodeData, 'summaryCard'>;
 
 const COLORS: Record<RelationshipType, string> = { dates: '#4A90D9', cost: '#34A853', place: '#EA4335', tasks: '#9B72CF' };
-const iconForKind: Record<DashboardModuleKind, ComponentType<{ size?: number; strokeWidth?: number }>> = { overview: Sparkles, timeline: Plane, budget: Wallet, checklist: CheckSquare, map: Map, tasks: ListChecks, topics: BookOpen, resources: FileText, results: Sparkles };
-const iconForPlan = { sparkles: Sparkles, plane: Plane, wallet: Wallet, 'check-square': CheckSquare, map: Map, 'list-checks': ListChecks, 'book-open': BookOpen, 'file-text': FileText } as const;
+const iconForKind: Record<DashboardModuleKind, ComponentType<{ size?: number; strokeWidth?: number }>> = { overview: SparklesIcon, timeline: Plane, budget: Wallet, checklist: CheckSquare, map: Map, tasks: ListChecks, topics: BookOpen, resources: FileText, results: SparklesIcon };
+const iconForPlan = { sparkles: SparklesIcon, plane: Plane, wallet: Wallet, 'check-square': CheckSquare, map: Map, 'list-checks': ListChecks, 'book-open': BookOpen, 'file-text': FileText } as const;
 const relationshipFor = (kind: DashboardModuleKind): RelationshipType | null => ({ timeline: 'dates', budget: 'cost', checklist: 'tasks', tasks: 'tasks', map: 'place' } as Partial<Record<DashboardModuleKind, RelationshipType>>)[kind] ?? null;
 const colorFor = (module: DashboardModule) => module.accent === 'dates' ? COLORS.dates : module.accent === 'cost' ? COLORS.cost : module.accent === 'place' ? COLORS.place : module.accent === 'tasks' ? COLORS.tasks : '#9B72CF';
 const value = (data: Record<string, unknown>, key: string) => typeof data[key] === 'string' ? data[key] : '';
@@ -24,7 +24,7 @@ function fallbackPlan(files: AnalyzedFile[], cluster: SuggestedCluster): Dashboa
   if (files.some((file) => file.entities.costs.length)) modules.push({ id: 'budget', kind: 'budget', title: 'Budget', summary: 'Editable amounts grounded in the files you added.', icon: 'wallet', accent: 'cost', sourceFileIds: files.filter((file) => file.entities.costs.length).map((file) => file.id) });
   if (files.some((file) => file.entities.tasks.length)) modules.push({ id: 'tasks', kind: 'tasks', title: cluster.category === 'travel' ? 'Packing' : 'Tasks', summary: 'Track the actionable items Aether found.', icon: 'list-checks', accent: 'tasks', sourceFileIds: files.filter((file) => file.entities.tasks.length).map((file) => file.id) });
   if (files.some((file) => file.entities.locations.length)) modules.push({ id: 'map', kind: 'map', title: cluster.category === 'travel' ? 'Map' : 'Places', summary: 'Places mentioned across this workspace.', icon: 'map', accent: 'place', sourceFileIds: files.filter((file) => file.entities.locations.length).map((file) => file.id) });
-  return { title: cluster.name, subtitle: cluster.dateRange, category: cluster.category, modules };
+  return { title: cluster.name, subtitle: cluster.dateRange, category: cluster.category, headerIcon: cluster.category === 'travel' ? 'map' : cluster.category === 'education' ? 'book-open' : 'sparkles', headerAccent: cluster.category === 'travel' ? 'place' : 'neutral', modules };
 }
 
 function ModuleShell({ module, open, onToggle, onHover, children }: { module: DashboardModule; open: boolean; onToggle: () => void; onHover: (active: boolean) => void; children: React.ReactNode }) {
@@ -49,6 +49,8 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
   const [newItem, setNewItem] = useState('');
   const dashboard = data.dashboard ?? {};
   const plan = data.dashboardPlan ?? fallbackPlan(data.files, data.cluster);
+  const HeaderIcon = iconForPlan[plan.headerIcon] ?? SparklesIcon;
+  const Sparkles = HeaderIcon;
   const openModule = dashboard.expandedSection;
   const costs = data.files.flatMap((file) => file.entities.costs);
   const previewBudget = data.files.find((file) => file.smartPreview.type === 'budget')?.smartPreview.displayData ?? {};
