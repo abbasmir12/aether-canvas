@@ -33,7 +33,6 @@ export default function AetherCanvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isDragActive, setIsDragActive] = useState(false);
-  const [isNodeDragging, setIsNodeDragging] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
   const [cluster, setCluster] = useState<SuggestedCluster | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
@@ -78,10 +77,10 @@ export default function AetherCanvas() {
       return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: activeCluster, files: allFiles, assemblyDelay: 1.2 } }];
     }));
     if (!shouldShowSummary) { setEdges([]); return; }
-    const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index, isDragging: isNodeDragging }, style: { stroke: RIBBON_COLORS[type] } })));
-    const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index, isDragging: isNodeDragging }, style: { stroke: RIBBON_COLORS[hub.type] } }));
+    const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));
+    const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
     setEdges([...fileToHub, ...hubToSummary]);
-  }, [isNodeDragging, setEdges, setNodes]);
+  }, [setEdges, setNodes]);
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);
   const onDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => { if (event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) return; setIsDragActive(false); }, []);
@@ -111,14 +110,10 @@ export default function AetherCanvas() {
 
   const connectSuggestion = useCallback(async () => { if (!suggestion) return; const file = pendingFiles.current.get(suggestion.fileId); if (file) { analyzedFiles.current.set(file.id, file); pendingFiles.current.delete(file.id); candidateIds.current.delete(file.id); await applyDiscovery(); } setSuggestion(null); }, [applyDiscovery, suggestion]);
   const keepSeparate = useCallback(() => { if (suggestion) { pendingFiles.current.delete(suggestion.fileId); candidateIds.current.delete(suggestion.fileId); } setSuggestion(null); }, [suggestion]);
-  const setRibbonDragMode = useCallback((dragging: boolean) => {
-    setIsNodeDragging(dragging);
-    setEdges((current) => current.map((edge) => ({ ...edge, data: { ...edge.data, isDragging: dragging } })));
-  }, [setEdges]);
 
-  return <div className="relative h-full w-full bg-[#F8F8FA]" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
-    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onEdgesChange={onEdgesChange} onNodeDragStart={() => setRibbonDragMode(true)} onNodeDragStop={() => requestAnimationFrame(() => setRibbonDragMode(false))} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
-      <Background bgColor="#F8F8FA" color="#D8D6D1" gap={18} size={1} variant={BackgroundVariant.Dots} />
+  return <div className="relative h-full w-full bg-[#F4F1E9]" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
+    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
+      <Background bgColor="#F4F1E9" color="#DBD5C6" gap={18} size={1} variant={BackgroundVariant.Dots} />
       <MiniMap className="!bottom-5 !right-5 !m-0 !h-[112px] !w-[176px] !rounded-[13px] !border !border-[#D3D3D8] !bg-white/90 !shadow-[0_3px_14px_rgba(33,33,36,0.08)]" maskColor="rgba(242, 242, 245, 0.58)" nodeBorderRadius={5} nodeColor={(node) => node.type === 'summaryCard' ? '#E7A271' : '#8AB99A'} pannable zoomable />
       <CanvasControls />
       {nodes.length === 0 && !isDragActive && <Panel className="!m-0" position="top-center"><motion.div animate={{ opacity: 1, y: 0 }} className="mt-7 flex items-center gap-2 rounded-full border border-[#E1E0DD] bg-white/70 px-4 py-2 text-[12px] font-medium text-[#77777D] shadow-[0_2px_10px_rgba(0,0,0,0.035)] backdrop-blur-md" initial={{ opacity: 0, y: -4 }}><span className="h-1.5 w-1.5 rounded-full bg-[#4A90D9]" />Drop local files anywhere on the canvas</motion.div></Panel>}

@@ -85,7 +85,7 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         await window.webContents.debugger.sendCommand('Input.dispatchDragEvent', { type: 'drop', x, y, data: dragData });
         await new Promise((done) => setTimeout(done, 900));
       }
-      await new Promise((done) => setTimeout(done, 9000));
+      await new Promise((done) => setTimeout(done, Number(process.env.AETHER_SMOKE_WAIT_MS) || 9000));
 
       if (process.env.AETHER_SMOKE_DEBUG) {
         const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
@@ -192,7 +192,7 @@ function createWindow(): BrowserWindow {
     minWidth: 1000,
     minHeight: 700,
     title: 'Aether Canvas',
-    backgroundColor: '#F8F8FA',
+    backgroundColor: '#F4F1E9',
     show: false,
     autoHideMenuBar: true,
     webPreferences: {

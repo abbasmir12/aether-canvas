@@ -10,7 +10,7 @@ const HUB_X = 510;
 const SUMMARY_X = 720;
 const FILE_TOP = 65;
 const CARD_GAP = 30;
-const CARD_HEIGHT = 165;
+const CARD_HEIGHT = 195;
 const HUB_ORDER: RelationshipType[] = ['dates', 'cost', 'place', 'tasks'];
 
 function categoriesFor(file: AnalyzedFile): RelationshipType[] {
@@ -27,7 +27,14 @@ export function categoriesForFile(file: AnalyzedFile): RelationshipType[] {
 }
 
 export function calculateAutoLayout(files: AnalyzedFile[]): AutoLayout {
-    const orderedFiles = [...files].sort((a, b) => categoriesFor(b).length - categoriesFor(a).length || a.fileName.localeCompare(b.fileName));
+    // Order the file column to roughly follow hub order so ribbons flow to
+    // their hubs with minimal crossing, as in the design reference.
+    const hubRank = (file: AnalyzedFile) => {
+      const categories = categoriesFor(file);
+      if (!categories.length) return HUB_ORDER.length;
+      return categories.reduce((sum, type) => sum + HUB_ORDER.indexOf(type), 0) / categories.length;
+    };
+    const orderedFiles = [...files].sort((a, b) => hubRank(a) - hubRank(b) || a.fileName.localeCompare(b.fileName));
     const filePositions = new Map(orderedFiles.map((file, index) => [file.id, { x: FILE_X, y: FILE_TOP + index * (CARD_HEIGHT + CARD_GAP) }]));
     const used = new Set(orderedFiles.flatMap(categoriesFor));
     const categories = HUB_ORDER.filter((category) => used.has(category));
