@@ -82,16 +82,15 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
           : 'border-[#D8D8DC]'
       }`}
       initial={{ opacity: 0, scale: 0.8, y: 6 }}
-      layout
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
       <Handle
-        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
+        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
         position={Position.Left}
         type="target"
       />
       <Handle
-        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
+        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
         id="top"
         position={Position.Top}
         type="target"
@@ -121,12 +120,12 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
         </div>
       )}
       <Handle
-        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
+        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
         position={Position.Right}
         type="source"
       />
       <Handle
-        className="!h-[11px] !w-[11px] !border-2 !border-[#4A90D9]/65 !bg-[#4A90D9]/30 !shadow-[inset_0_0_0_2px_#fff,0_0_0_1px_rgba(0,0,0,0.1)]"
+        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
         id="bottom"
         position={Position.Bottom}
         type="source"

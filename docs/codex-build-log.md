@@ -76,6 +76,10 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Ribbon refinement: implemented the five-layer SVG stack (blurred outer glow, main/inner bands, colored core, delayed white shimmer) and path-length-derived, staggered flow dots. Hub-to-summary trunks are now deliberately wider and more opaque than their tributaries.
 - Ran the complete five-file GPT-5.6 Electron capture after the local API key was configured. The first capture exposed a negative/delayed clustering result and an incomplete summary entrance; Codex added a grounded fallback workspace and corrected the motion transform, then verified the final capture renders all hubs, multi-layer ribbons, flowing dots, and dashboard-section trunks.
 - Fixed a summary-card entrance race found during human testing: React Flow now remeasures section handles after Framer Motion finishes the card’s horizontal entrance, and summary trunks wait until that refresh has occurred.
+- Rebuilt the connector geometry as filled, variable-width cubic contours rather than concentric strokes. Each ribbon now has asymmetric semantic-color halves, restrained white outer/inner boundary lines, a central optical divider, and directional chevron/square packets; dashboard trunks carry more visual weight than source tributaries.
+- Removed Framer Motion layout interpolation from draggable file cards and edge-container remounting from coordinate changes. React Flow now owns live movement of file cards, hubs, summary handles, and edge endpoints without a competing transform animation.
+- Reduced visual handle size to six pixels across cards, hubs, and dashboard sections so connection points remain discoverable without reading as controls.
+- Verified the five-file native Electron flow using the configured GPT-5.6 runtime: the captured canvas rendered all analyzed cards, category hubs, high-fidelity ribbons, and section-specific dashboard trunks. `npm run lint` and `npx vite build` pass.
 
 ### Human decisions — runtime model configuration
 

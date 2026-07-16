@@ -170,13 +170,23 @@ The 500ms material-eased reorganization is intentional product feedback: the can
 
 ## 019. Multi-layer SVG ribbon rendering
 
-**Status:** Accepted
+**Status:** Superseded by Decision 022
 **Date:** July 15, 2026
 **Decision owner:** Human
 
 Each semantic connection is rendered as five stacked SVG paths following the exact same organic horizontal cubic Bezier: a blurred atmospheric glow, wide main band, denser inner band, colored core, and a delayed white highlight shimmer. Real path-length sampling places staggered white flow dots on the ribbon after the draw animation completes, while larger endpoint markers make every source and destination legible.
 
 This produces a translucent river-of-light treatment rather than a flat graph line. Hub-to-dashboard ribbons scale all widths and opacities by 1.3×/1.2× so the merged stream visibly carries more weight than its file-to-hub tributaries.
+
+## 022. Variable-width ribbon contours with React Flow-first dragging
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+The visual language moved beyond stacked uniform strokes. Every connection now uses independently offset upper and lower cubic contours to form a real, asymmetric filled ribbon: it starts narrow, swells through its bend, and settles near its destination. A luminous outer boundary, nested translucent inner channel, optical white center divider, and small directional chevron/square packets make the flow legible without turning it into a conventional graph line. Hub-to-dashboard trunks use larger contour widths than file tributaries.
+
+React Flow remains the sole owner of draggable node positions and live edge coordinates. Framer Motion supplies entrance effects only; it no longer applies layout interpolation to file cards or remounts edge containers as their coordinates change. This prevents the renderer from competing with React Flow during a drag, so cards, hubs, handles, and connector geometry update in the same interaction frame.
 
 ## 020. Resilient workspace assembly after file analysis
 
