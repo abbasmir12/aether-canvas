@@ -280,6 +280,16 @@ The Spaces, Recent, and Local Files navigation destinations are derived from the
 
 Local Files is deliberately a short list of user-pinned folders, not a replica of the operating system’s entire file manager. Aether stores only the explicitly selected directory paths in `userData/pinned-folders.json`, refreshes direct supported-file contents whenever the view opens, and authorizes those displayed files for the existing metadata, thumbnail, and GPT-5.6 import flow. This keeps the consumer workflow focused on repeat-use folders while preserving the local-first security boundary.
 
+## 033. Progressive disclosure for local folder location and file density
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+Pinned folder headers show only the human-readable folder name to keep the library calm. The full local path, file count, and pin details are available through an adjacent information control rather than becoming permanent visual noise. A segmented List/Grid/Compact switch lets people choose between metadata-rich rows, visual scanning, and high-density browsing without changing what Aether imports.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted
