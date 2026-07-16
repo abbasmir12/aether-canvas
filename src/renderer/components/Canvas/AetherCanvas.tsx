@@ -25,11 +25,11 @@ function readableError(error: unknown): string {
 function CanvasControls() {
   const { fitView, zoomIn, zoomOut } = useReactFlow();
   const { zoom } = useViewport();
-  const button = 'grid w-11 place-items-center text-[#4C4C51] transition-colors hover:bg-[#F4F4F6]';
-  return <Panel className="!bottom-5 !left-4 !m-0" position="bottom-left"><div className="flex h-11 items-stretch overflow-hidden rounded-[11px] border border-[#D7D7DC] bg-white/95 shadow-[0_3px_12px_rgba(32,32,35,0.08)] backdrop-blur-md"><button aria-label="Zoom out" className={button} onClick={() => zoomOut({ duration: 180 })} type="button"><Minus size={18} /></button><div className="grid min-w-[58px] place-items-center border-x border-[#E3E3E6] px-2 text-[11px] font-medium tabular-nums text-[#4E4E53]">{Math.round(zoom * 100)}%</div><button aria-label="Zoom in" className={button} onClick={() => zoomIn({ duration: 180 })} type="button"><Plus size={18} /></button><button aria-label="Fit canvas to content" className={`${button} border-l border-[#E3E3E6]`} onClick={() => fitView({ duration: 300, padding: 0.25 })} type="button"><Maximize2 size={17} /></button></div></Panel>;
+  const button = 'grid h-7 w-7 place-items-center text-[#4C4C51] transition-colors hover:bg-[#F0EFED]';
+  return <Panel className="!bottom-5 !left-4 !m-0" position="bottom-left"><div className="flex h-7 items-stretch overflow-hidden rounded-[8px] border border-[#DEDCD9] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]"><button aria-label="Zoom out" className={button} onClick={() => zoomOut({ duration: 180 })} type="button"><Minus size={14} /></button><div className="grid min-w-[52px] place-items-center border-x border-[#E5E3E0] px-2 text-[12px] font-medium tabular-nums text-[#55555A]">{Math.round(zoom * 100)}%</div><button aria-label="Zoom in" className={button} onClick={() => zoomIn({ duration: 180 })} type="button"><Plus size={14} /></button><button aria-label="Fit canvas to content" className={`${button} border-l border-[#E5E3E0]`} onClick={() => fitView({ duration: 300, padding: 0.25 })} type="button"><Maximize2 size={14} /></button></div></Panel>;
 }
 
-export default function AetherCanvas() {
+export default function AetherCanvas({ focusRequest = 0 }: { focusRequest?: number }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -42,10 +42,15 @@ export default function AetherCanvas() {
   const nodesRef = useRef<CanvasNode[]>([]);
   const clusterRef = useRef<SuggestedCluster | null>(null);
   const relationshipRequest = useRef(0);
-  const { screenToFlowPosition } = useReactFlow();
+  const { fitView, screenToFlowPosition } = useReactFlow();
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { clusterRef.current = cluster; }, [cluster]);
+  useEffect(() => {
+    if (focusRequest === 0) return;
+    const frame = requestAnimationFrame(() => fitView({ duration: 420, padding: 0.2 }));
+    return () => cancelAnimationFrame(frame);
+  }, [fitView, focusRequest]);
 
   const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
   const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);

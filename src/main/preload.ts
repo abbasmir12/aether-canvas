@@ -13,6 +13,9 @@ const aetherBridge: AetherBridge = {
     ipcRenderer.invoke('aether:analyze-file', filePath, fileId),
   findRelationships: (fileIds) =>
     ipcRenderer.invoke('aether:find-relationships', fileIds),
+  minimizeWindow: () => ipcRenderer.invoke('aether:window-minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('aether:window-maximize'),
+  closeWindow: () => ipcRenderer.invoke('aether:window-close'),
   getDroppedFilePath: async (file) => {
     const filePath = webUtils.getPathForFile(file);
 
