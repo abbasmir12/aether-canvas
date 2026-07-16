@@ -198,6 +198,16 @@ Ribbons do not use Gaussian blur or dark drop shadows. Their sense of depth come
 
 The dashboard owns visible section-end ports in its node layer, while the hidden React Flow handle preserves the exact anchor coordinate below it. This ensures each hub stream visibly terminates in a round, color-matched dashboard connection even though graph edges render behind nodes.
 
+## 024. Elevated, high-contrast semantic ribbons
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+The reference uses controlled elevation rather than flat color. Semantic ribbons, flow packets, and terminal ports therefore receive the same restrained black shadow as file cards—`0 2px 8px rgba(0,0,0,0.08)`—while hub pills use that elevation plus a narrow white gap ring. Main ribbon fills and center rails were increased in contrast so semantic categories remain legible over the quiet dotted canvas.
+
+Flow markers use deterministic but irregular spacing derived from each edge ID. Their layered dark underlay, white face, and small semantic-color inset provide a tactile three-dimensional cue without introducing random visual movement during dragging.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted

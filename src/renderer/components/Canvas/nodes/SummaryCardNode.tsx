@@ -35,7 +35,7 @@ function Section({ children, index, relationshipType }: { children: React.ReactN
       <Handle id={`summary-${relationshipType}`} className="!h-[8px] !w-[8px] !border-0 !bg-transparent !opacity-0" position={Position.Left} style={{ top: '50%' }} type="target" />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute left-[-10px] top-1/2 grid h-[18px] w-[18px] -translate-y-1/2 place-items-center rounded-full border-2 border-white"
+        className="pointer-events-none absolute left-[-10px] top-1/2 grid h-[18px] w-[18px] -translate-y-1/2 place-items-center rounded-full border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
         style={{ backgroundColor: colors[relationshipType] }}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-white" />

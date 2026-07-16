@@ -22,7 +22,7 @@ export default function HubNode({ data }: NodeProps<HubNodeType>) {
       animate={{ opacity: 1, scale: 1 }}
       className="relative flex h-[50px] w-[112px] items-center gap-2 rounded-full border border-white/90 px-2.5 text-white"
       initial={{ opacity: 0, scale: 0.72 }}
-      style={{ background: `linear-gradient(135deg, ${hub.color} 0%, ${hub.color} 62%, ${hub.shade} 100%)`, boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.28)` }}
+      style={{ background: `linear-gradient(135deg, ${hub.color} 0%, ${hub.color} 62%, ${hub.shade} 100%)`, boxShadow: `0 2px 8px rgba(0,0,0,0.08), 0 0 0 2px rgba(255,255,255,0.92), 0 0 0 3px ${hub.color}88, inset 0 0 0 1px rgba(255,255,255,0.28)` }}
       transition={{ delay: data.delay ?? 0.3, duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
     >
       <span className="grid h-8 w-8 place-items-center rounded-[10px] border border-white/75 bg-white/18 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)]"><Icon size={16} strokeWidth={2.6} /></span>

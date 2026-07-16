@@ -82,6 +82,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Verified the five-file native Electron flow using the configured GPT-5.6 runtime: the captured canvas rendered all analyzed cards, category hubs, high-fidelity ribbons, and section-specific dashboard trunks. `npm run lint` and `npx vite build` pass.
 - Ribbon precision pass: removed Gaussian blur and all dark outer shadows; widened the filled semantic contour body, strengthened its white center/boundary lines, and added small static filled dot, arrow, and square flow packets that remain stable during dragging.
 - Refined hub pills into framed semantic gradients without drop shadows and added visible circular destination ports inside summary sections so ribbons end cleanly at the dashboard rather than disappearing behind it.
+- Contrast and elevation pass: restored the mockup’s restrained card-equivalent black shadow to ribbons, hubs, flow packets, and ports; increased semantic fill/center-rail contrast; and built the hub’s narrow white gap ring. Flow dots, arrows, and square packets now use deterministic irregular placement and layered faces for a small 3D appearance.
 
 ### Human decisions — runtime model configuration
 

@@ -14,6 +14,14 @@ const COLORS: Record<RelationshipType, string> = {
   tasks: '#9B72CF',
 };
 
+function seededValue(seed: number): number {
+  return (Math.sin(seed * 12.9898) * 43758.5453) % 1;
+}
+
+function positiveSeed(seed: number): number {
+  return Math.abs(seededValue(seed));
+}
+
 function pathFor({ start, controlA, controlB, end }: Cubic): string {
   return `M ${start.x} ${start.y} C ${controlA.x} ${controlA.y}, ${controlB.x} ${controlB.y}, ${end.x} ${end.y}`;
 }
@@ -109,41 +117,70 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   const atmosphereBottom = offsetCurve(curve, widths.map((width) => -width * 1.5));
   const terminalOuterRadius = isTrunk ? 8.5 : 7.5;
   const terminalInnerRadius = isTrunk ? 5.1 : 4.2;
+  const markerPattern = useMemo(() => {
+    const seed = [...id].reduce((total, character) => total + character.charCodeAt(0), 0);
+    const spread = (slot: number, min: number, max: number) => min + positiveSeed(seed + slot * 17.3) * (max - min);
+    return {
+      dots: [spread(1, 0.13, 0.23), spread(2, 0.31, 0.43), spread(3, 0.52, 0.66), spread(4, 0.74, 0.9)].sort((a, b) => a - b),
+      arrows: [spread(5, 0.24, 0.38), spread(6, 0.5, 0.61), spread(7, 0.69, 0.83)].sort((a, b) => a - b),
+      packets: [spread(8, 0.34, 0.5), spread(9, 0.7, 0.86)].sort((a, b) => a - b),
+    };
+  }, [id]);
   return (
     <g className="semantic-ribbon">
-      {/* A quiet color atmosphere—filled rather than blurred, so it never becomes a grey/black drop shadow. */}
-      <path d={enclosedPath(atmosphereTop, atmosphereBottom)} fill={color} fillOpacity={isTrunk ? 0.065 : 0.05} />
+      <defs>
+        <filter id={`aether-ribbon-shadow-${id.replace(/[^a-z0-9]/gi, '')}`} x="-30%" y="-35%" width="160%" height="180%">
+          <feDropShadow dx="0" dy="2" floodColor="#000000" floodOpacity="0.08" stdDeviation="2" />
+        </filter>
+      </defs>
+      <g filter={`url(#aether-ribbon-shadow-${id.replace(/[^a-z0-9]/gi, '')})`}>
+      {/* A restrained semantic atmosphere behind the higher-contrast ribbon body. */}
+      <path d={enclosedPath(atmosphereTop, atmosphereBottom)} fill={color} fillOpacity={isTrunk ? 0.1 : 0.08} />
 
       {/* Main ribbon: its two halves deliberately carry different weight. */}
-      <path d={enclosedPath(outerTop, center)} fill={color} fillOpacity={isTrunk ? 0.25 : 0.22} />
-      <path d={enclosedPath(center, outerBottom)} fill={color} fillOpacity={isTrunk ? 0.14 : 0.11} />
+      <path d={enclosedPath(outerTop, center)} fill={color} fillOpacity={isTrunk ? 0.38 : 0.34} />
+      <path d={enclosedPath(center, outerBottom)} fill={color} fillOpacity={isTrunk ? 0.26 : 0.22} />
       <path d={pathFor(outerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.68} strokeWidth={1.05} />
       <path d={pathFor(outerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.56} strokeWidth={0.95} />
 
       {/* Secondary inner ribbon: a quieter translucent channel nested in the main body. */}
-      <path d={enclosedPath(innerTop, center)} fill="#FFFFFF" fillOpacity={0.16} />
-      <path d={enclosedPath(center, innerBottom)} fill={color} fillOpacity={0.13} />
+      <path d={enclosedPath(innerTop, center)} fill="#FFFFFF" fillOpacity={0.22} />
+      <path d={enclosedPath(center, innerBottom)} fill={color} fillOpacity={0.2} />
       <path d={pathFor(innerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.72} strokeWidth={0.8} />
       <path d={pathFor(innerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.48} strokeWidth={0.68} />
 
       {/* Optical divider that makes the asymmetric halves legible. */}
-      <path d={pathFor(center)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.92} strokeWidth={isTrunk ? 1.7 : 1.35} />
+      <path d={pathFor(center)} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={0.65} strokeWidth={isTrunk ? 5.2 : 4.2} />
+      <path d={pathFor(center)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.96} strokeWidth={isTrunk ? 2.05 : 1.7} />
+      <path d={pathFor(offsetCurve(center, [-0.65, -0.75, -0.6, -0.45]))} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.76} strokeWidth={isTrunk ? 0.76 : 0.62} />
 
       {/* Small filled flow packets: dots and compact arrowheads are decorative data cues, never controls. */}
-      {[0.18, 0.42, 0.67, 0.88].map((progress, markerIndex) => (
-        <circle cx={pointAt(innerTop, progress).x} cy={pointAt(innerTop, progress).y} fill="#FFFFFF" fillOpacity={0.86} key={`dot-${markerIndex}`} r={isTrunk ? 1.9 : 1.55} />
+      {markerPattern.dots.map((progress, markerIndex) => (
+        <g key={`dot-${markerIndex}`} transform={`translate(${pointAt(innerTop, progress).x} ${pointAt(innerTop, progress).y})`}>
+          <circle fill="#000000" fillOpacity={0.12} r={isTrunk ? 2.75 : 2.25} transform="translate(0 0.8)" />
+          <circle fill="#FFFFFF" fillOpacity={0.96} r={isTrunk ? 2.15 : 1.75} />
+          <circle fill="#FFFFFF" fillOpacity={0.72} r={isTrunk ? 0.85 : 0.68} transform="translate(-0.55 -0.55)" />
+        </g>
       ))}
-      {[0.3, 0.57, 0.79].map((progress, markerIndex) => (
-        <path d="M -3.4 -2.15 L 3.2 0 L -3.4 2.15 L -1.25 0 Z" fill="#FFFFFF" fillOpacity={0.88} key={`arrow-${markerIndex}`} transform={markerTransform(center, progress)} />
+      {markerPattern.arrows.map((progress, markerIndex) => (
+        <g key={`arrow-${markerIndex}`} transform={`${markerTransform(center, progress)} translate(0 0.85)`}>
+          <path d="M -3.8 -2.5 L 3.7 0 L -3.8 2.5 L -1.25 0 Z" fill="#000000" fillOpacity={0.12} />
+          <path d="M -3.8 -3.15 L 3.7 -0.65 L -3.8 1.85 L -1.25 -0.65 Z" fill="#FFFFFF" fillOpacity={0.96} />
+          <path d="M -2.7 -2.15 L 1.55 -0.65 L -2.7 0.75" fill="none" stroke={color} strokeOpacity={0.42} strokeWidth={0.62} />
+        </g>
       ))}
-      {[0.5, 0.84].map((progress, markerIndex) => (
-        <rect fill="#FFFFFF" fillOpacity={0.72} height={2.6} key={`packet-${markerIndex}`} rx={0.65} transform={markerTransform(innerBottom, progress, 45)} width={2.6} x={-1.3} y={-1.3} />
+      {markerPattern.packets.map((progress, markerIndex) => (
+        <g key={`packet-${markerIndex}`} transform={`${markerTransform(innerBottom, progress, 45)} translate(0 0.65)`}>
+          <rect fill="#000000" fillOpacity={0.1} height={3.5} rx={0.82} width={3.5} x={-1.75} y={-1.1} />
+          <rect fill="#FFFFFF" fillOpacity={0.92} height={3.25} rx={0.78} width={3.25} x={-1.625} y={-2.05} />
+        </g>
       ))}
 
       <circle cx={sourceX} cy={sourceY} fill="#FFFFFF" r={terminalOuterRadius} stroke={color} strokeOpacity={0.9} strokeWidth={1.5} />
       <circle cx={sourceX} cy={sourceY} fill={color} r={terminalInnerRadius} />
       <circle cx={targetX} cy={targetY} fill="#FFFFFF" r={terminalOuterRadius} stroke={color} strokeOpacity={0.9} strokeWidth={1.5} />
       <circle cx={targetX} cy={targetY} fill={color} r={terminalInnerRadius} />
+      </g>
     </g>
   );
 }
