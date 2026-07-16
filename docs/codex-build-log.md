@@ -98,6 +98,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Added the shared interactive-canvas foundation: file cards now open a Quick Preview on double-click, all node types expose a premium right-click context menu, original files can be opened or revealed through narrow authorized IPC calls, files can be re-analyzed or non-destructively removed from a canvas, and hubs can focus their semantic ribbon flow.
 - Made dashboard content actionable: Journey and map locations focus their analyzed source card; the Packing card marks the next item complete and persists that user override in the workspace while leaving the original source file untouched.
 - Refined transient error feedback so local-access and analysis notices automatically dismiss after 4.5 seconds rather than remaining on the canvas.
+- Repaired ribbon interaction performance: semantic focus now reaches a stable custom-edge component through a tiny external interaction store instead of changing the `edgeTypes` component identity. Hover only animates opacity, while dragging swaps the rich layered ribbon for one lightweight cubic path until pointer release.
+- Replaced the travel-shaped Summary Card contract with a GPT-5.6 dashboard plan returned during relationship discovery. The model now selects 2–5 specific module kinds, names, summaries, and contributing source files from a bounded set of interactive renderer capabilities; the renderer provides only grounded fallbacks if no plan arrives.
 - Built the interactive Summary Dashboard Card on `feature/interactive-summary`: expandable, section-specific mini-app modules now turn clustered file analysis into editable and persistent user state rather than a static summary.
 - Added an interactive Journey timeline with a live countdown, source-linked events, airport details, external map links, and clipboard-ready flight details; a live Budget tracker with editable actuals, animated donut updates, inline expenses, and CSV export; and a persistent clickable Packing checklist with user and AI-suggested items.
 - Added an embedded Carto/Leaflet map with sourced location pins, AI-discovered place pins, fit-to-locations, browser directions, and map expansion. Coordinates are requested as confidence-gated structured GPT-5.6 output rather than using a separate geocoding service.
@@ -110,6 +112,10 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Selected a “light” reasoning default, implemented using the Responses API's official `low` effort value, while retaining environment switches for higher-capability models and reasoning levels.
 - Required the sidebar to represent real, usable workspace actions rather than static navigation labels, and asked for the Aether identity to carry through the empty canvas.
 - Required the generated dashboard to become a general-purpose, interactive workspace rather than a travel-only visual summary; the Tokyo Trip presentation remains a concrete demo example, not a hard-coded product boundary.
+
+### Verification — dynamic dashboards and ribbon interaction
+
+- `npm run lint` passes after the stable ribbon interaction store, drag simplification path, and typed GPT-generated dashboard-plan contract were added.
 
 ### Verification — interactive dashboard
 

@@ -360,6 +360,26 @@ AI assistance is activated by an explicit user action per dashboard module, neve
 
 The Map module uses embedded Leaflet and a muted Carto basemap rather than a static illustration or a paid mapping SDK. GPT-5.6 may return coordinates only when confident, and the UI makes uncertainty explicit when it cannot. This gives generated travel, event, property, and local-project canvases real spatial interaction without adding a separate geocoding API key.
 
+## 039. GPT-generated dashboard plans within bounded interactive modules
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+GPT-5.6 now compiles cluster metadata into a typed dashboard plan: title, subtitle, category, and two to five modules with titles, grounded summaries, and source file IDs. The renderer supports a bounded, tested set of interactive module kinds rather than asking a model to generate executable UI. This gives the model ownership of the workspace’s information architecture while keeping local rendering safe, fast, and traceable.
+
+## 040. Stable edge identity and simplified drag rendering
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Codex implementation in response to human testing
+
+Hover state must never replace React Flow’s custom edge component. A shared interaction store changes only ribbon opacity on focus, and rich variable-width ribbon geometry is temporarily replaced with a single cubic SVG path during direct node movement. This prevents re-mount/fade replay and avoids expensive multi-layer geometry work while pointer coordinates are changing.
+
 ## Decision Template
 
 ## NNN. Decision title

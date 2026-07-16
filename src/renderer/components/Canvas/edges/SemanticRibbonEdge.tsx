@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import type { EdgeProps } from '@xyflow/react';
 
 import type { RelationshipType } from '../../../../shared/types';
+import { useRibbonInteraction } from './RibbonInteractionContext';
 
 type RibbonData = { relationshipType: RelationshipType; phase?: 'file' | 'summary'; index?: number };
 
@@ -207,30 +208,40 @@ function FlowMarker({ x, y, angle, size, opacity }: { x: number; y: number; angl
   );
 }
 
-export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targetY, data, isDimmed = false }: EdgeProps & { isDimmed?: boolean }) {
+function buildLitePath(sourceX: number, sourceY: number, targetX: number, targetY: number, seed: number): string {
+  const dx = targetX - sourceX;
+  const sway = (24 + (seed % 3) * 8) * (seed % 2 ? 1 : -1);
+  return `M ${sourceX},${sourceY} C ${sourceX + dx * 0.44},${sourceY + sway} ${targetX - dx * 0.28},${targetY - sway} ${targetX},${targetY}`;
+}
+
+export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targetY, data }: EdgeProps) {
+  const { focus, isDragging } = useRibbonInteraction();
   const ribbon = data as RibbonData | undefined;
   const color = COLORS[ribbon?.relationshipType ?? 'place'];
+  const isDimmed = Boolean(focus && ribbon?.relationshipType !== focus);
   const isSummary = ribbon?.phase === 'summary';
   const index = ribbon?.index ?? 0;
-  const drawDelay = (isSummary ? 1.4 : 0.45) + index * 0.08;
 
   // Every ribbon carries a different weight, like strands of unequal flow.
   const baseWidth = isSummary ? [22, 26, 20, 24][index % 4] : [24, 30, 20, 33, 26][index % 5];
   const geometry = useMemo(
-    () => buildGeometry(sourceX, sourceY, targetX, targetY, baseWidth, index, isSummary),
-    [baseWidth, index, isSummary, sourceX, sourceY, targetX, targetY],
+    () => isDragging ? null : buildGeometry(sourceX, sourceY, targetX, targetY, baseWidth, index, isSummary),
+    [baseWidth, index, isDragging, isSummary, sourceX, sourceY, targetX, targetY],
   );
+  const litePath = useMemo(() => buildLitePath(sourceX, sourceY, targetX, targetY, index), [index, sourceX, sourceY, targetX, targetY]);
   const safeId = String(id).replace(/[^a-z0-9]/gi, '');
   const gradientId = `aether-ribbon-ramp-${safeId}`;
   const satGradientId = `aether-ribbon-sat-ramp-${safeId}`;
 
   return (
     <motion.g
-      animate={{ opacity: isDimmed ? 0.14 : 1 }}
+      animate={{ opacity: isDimmed ? 0.16 : 1 }}
       className="semantic-ribbon"
-      initial={{ opacity: 0 }}
-      transition={{ delay: drawDelay, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      initial={false}
+      transition={{ duration: isDragging ? 0 : 0.14, ease: 'easeOut' }}
     >
+      {isDragging && <path d={litePath} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={0.42} strokeWidth={2.5} />}
+      {!isDragging && geometry && <>
       <defs>
         {/* Opacity ramps from a near-transparent source to strong color at the hub. */}
         <linearGradient gradientUnits="userSpaceOnUse" id={gradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
@@ -275,6 +286,7 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
           <circle cx={sourceX} cy={sourceY} fill={color} r={8} stroke="#FFFFFF" strokeWidth={3} />
         </>
       )}
+      </>}
     </motion.g>
   );
 }

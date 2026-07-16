@@ -3,12 +3,13 @@ import { Background, BackgroundVariant, MiniMap, Panel, ReactFlow, useEdgesState
 import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 
-import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardState, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
+import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardPlan, DashboardState, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
 import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
 import SmartSuggestion from './SmartSuggestion';
 import CanvasContextMenu, { type CanvasMenuTarget } from './CanvasContextMenu';
 import FileQuickPreview from './FileQuickPreview';
 import SemanticRibbonEdge from './edges/SemanticRibbonEdge';
+import { setRibbonInteraction } from './edges/RibbonInteractionContext';
 import FileCardNode, { type FileCardNodeType } from './nodes/FileCardNode';
 import HubNode, { type HubNodeType } from './nodes/HubNode';
 import SummaryCardNode, { type SummaryCardNodeType } from './nodes/SummaryCardNode';
@@ -42,6 +43,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const [cluster, setCluster] = useState<SuggestedCluster | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [semanticFocus, setSemanticFocus] = useState<RelationshipType | null>(null);
+  const [isCanvasNodeDragging, setIsCanvasNodeDragging] = useState(false);
   const [quickPreview, setQuickPreview] = useState<AnalyzedFile | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const analyzedFiles = useRef(new Map<string, AnalyzedFile>());
@@ -89,9 +91,23 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const timeout = window.setTimeout(() => setToastMessage(null), 2_000);
     return () => window.clearTimeout(timeout);
   }, [toastMessage]);
+  useEffect(() => {
+    setRibbonInteraction({ focus: semanticFocus, isDragging: isCanvasNodeDragging });
+  }, [isCanvasNodeDragging, semanticFocus]);
+  useEffect(() => {
+    const start = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('.react-flow__node') && !target.closest('[data-id^="hub:"]')) setIsCanvasNodeDragging(true);
+    };
+    const stop = () => setIsCanvasNodeDragging(false);
+    window.addEventListener('pointerdown', start, true);
+    window.addEventListener('pointerup', stop, true);
+    window.addEventListener('pointercancel', stop, true);
+    return () => { window.removeEventListener('pointerdown', start, true); window.removeEventListener('pointerup', stop, true); window.removeEventListener('pointercancel', stop, true); };
+  }, []);
 
   const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
-  const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: (props) => <SemanticRibbonEdge {...props} isDimmed={Boolean(semanticFocus && (props.data as { relationshipType?: RelationshipType } | undefined)?.relationshipType !== semanticFocus)} /> }), [semanticFocus]);
+  const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);
   const importPaths = useCallback(async (paths: string[]) => {
     const base = screenToFlowPosition({ x: 460, y: 240 });
     const entries = await Promise.all(paths.map(async (filePath, index) => { const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`; return { id, filePath, node: { id, type: 'fileCard' as const, position: { x: base.x + index * 28, y: base.y + index * 72 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } }; }));
@@ -123,8 +139,9 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
       category: allFiles[0]?.category ?? 'personal',
     };
     const activeCluster = discovery.shouldCluster && discovery.suggestedCluster ? discovery.suggestedCluster : fallbackCluster;
-    if (workspace?.name === 'Untitled Space' && allFiles.length >= 2 && activeCluster.name !== 'Untitled Space') {
-      onWorkspaceSnapshot({ ...workspace, name: activeCluster.name, icon: activeCluster.category === 'travel' ? 'map-pin' : workspace.icon, iconColor: activeCluster.category === 'travel' ? '#EA4335' : workspace.iconColor });
+    const generatedWorkspaceName = discovery.dashboard?.title || activeCluster.name;
+    if (workspace?.name === 'Untitled Space' && allFiles.length >= 2 && generatedWorkspaceName !== 'Untitled Space') {
+      onWorkspaceSnapshot({ ...workspace, name: generatedWorkspaceName, icon: activeCluster.category === 'travel' ? 'map-pin' : workspace.icon, iconColor: activeCluster.category === 'travel' ? '#EA4335' : workspace.iconColor });
     }
     const shouldShowSummary = allFiles.length >= 2;
     setCluster(activeCluster);
@@ -136,7 +153,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
       if (!shouldShowSummary) return laidOutFiles;
       const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', draggable: false, position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
       const previousSummary = current.find((node): node is SummaryCardNodeType => node.id === summaryId && node.type === 'summaryCard');
-      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: previousSummary?.data.cluster ?? activeCluster, files: allFiles, dashboard: previousSummary?.data.dashboard, assemblyDelay: 1.2 } }];
+      const dashboardPlan: DashboardPlan | undefined = discovery.dashboard ?? previousSummary?.data.dashboardPlan;
+      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: dashboardPlan ? { ...activeCluster, name: dashboardPlan.title || activeCluster.name, dateRange: dashboardPlan.subtitle || activeCluster.dateRange, category: dashboardPlan.category || activeCluster.category } : previousSummary?.data.cluster ?? activeCluster, files: allFiles, dashboard: previousSummary?.data.dashboard, dashboardPlan, assemblyDelay: 1.2 } }];
     }));
     if (!shouldShowSummary) { setEdges([]); return; }
     const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));

@@ -141,7 +141,7 @@ const FILE_ANALYSIS_SCHEMA = {
 const RELATIONSHIP_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['relationships', 'suggestedCluster', 'shouldCluster'],
+  required: ['relationships', 'suggestedCluster', 'shouldCluster', 'dashboard'],
   properties: {
     relationships: {
       type: 'array',
@@ -170,6 +170,31 @@ const RELATIONSHIP_SCHEMA = {
       },
     },
     shouldCluster: { type: 'boolean' },
+    dashboard: {
+      type: ['object', 'null'],
+      additionalProperties: false,
+      required: ['title', 'subtitle', 'category', 'modules'],
+      properties: {
+        title: { type: 'string' },
+        subtitle: { type: 'string' },
+        category: { type: 'string' },
+        modules: {
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['id', 'kind', 'title', 'summary', 'sourceFileIds'],
+            properties: {
+              id: { type: 'string' },
+              kind: { type: 'string', enum: ['overview', 'timeline', 'budget', 'checklist', 'map', 'tasks', 'topics', 'resources', 'results'] },
+              title: { type: 'string' },
+              summary: { type: 'string' },
+              sourceFileIds: { type: 'array', items: { type: 'string' } },
+            },
+          },
+        },
+      },
+    },
   },
 } as const;
 
@@ -284,15 +309,16 @@ export async function findRelationships(
   analyzedFiles: AnalyzedFile[],
 ): Promise<RelationshipDiscovery> {
   if (analyzedFiles.length < 2) {
-    return { relationships: [], suggestedCluster: null, shouldCluster: false };
+    return { relationships: [], suggestedCluster: null, shouldCluster: false, dashboard: null };
   }
 
-  const files = analyzedFiles.map(({ id, title, category, entities, summary }) => ({
+  const files = analyzedFiles.map(({ id, title, category, entities, summary, smartPreview }) => ({
     id,
     title,
     category,
     entities,
     summary,
+    smartPreview,
   }));
 
   const response = await client().responses.create({
@@ -304,7 +330,7 @@ export async function findRelationships(
         content: [
           {
             type: 'input_text',
-            text: `You are the relationship discovery engine for Aether Canvas. Identify only meaningful semantic relationships grounded in the analyzed metadata. Prefer one strongest relationship type for each related file pair. Do not connect unrelated files.\n\nFiles: ${JSON.stringify(files)}`,
+            text: `You are the relationship and workspace compiler for Aether Canvas. Identify only meaningful semantic relationships grounded in the analyzed metadata. Prefer one strongest relationship type for each related file pair. Do not connect unrelated files.\n\nThen design the dashboard this exact cluster needs. The dashboard is not a travel template: choose 2-5 modules based on the files. Allowed module kinds: overview, timeline, budget, checklist, map, tasks, topics, resources, results.\n\nExamples: travel → timeline/budget/checklist/map; study → overview/topics/timeline/tasks/resources; work project → overview/timeline/tasks/budget/resources; medical → results/timeline/tasks/resources; recipes → overview/checklist/timeline/resources. Only use modules grounded in the files. Give each module a specific short title, a concise grounded summary, and the exact source file IDs that contributed. Return dashboard null only when the files cannot form a coherent workspace.\n\nFiles: ${JSON.stringify(files)}`,
           },
         ],
       },
@@ -336,6 +362,12 @@ export async function findRelationships(
     relationships,
     suggestedCluster: result.shouldCluster ? result.suggestedCluster : null,
     shouldCluster: Boolean(result.shouldCluster),
+    dashboard: result.dashboard && Array.isArray(result.dashboard.modules)
+      ? {
+        ...result.dashboard,
+        modules: result.dashboard.modules.filter((module) => validIds.has(module.sourceFileIds[0]) || module.sourceFileIds.some((id) => validIds.has(id))),
+      }
+      : null,
   };
 }
 

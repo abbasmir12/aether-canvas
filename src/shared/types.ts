@@ -74,6 +74,24 @@ export interface RelationshipDiscovery {
   relationships: DiscoveredRelationship[];
   suggestedCluster: SuggestedCluster | null;
   shouldCluster: boolean;
+  dashboard: DashboardPlan | null;
+}
+
+export type DashboardModuleKind = 'overview' | 'timeline' | 'budget' | 'checklist' | 'map' | 'tasks' | 'topics' | 'resources' | 'results';
+
+export interface DashboardModule {
+  id: string;
+  kind: DashboardModuleKind;
+  title: string;
+  summary: string;
+  sourceFileIds: string[];
+}
+
+export interface DashboardPlan {
+  title: string;
+  subtitle: string;
+  category: string;
+  modules: DashboardModule[];
 }
 
 export interface AetherFile {
@@ -102,7 +120,6 @@ export interface SummaryCard {
   sections: SummarySection[];
 }
 
-export type DashboardSectionKey = 'journey' | 'budget' | 'packing' | 'map';
 export type DashboardInsightKind = 'journey' | 'budget' | 'packing' | 'map';
 
 export interface DashboardBudgetRow {
@@ -129,7 +146,7 @@ export interface DashboardAiInsight {
 }
 
 export interface DashboardState {
-  expandedSection?: DashboardSectionKey;
+  expandedSection?: string;
   budgetRows?: DashboardBudgetRow[];
   packingItems?: DashboardPackingItem[];
   aiCache?: Partial<Record<DashboardInsightKind, DashboardAiInsight[]>>;
