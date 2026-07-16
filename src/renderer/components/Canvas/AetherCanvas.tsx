@@ -43,6 +43,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const nodesRef = useRef<CanvasNode[]>([]);
   const clusterRef = useRef<SuggestedCluster | null>(null);
   const relationshipRequest = useRef(0);
+  const applyDiscoveryRef = useRef<(files?: Map<string, AnalyzedFile>) => Promise<void>>(async () => undefined);
   const workspaceRef = useRef<WorkspaceData | null>(workspace);
   const hydratedWorkspaceId = useRef<string | null>(null);
   const workspaceReady = useRef(false);
@@ -78,13 +79,15 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const entries = await Promise.all(paths.map(async (filePath, index) => { const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`; return { id, filePath, node: { id, type: 'fileCard' as const, position: { x: base.x + index * 28, y: base.y + index * 72 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } }; }));
     setNodes((current) => [...current, ...entries.map((entry) => entry.node)]);
     await Promise.all(entries.map(async ({ id, filePath }) => { const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(filePath, id), window.aether.getThumbnail(filePath)]); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null } } as FileCardNodeType : node)); analyzedFiles.current.set(id, analysis); }));
+    await applyDiscoveryRef.current();
   }, [screenToFlowPosition, setNodes]);
 
   useEffect(() => {
     const open = async () => { const selected = await window.aether.openFileDialog(); if (!selected.canceled && selected.filePaths.length) await importPaths(selected.filePaths); };
+    const importSelected = (event: Event) => { const paths = (event as CustomEvent<string[]>).detail; if (Array.isArray(paths) && paths.length) void importPaths(paths); };
     const search = (event: Event) => { const query = String((event as CustomEvent<string>).detail ?? '').toLowerCase(); setNodes((current) => current.map((node) => node.type === 'fileCard' ? { ...node, hidden: Boolean(query) && !node.data.fileName.toLowerCase().includes(query) && !(node.data.analysis?.summary ?? '').toLowerCase().includes(query) } : node)); };
-    window.addEventListener('aether:open-dialog', open); window.addEventListener('aether:search', search);
-    return () => { window.removeEventListener('aether:open-dialog', open); window.removeEventListener('aether:search', search); };
+    window.addEventListener('aether:open-dialog', open); window.addEventListener('aether:import-paths', importSelected); window.addEventListener('aether:search', search);
+    return () => { window.removeEventListener('aether:open-dialog', open); window.removeEventListener('aether:import-paths', importSelected); window.removeEventListener('aether:search', search); };
   }, [importPaths, setNodes]);
 
   const applyDiscovery = useCallback(async (files = analyzedFiles.current) => {
@@ -121,6 +124,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
     setEdges([...fileToHub, ...hubToSummary]);
   }, [onWorkspaceSnapshot, setEdges, setNodes, workspace]);
+  useEffect(() => { applyDiscoveryRef.current = applyDiscovery; }, [applyDiscovery]);
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);
   const onDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => { if (event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) return; setIsDragActive(false); }, []);

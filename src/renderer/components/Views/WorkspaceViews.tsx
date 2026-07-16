@@ -1,0 +1,21 @@
+import { Clock, FileText, FolderOpen, Layers, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import type { WorkspaceListItem } from '../../../shared/types';
+
+export function SpacesView({ workspaces, onCreate, onSelect }: { workspaces: WorkspaceListItem[]; onCreate: () => void; onSelect: (id: string) => void }) {
+  return <div className="h-full overflow-auto bg-[#F8F8FA] p-8"><h1 className="text-[22px] font-semibold text-[#29292D]">Spaces</h1><p className="mt-1 text-[13px] text-[#85858B]">Your saved canvases, locally stored.</p><div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">{workspaces.map((space) => <button className="h-[160px] rounded-[12px] border border-[#E5E3E1] bg-white p-4 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(0,0,0,0.09)]" key={space.id} onClick={() => onSelect(space.id)} type="button"><span className="grid h-10 w-10 place-items-center rounded-full text-white" style={{ backgroundColor: space.iconColor }}><Layers size={19} /></span><p className="mt-4 truncate text-[16px] font-semibold">{space.name}</p><p className="mt-1 text-[12px] text-[#8A8A90]">{space.fileCount} files · Updated {new Date(space.updatedAt).toLocaleDateString()}</p><div className="mt-4 flex gap-1"><i className="h-2 w-2 rounded-full bg-[#4A90D9]" /><i className="h-2 w-2 rounded-full bg-[#34A853]" /><i className="h-2 w-2 rounded-full bg-[#9B72CF]" /></div></button>)}<button className="grid h-[160px] place-items-center rounded-[12px] border border-dashed border-[#CFCBC7] text-[#88888E] transition hover:bg-white" onClick={onCreate} type="button"><span className="flex flex-col items-center gap-2"><Plus size={22} />Create new space</span></button></div></div>;
+}
+
+export function RecentView({ workspaces, onSelect }: { workspaces: WorkspaceListItem[]; onSelect: (id: string) => void }) {
+  const [files, setFiles] = useState<Array<{ workspace: WorkspaceListItem; name: string; summary: string }>>([]);
+  useEffect(() => {
+    void Promise.all(workspaces.map(async (workspace) => ({ workspace, data: await window.aether.workspace.load(workspace.id) }))).then((items) => {
+      const recent = items.flatMap(({ workspace, data }) => data.analyzedFiles.map((file) => ({ workspace, name: file.fileName, summary: file.summary }))).slice(0, 50);
+      setFiles(recent);
+    });
+  }, [workspaces]);
+  return <div className="h-full overflow-auto bg-[#F8F8FA] p-8"><h1 className="text-[22px] font-semibold">Recent</h1><div className="mt-6 max-w-3xl space-y-2">{files.length ? files.map((file, index) => <button className="flex w-full items-center gap-3 rounded-[10px] border border-[#E6E4E1] bg-white p-3 text-left hover:bg-[#FCFBFA]" key={`${file.workspace.id}-${index}`} onClick={() => onSelect(file.workspace.id)} type="button"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#EAF3FC] text-[#4A90D9]"><FileText size={17} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[13px]">{file.name}</b><small className="block truncate text-[12px] text-[#88888E]">{file.summary}</small></span><span className="rounded-full bg-[#F1EFED] px-2 py-1 text-[10px] text-[#66666B]">{file.workspace.name}</span></button>) : <div className="grid place-items-center py-24 text-center text-[#98989D]"><Clock size={28} /><p className="mt-3 text-[14px]">No recent files yet</p></div>}</div></div>;
+}
+
+export function LocalFilesView({ onBrowse }: { onBrowse: () => void }) { return <div className="grid h-full place-items-center bg-[#F8F8FA]"><div className="text-center"><span className="mx-auto grid h-14 w-14 place-items-center rounded-[16px] border border-[#E5E3E1] bg-white text-[#77777D] shadow-[0_2px_8px_rgba(0,0,0,0.06)]"><FolderOpen size={25} /></span><h1 className="mt-4 text-[20px] font-semibold">Local files</h1><p className="mt-2 max-w-sm text-[13px] leading-6 text-[#88888E]">Browse files from your computer and add them directly to the current canvas.</p><button className="mt-5 rounded-[8px] border border-[#DDD9D5] bg-white px-4 py-2 text-[13px] font-medium hover:bg-[#F5F4F2]" onClick={onBrowse} type="button">Browse files</button></div></div>; }

@@ -181,7 +181,9 @@ This produces a translucent river-of-light treatment rather than a flat graph li
 ## 022. Variable-width ribbon contours with React Flow-first dragging
 
 **Status:** Accepted
+
 **Date:** July 16, 2026
+
 **Decision owner:** Human direction, Codex implementation
 
 The visual language moved beyond stacked uniform strokes. Every connection now uses independently offset upper and lower cubic contours to form a real, asymmetric filled ribbon: it starts narrow, swells through its bend, and settles near its destination. A luminous outer boundary, nested translucent inner channel, optical white center divider, and small directional chevron/square packets make the flow legible without turning it into a conventional graph line. Hub-to-dashboard trunks use larger contour widths than file tributaries.
@@ -259,6 +261,14 @@ Workspace index metadata and individual workspace snapshots are stored as JSON u
 **Decision owner:** Human direction
 
 New workspaces begin as `Untitled Space` with a semantic icon/color preset and expose immediate inline naming. The persisted workspace model keeps name, icon, color, analyzed-file summaries, and timestamps together so GPT-5.6 contextual naming can update the same user-controlled record without changing canvas content.
+
+## 031. Workspace-backed sidebar surfaces instead of static navigation
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+The Spaces, Recent, and Local Files navigation destinations are derived from the same local workspace records that power the canvas. Spaces is a browseable index of persisted canvases, Recent reads cached analyzed-file summaries across those spaces, and Local Files uses the secure native picker before routing selected paths through Aether's established file-analysis path. This preserves a single source of truth and ensures every sidebar action advances a user task rather than displaying inert chrome.
 
 ## 020. Resilient workspace assembly after file analysis
 

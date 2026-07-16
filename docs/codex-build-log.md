@@ -88,11 +88,14 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Sidebar and chrome polish on `feature/sidebar-topbar-polish`: created a frameless Electron window with a secure renderer-owned top bar, search treatment, privacy badge, avatar, and IPC-backed minimize/maximize/close controls. Rebuilt the sidebar with a unified Lucide system, active/hover states, saved-space affordances, Tokyo Trip canvas focus, intentional non-canvas placeholders, and mockup-matched zoom controls. Also constrained React Flow transform animation to non-dragging nodes so direct movement remains responsive.
 - Workspace system on `feature/workspace-system`: added local JSON workspace index/files under Electron userData, secure IPC for list/create/load/save/rename/delete/icon mutation, real sidebar workspace entries with inline rename, canvas hydration/snapshot/autosave contract, workspace switching, and a polished first-run empty canvas with supported-file affordances. Added lightweight functional settings/help panels as the first persistent-app chrome surfaces.
 - Follow-up interaction repair: removed unused topbar privacy/avatar elements and increased chrome breathing room; routed native file-dialog paths through the same canvas analysis pipeline as OS drops; made the empty-state Browse action functional; connected top search to live file-card filtering; and added confirmed workspace deletion from the sidebar.
+- Activated the remaining sidebar navigation with workspace-backed surfaces: **Spaces** now presents selectable persisted canvas cards, **Recent** composes analyzed-file summaries from every stored workspace, and **Local Files** launches the native picker then returns selected paths to the active canvas for the same analysis flow as a drop.
+- Replaced the generic empty-canvas sparkle with a floating Aether brand mark, keeping the first-run experience visually connected to the custom desktop chrome.
 
 ### Human decisions — runtime model configuration
 
 - Funded the direct OpenAI API account and selected GPT-5.6 Luna as Aether's default runtime model.
 - Selected a “light” reasoning default, implemented using the Responses API's official `low` effort value, while retaining environment switches for higher-capability models and reasoning levels.
+- Required the sidebar to represent real, usable workspace actions rather than static navigation labels, and asked for the Aether identity to carry through the empty canvas.
 
 ## Day 3 — July 16, 2026
 
