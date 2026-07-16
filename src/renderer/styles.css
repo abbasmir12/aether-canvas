@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
+@import "leaflet/dist/leaflet.css";
 
 @theme {
   --color-aether-canvas: #F4F1E9;

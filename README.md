@@ -94,6 +94,7 @@ These exercise GPT-5.6 native file analysis and relationship discovery before ri
 - Electron and electron-builder
 - Vite, vite-plugin-electron, React, and TypeScript
 - React Flow (`@xyflow/react`) for the infinite canvas
+- Leaflet + Carto light tiles for generated, interactive location modules
 - Tailwind CSS and Framer Motion
 - OpenAI GPT-5.6 Responses API for native PDF, spreadsheet, document, text, and image understanding
 - `sharp` only for local UI thumbnails

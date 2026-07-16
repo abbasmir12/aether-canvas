@@ -3,7 +3,7 @@ import { Background, BackgroundVariant, MiniMap, Panel, ReactFlow, useEdgesState
 import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 
-import type { AnalyzedFile, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
+import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardState, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
 import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
 import SmartSuggestion from './SmartSuggestion';
 import CanvasContextMenu, { type CanvasMenuTarget } from './CanvasContextMenu';
@@ -38,6 +38,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isDragActive, setIsDragActive] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [cluster, setCluster] = useState<SuggestedCluster | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [semanticFocus, setSemanticFocus] = useState<RelationshipType | null>(null);
@@ -83,6 +84,11 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const timeout = window.setTimeout(() => setDropError(null), 4_500);
     return () => window.clearTimeout(timeout);
   }, [dropError]);
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timeout = window.setTimeout(() => setToastMessage(null), 2_000);
+    return () => window.clearTimeout(timeout);
+  }, [toastMessage]);
 
   const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
   const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: (props) => <SemanticRibbonEdge {...props} isDimmed={Boolean(semanticFocus && (props.data as { relationshipType?: RelationshipType } | undefined)?.relationshipType !== semanticFocus)} /> }), [semanticFocus]);
@@ -129,7 +135,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
       const laidOutFiles = fileNodes.map((node) => ({ ...node, position: layout.filePositions.get(node.id) ?? node.position, style: { ...node.style, willChange: 'transform' } }));
       if (!shouldShowSummary) return laidOutFiles;
       const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', draggable: false, position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
-      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: activeCluster, files: allFiles, assemblyDelay: 1.2 } }];
+      const previousSummary = current.find((node): node is SummaryCardNodeType => node.id === summaryId && node.type === 'summaryCard');
+      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: previousSummary?.data.cluster ?? activeCluster, files: allFiles, dashboard: previousSummary?.data.dashboard, assemblyDelay: 1.2 } }];
     }));
     if (!shouldShowSummary) { setEdges([]); return; }
     const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));
@@ -192,9 +199,81 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
         return node;
       }));
     };
-    window.addEventListener('aether:focus-source-file', focusFile); window.addEventListener('aether:focus-source-location', focusLocation); window.addEventListener('aether:toggle-packing-task', togglePackingTask);
-    return () => { window.removeEventListener('aether:focus-source-file', focusFile); window.removeEventListener('aether:focus-source-location', focusLocation); window.removeEventListener('aether:toggle-packing-task', togglePackingTask); };
-  }, [focusSourceFile, setNodes]);
+    const patchDashboard = (event: Event) => {
+      const detail = (event as CustomEvent<{ summaryId?: string; patch?: Partial<DashboardState> }>).detail;
+      if (!detail?.summaryId || !detail.patch) return;
+      setNodes((current) => current.map((node) => node.id === detail.summaryId && node.type === 'summaryCard'
+        ? { ...node, data: { ...node.data, dashboard: { ...node.data.dashboard, ...detail.patch } } } as SummaryCardNodeType
+        : node));
+    };
+    const requestInsights = (event: Event) => {
+      const detail = (event as CustomEvent<{ summaryId?: string; kind?: DashboardInsightKind; context?: string }>).detail;
+      if (!detail?.summaryId || !detail.kind || typeof detail.context !== 'string') return;
+      const currentSummary = nodesRef.current.find((node): node is SummaryCardNodeType => node.id === detail.summaryId && node.type === 'summaryCard');
+      if (currentSummary?.data.dashboard?.aiCacheInputs?.[detail.kind] === detail.context && currentSummary.data.dashboard.aiCache?.[detail.kind]?.length) {
+        setToastMessage('Showing saved AI insights');
+        return;
+      }
+      setNodes((current) => current.map((node) => node.id === detail.summaryId && node.type === 'summaryCard'
+        ? { ...node, data: { ...node.data, dashboard: { ...node.data.dashboard, aiLoading: detail.kind } } } as SummaryCardNodeType
+        : node));
+      void window.aether.getDashboardInsights(detail.kind, detail.context).then((insights) => {
+        setNodes((current) => current.map((node) => node.id === detail.summaryId && node.type === 'summaryCard'
+          ? { ...node, data: { ...node.data, dashboard: { ...node.data.dashboard, aiLoading: undefined, aiCache: { ...node.data.dashboard?.aiCache, [detail.kind as DashboardInsightKind]: insights as DashboardAiInsight[] }, aiCacheInputs: { ...node.data.dashboard?.aiCacheInputs, [detail.kind as DashboardInsightKind]: detail.context } } } } as SummaryCardNodeType
+          : node));
+      }).catch(() => {
+        setNodes((current) => current.map((node) => node.id === detail.summaryId && node.type === 'summaryCard'
+          ? { ...node, data: { ...node.data, dashboard: { ...node.data.dashboard, aiLoading: undefined } } } as SummaryCardNodeType
+          : node));
+        setToastMessage('Couldn’t load insights right now');
+      });
+    };
+    const renameCluster = (event: Event) => {
+      const detail = (event as CustomEvent<{ summaryId?: string; name?: string }>).detail;
+      const name = detail?.name?.trim();
+      if (!detail?.summaryId || !name) return;
+      setNodes((current) => current.map((node) => node.id === detail.summaryId && node.type === 'summaryCard'
+        ? { ...node, data: { ...node.data, cluster: { ...node.data.cluster, name } } } as SummaryCardNodeType
+        : node));
+      setCluster((current) => current ? { ...current, name } : current);
+      const active = workspaceRef.current;
+      if (active) onWorkspaceSnapshot({ ...active, name });
+      setToastMessage('Workspace renamed');
+    };
+    const removeCluster = (event: Event) => {
+      const summaryId = String((event as CustomEvent<string>).detail ?? 'summary:active');
+      if (!window.confirm('Remove this generated dashboard? Your original file cards will remain on the canvas.')) return;
+      setNodes((current) => current.filter((node) => node.id !== summaryId && node.type !== 'hub'));
+      setEdges([]);
+      setCluster(null);
+      setToastMessage('Dashboard removed');
+    };
+    const exportBudget = (event: Event) => {
+      const detail = (event as CustomEvent<{ currency?: string; rows?: Array<{ category: string; estimate: number; actual?: number }> }>).detail;
+      if (!detail?.rows) return;
+      const escape = (input: string | number) => `"${String(input).replaceAll('"', '""')}"`;
+      const contents = ['Category,Estimate,Actual,Status', ...detail.rows.map((row) => [escape(row.category), row.estimate, row.actual ?? '', row.actual === undefined ? 'Upcoming' : row.actual > row.estimate ? 'Over budget' : 'Paid'].join(','))].join('\n');
+      void window.aether.saveTextFile(`${(clusterRef.current?.name ?? 'aether-space').replaceAll(/[^a-z0-9]+/gi, '-').toLowerCase()}-budget.csv`, contents).then((saved) => setToastMessage(saved ? 'Budget exported' : 'Export canceled'));
+    };
+    const exportSummary = (event: Event) => {
+      const detail = (event as CustomEvent<{ cluster?: SuggestedCluster; files?: AnalyzedFile[]; budgetRows?: Array<{ category: string; estimate: number; actual?: number }>; packingItems?: Array<{ text: string; checked: boolean }>; locations?: Array<{ name: string }> }>).detail;
+      if (!detail?.cluster) return;
+      const checked = detail.packingItems?.filter((item) => item.checked).map((item) => `✅ ${item.text}`) ?? [];
+      const unchecked = detail.packingItems?.filter((item) => !item.checked).map((item) => `⬜ ${item.text}`) ?? [];
+      const contents = [`# ${detail.cluster.name}${detail.cluster.dateRange ? ` (${detail.cluster.dateRange})` : ''}`, '', '## Source files', ...(detail.files?.map((file) => `- ${file.title}: ${file.summary}`) ?? []), '', '## Budget', ...(detail.budgetRows?.map((row) => `- ${row.category}: ${row.actual ?? row.estimate}`) ?? ['No budget details']), '', `## Checklist (${checked.length}/${detail.packingItems?.length ?? 0} complete)`, ...checked, ...unchecked, '', '## Locations', ...(detail.locations?.map((location) => `- ${location.name}`) ?? ['No locations identified'])].join('\n');
+      void window.aether.saveTextFile(`${detail.cluster.name.replaceAll(/[^a-z0-9]+/gi, '-').toLowerCase()}-summary.md`, contents).then((saved) => setToastMessage(saved ? 'Summary exported' : 'Export canceled'));
+    };
+    const summaryFocus = (event: Event) => setSemanticFocus((event as CustomEvent<RelationshipType | null>).detail ?? null);
+    const highlightSources = (event: Event) => {
+      const ids = (event as CustomEvent<string[]>).detail;
+      if (!Array.isArray(ids) || !ids.length) return;
+      focusSourceFile(ids[0]);
+      setToastMessage(`${ids.length} source files connected to this dashboard`);
+    };
+    const showToast = (event: Event) => setToastMessage(String((event as CustomEvent<string>).detail ?? 'Saved'));
+    window.addEventListener('aether:focus-source-file', focusFile); window.addEventListener('aether:focus-source-location', focusLocation); window.addEventListener('aether:toggle-packing-task', togglePackingTask); window.addEventListener('aether:dashboard-state', patchDashboard); window.addEventListener('aether:dashboard-insights', requestInsights); window.addEventListener('aether:rename-cluster', renameCluster); window.addEventListener('aether:remove-cluster', removeCluster); window.addEventListener('aether:export-budget', exportBudget); window.addEventListener('aether:export-summary', exportSummary); window.addEventListener('aether:summary-section-focus', summaryFocus); window.addEventListener('aether:highlight-sources', highlightSources); window.addEventListener('aether:toast', showToast);
+    return () => { window.removeEventListener('aether:focus-source-file', focusFile); window.removeEventListener('aether:focus-source-location', focusLocation); window.removeEventListener('aether:toggle-packing-task', togglePackingTask); window.removeEventListener('aether:dashboard-state', patchDashboard); window.removeEventListener('aether:dashboard-insights', requestInsights); window.removeEventListener('aether:rename-cluster', renameCluster); window.removeEventListener('aether:remove-cluster', removeCluster); window.removeEventListener('aether:export-budget', exportBudget); window.removeEventListener('aether:export-summary', exportSummary); window.removeEventListener('aether:summary-section-focus', summaryFocus); window.removeEventListener('aether:highlight-sources', highlightSources); window.removeEventListener('aether:toast', showToast); };
+  }, [focusSourceFile, onWorkspaceSnapshot, setEdges, setNodes]);
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);
   const onDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => { if (event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) return; setIsDragActive(false); }, []);
@@ -239,5 +318,6 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     {contextMenu && <CanvasContextMenu onClose={() => setContextMenu(null)} onHighlight={highlightFlow} onOpen={() => void openOriginal(contextMenu.target.id)} onPreview={() => { if (contextMenu.target.type === 'summaryCard') setSemanticFocus(null); else previewFile(contextMenu.target.id); }} onReanalyze={() => void reanalyzeFile(contextMenu.target.id)} onReorganize={() => void reorganizeCanvas()} onRemove={() => void removeFromCanvas(contextMenu.target.id)} onReveal={() => void revealOriginal(contextMenu.target.id)} position={{ x: Math.min(contextMenu.x, 940), y: Math.min(contextMenu.y, 600) }} target={contextMenu.target} />}
     <AnimatePresence>{isDragActive && <motion.div animate={{ opacity: 1 }} className="pointer-events-none absolute inset-3 z-30 grid place-items-center rounded-[18px] border-2 border-dashed border-[#4A90D9]/55 bg-[#EAF3FC]/50 backdrop-blur-[2px]" exit={{ opacity: 0 }} initial={{ opacity: 0 }}><motion.div animate={{ scale: 1, y: 0 }} className="rounded-[16px] border border-white/90 bg-white/90 px-7 py-5 text-center shadow-[0_12px_38px_rgba(42,91,137,0.14)]" initial={{ scale: 0.97, y: 4 }}><div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-[12px] bg-[#4A90D9] text-white shadow-[0_4px_12px_rgba(74,144,217,0.28)]"><Plus size={22} /></div><p className="text-[14px] font-semibold text-[#2B2B2E]">Place files in this space</p><p className="mt-1 text-[11px] text-[#7D7D83]">Release to add them at this position</p></motion.div></motion.div>}</AnimatePresence>
     <AnimatePresence>{dropError && <motion.div animate={{ opacity: 1, y: 0 }} className="absolute left-1/2 top-5 z-40 -translate-x-1/2 rounded-[11px] border border-[#EA4335]/20 bg-white px-4 py-2.5 text-[12px] font-medium text-[#9A322A] shadow-[0_5px_18px_rgba(0,0,0,0.09)]" exit={{ opacity: 0, y: -4 }} initial={{ opacity: 0, y: -4 }}>{dropError}</motion.div>}</AnimatePresence>
+    <AnimatePresence>{toastMessage && <motion.div animate={{ opacity: 1, y: 0 }} className="pointer-events-none absolute bottom-5 left-1/2 z-40 -translate-x-1/2 rounded-full border border-[#E2E0DE] bg-[#2F2F33] px-4 py-2 text-[11px] font-medium text-white shadow-[0_8px_20px_rgba(0,0,0,0.16)]" exit={{ opacity: 0, y: 6 }} initial={{ opacity: 0, y: 8 }}>{toastMessage}</motion.div>}</AnimatePresence>
   </div>;
 }

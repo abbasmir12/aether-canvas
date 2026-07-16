@@ -330,6 +330,36 @@ React Flow measures handle coordinates independently from Framer Motion. Animati
 
 The summary node now calls `useUpdateNodeInternals(id)` on entrance completion, while section wrappers animate opacity only so their handle coordinates never move. Summary trunks begin after this remeasurement point. This preserves the dashboard entrance without sacrificing deterministic, section-specific connections in the demo or normal use.
 
+## 036. Summary card as an interactive, persisted mini-app
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The generated card is not a passive file summary. Section-specific user overrides—actual spend, new expenses, checklist progress, dismissed suggestions, accordion state, and cached insights—live alongside the analyzed source data in the active workspace JSON. This lets Aether evolve from initial AI synthesis into a useful working surface while retaining traceable source files and without modifying originals.
+
+## 037. On-demand GPT-5.6 enrichment with workspace caching
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Codex proposal under human runtime-model direction
+
+AI assistance is activated by an explicit user action per dashboard module, never automatically on every edit or expansion. Responses are structured, cached with their input context in the workspace, and surfaced with clear AI styling. This keeps API spend predictable, avoids surprise requests, and makes the distinction between extracted file facts and model-generated guidance legible.
+
+## 038. Leaflet with Carto light tiles for location workspaces
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The Map module uses embedded Leaflet and a muted Carto basemap rather than a static illustration or a paid mapping SDK. GPT-5.6 may return coordinates only when confident, and the UI makes uncertainty explicit when it cannot. This gives generated travel, event, property, and local-project canvases real spatial interaction without adding a separate geocoding API key.
+
 ## Decision Template
 
 ## NNN. Decision title
