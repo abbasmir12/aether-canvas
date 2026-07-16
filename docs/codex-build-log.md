@@ -156,6 +156,16 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - `npm run lint` passes.
 - Vite development startup and the renderer/main/preload production builds complete successfully. Electron packaging reached the platform packaging step but could not download an external GitHub artifact because this EC2 environment returned `EAI_AGAIN` for `github.com`.
 
+### Codex contributions — Adaptive dashboard vocabulary
+
+- Extended the constrained GPT-5.6 dashboard vocabulary with `stat-grid`, `priority-stack`, `calendar-strip`, `activity-stream`, and `comparison-bars`, each rendered locally through the same premium Aether component language.
+- Redesigned the generic Overview / `key-points` treatment as a concise Workspace Brief and elevated Journey details into a labeled trip-flow panel plus a chronological source-linked timeline.
+- Corrected compact progress totals to derive from the persisted live checklist, preventing stale model compact text from disagreeing with the expanded checklist.
+
+### Verification — Adaptive dashboard vocabulary
+
+- `npm run lint` passes strict renderer and main-process TypeScript checks.
+
 ## Day 3 — July 16, 2026
 
 ### Codex contributions

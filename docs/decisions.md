@@ -440,6 +440,16 @@ The summary card remains a concise, high-signal generated dashboard. When a user
 
 The Summary Card uses a restrained layered-material system rather than flat nested rectangles: quiet white-to-neutral surfaces, inset highlights, hairline separators, controlled semantic gradients, and elevation reserved for the card and its active detail panel. Compact previews share that material vocabulary while retaining distinct information shapes (route rail, metric ring, progress rail, map). This makes generated mini-apps feel coherent and premium across domains without adding decorative noise.
 
+## 047. Expand the AI dashboard vocabulary while keeping rendering bounded
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+GPT-5.6 can now choose additional declarative visual metaphors—stat grids, priority stacks, calendar strips, activity streams, and comparison bars—when source data supports them. Aether still renders every option locally from a fixed vocabulary. Live user state, such as packing completion, overrides stale compact model text so the generated dashboard remains both adaptive and numerically trustworthy.
+
 ## Decision Template
 
 ## NNN. Decision title

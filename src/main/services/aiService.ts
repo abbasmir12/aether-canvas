@@ -193,7 +193,7 @@ const RELATIONSHIP_SCHEMA = {
               summary: { type: 'string' },
               icon: { type: 'string', enum: ['sparkles', 'plane', 'wallet', 'check-square', 'map', 'list-checks', 'book-open', 'file-text'] },
               accent: { type: 'string', enum: ['dates', 'cost', 'place', 'tasks', 'neutral'] },
-              visual: { type: 'string', enum: ['source-list', 'route-rail', 'ring-metric', 'progress', 'pin-map', 'milestone-list', 'key-points'] },
+              visual: { type: 'string', enum: ['source-list', 'route-rail', 'ring-metric', 'progress', 'pin-map', 'milestone-list', 'key-points', 'stat-grid', 'priority-stack', 'calendar-strip', 'activity-stream', 'comparison-bars'] },
               interactions: { type: 'array', items: { type: 'string', enum: ['expand', 'focus-source', 'copy', 'edit-values', 'add-item', 'toggle-item', 'export', 'open-map', 'ai-insights'] } },
               compact: { type: 'object', additionalProperties: false, required: ['primary', 'secondary', 'tertiary'], properties: { primary: { type: 'string' }, secondary: { type: 'string' }, tertiary: { type: 'string' } } },
               sourceFileIds: { type: 'array', items: { type: 'string' } },
@@ -219,7 +219,9 @@ Tokyo Trip compact example:
 - Packing / progress: { primary: "8 / 14", secondary: "packed", tertiary: "" }. Aether renders an oversized fraction and progress rail.
 - Map / pin-map: { primary: "Shinjuku", secondary: "Shibuya", tertiary: "Asakusa" }. Aether renders a bounded pin map.
 
-For non-travel workspaces, preserve the same information density and visual confidence: use the compact strings to express the most important two or three facts for that section.`;
+For non-travel workspaces, preserve the same information density and visual confidence: use the compact strings to express the most important two or three facts for that section.
+
+Additional visual vocabulary: stat-grid = three compact headline metrics; priority-stack = ranked layered work or findings; calendar-strip = compact date blocks; activity-stream = chronological pulse/event trail; comparison-bars = relative magnitude or option comparison. Use these only when they genuinely fit the extracted data.`;
 
 let openAIClient: OpenAI | null = null;
 
