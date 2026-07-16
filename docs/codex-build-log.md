@@ -141,6 +141,21 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 - `npm run lint` passes strict renderer and main-process TypeScript checks after the detached-detail implementation.
 
+### Codex contributions — Summary Card visual refinement
+
+- Refined the Summary Card into a layered, restrained desktop surface: a softer multi-level elevation, tuned 20px card geometry, a luminous semantic header tile, more deliberate title/date hierarchy, and a quieter provenance footer.
+- Rebuilt the compact route, budget, packing, and map previews around consistent inset materials, hairline borders, controlled gradients, precise icon containers, and meaningful micro-depth rather than generic UI blocks.
+- Added polished hover and focus treatments to every module and upgraded expanded detail panels with a measured entrance, richer elevation, and a more intentional connector treatment.
+
+### Human decisions — Summary Card visual refinement
+
+- The human asked for a visual-only pass that exceeds the design reference’s level of polish without adding new product behavior.
+
+### Verification — Summary Card visual refinement
+
+- `npm run lint` passes.
+- Vite development startup and the renderer/main/preload production builds complete successfully. Electron packaging reached the platform packaging step but could not download an external GitHub artifact because this EC2 environment returned `EAI_AGAIN` for `github.com`.
+
 ## Day 3 — July 16, 2026
 
 ### Codex contributions

@@ -430,6 +430,16 @@ The summary card should communicate a complete workspace at a glance without exp
 
 The summary card remains a concise, high-signal generated dashboard. When a user opens a section, Aether pulls its detailed mini-app into a neighboring floating panel attached by a short, semantic-color dotted tether. This avoids a tall, visually noisy accordion while making the relationship between the compact card and its working detail explicit. The Journey panel uses a route rail and chronological source-linked timeline so related travel data reads as a plan rather than a scattered list.
 
+## 046. Summary Card as a layered desktop surface
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The Summary Card uses a restrained layered-material system rather than flat nested rectangles: quiet white-to-neutral surfaces, inset highlights, hairline separators, controlled semantic gradients, and elevation reserved for the card and its active detail panel. Compact previews share that material vocabulary while retaining distinct information shapes (route rail, metric ring, progress rail, map). This makes generated mini-apps feel coherent and premium across domains without adding decorative noise.
+
 ## Decision Template
 
 ## NNN. Decision title
