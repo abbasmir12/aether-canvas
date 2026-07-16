@@ -78,6 +78,11 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const frame = requestAnimationFrame(() => fitView({ duration: 420, padding: 0.2 }));
     return () => cancelAnimationFrame(frame);
   }, [fitView, focusRequest]);
+  useEffect(() => {
+    if (!dropError) return;
+    const timeout = window.setTimeout(() => setDropError(null), 4_500);
+    return () => window.clearTimeout(timeout);
+  }, [dropError]);
 
   const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
   const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: (props) => <SemanticRibbonEdge {...props} isDimmed={Boolean(semanticFocus && (props.data as { relationshipType?: RelationshipType } | undefined)?.relationshipType !== semanticFocus)} /> }), [semanticFocus]);

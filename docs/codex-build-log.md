@@ -97,6 +97,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Updated Spaces cards to reuse each workspace’s saved semantic icon and color, and replaced fixed decorative marks with extension-derived file dots. Cards show up to nine actual file-color dots and a leading `+X` overflow count for larger spaces.
 - Added the shared interactive-canvas foundation: file cards now open a Quick Preview on double-click, all node types expose a premium right-click context menu, original files can be opened or revealed through narrow authorized IPC calls, files can be re-analyzed or non-destructively removed from a canvas, and hubs can focus their semantic ribbon flow.
 - Made dashboard content actionable: Journey and map locations focus their analyzed source card; the Packing card marks the next item complete and persists that user override in the workspace while leaving the original source file untouched.
+- Refined transient error feedback so local-access and analysis notices automatically dismiss after 4.5 seconds rather than remaining on the canvas.
 
 ### Human decisions — runtime model configuration
 
