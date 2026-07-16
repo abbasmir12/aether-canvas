@@ -83,6 +83,12 @@ export type DashboardModuleAccent = 'dates' | 'cost' | 'place' | 'tasks' | 'neut
 export type DashboardModuleVisual = 'source-list' | 'route-rail' | 'ring-metric' | 'progress' | 'pin-map' | 'milestone-list' | 'key-points';
 export type DashboardModuleInteraction = 'expand' | 'focus-source' | 'copy' | 'edit-values' | 'add-item' | 'toggle-item' | 'export' | 'open-map' | 'ai-insights';
 
+export interface DashboardModuleCompact {
+  primary: string;
+  secondary: string;
+  tertiary: string;
+}
+
 export interface DashboardModule {
   id: string;
   kind: DashboardModuleKind;
@@ -92,6 +98,7 @@ export interface DashboardModule {
   accent: DashboardModuleAccent;
   visual: DashboardModuleVisual;
   interactions: DashboardModuleInteraction[];
+  compact: DashboardModuleCompact;
   sourceFileIds: string[];
 }
 

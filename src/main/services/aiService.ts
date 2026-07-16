@@ -185,7 +185,7 @@ const RELATIONSHIP_SCHEMA = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['id', 'kind', 'title', 'summary', 'icon', 'accent', 'visual', 'interactions', 'sourceFileIds'],
+            required: ['id', 'kind', 'title', 'summary', 'icon', 'accent', 'visual', 'interactions', 'compact', 'sourceFileIds'],
             properties: {
               id: { type: 'string' },
               kind: { type: 'string', enum: ['overview', 'timeline', 'budget', 'checklist', 'map', 'tasks', 'topics', 'resources', 'results'] },
@@ -195,6 +195,7 @@ const RELATIONSHIP_SCHEMA = {
               accent: { type: 'string', enum: ['dates', 'cost', 'place', 'tasks', 'neutral'] },
               visual: { type: 'string', enum: ['source-list', 'route-rail', 'ring-metric', 'progress', 'pin-map', 'milestone-list', 'key-points'] },
               interactions: { type: 'array', items: { type: 'string', enum: ['expand', 'focus-source', 'copy', 'edit-values', 'add-item', 'toggle-item', 'export', 'open-map', 'ai-insights'] } },
+              compact: { type: 'object', additionalProperties: false, required: ['primary', 'secondary', 'tertiary'], properties: { primary: { type: 'string' }, secondary: { type: 'string' }, tertiary: { type: 'string' } } },
               sourceFileIds: { type: 'array', items: { type: 'string' } },
             },
           },
@@ -209,6 +210,16 @@ const DASHBOARD_INSIGHT_SCHEMA = {
     items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['title', 'body', 'category', 'lat', 'lng'], properties: { title: { type: 'string' }, body: { type: 'string' }, category: { type: 'string' }, lat: { type: ['number', 'null'] }, lng: { type: ['number', 'null'] } } } },
   },
 } as const;
+
+const DASHBOARD_COMPACT_RULES = `Every dashboard module must include a compact object with three short display strings: primary, secondary, tertiary. This compact object is rendered before expansion, so it must be specific, useful, and grounded—not a generic summary. Keep additional rows, editors, and explanations for the expanded state.
+
+Tokyo Trip compact example:
+- Journey / route-rail: { primary: "JFK", secondary: "HND", tertiary: "Check-in Jul 19" }. Aether renders primary → plane icon → secondary and a small hotel/transport detail.
+- Budget / ring-metric: { primary: "$1,460", secondary: "Spent", tertiary: "$540 remaining" }. Aether renders this in a premium ring with a two-value legend.
+- Packing / progress: { primary: "8 / 14", secondary: "packed", tertiary: "" }. Aether renders an oversized fraction and progress rail.
+- Map / pin-map: { primary: "Shinjuku", secondary: "Shibuya", tertiary: "Asakusa" }. Aether renders a bounded pin map.
+
+For non-travel workspaces, preserve the same information density and visual confidence: use the compact strings to express the most important two or three facts for that section.`;
 
 let openAIClient: OpenAI | null = null;
 
@@ -334,6 +345,7 @@ export async function findRelationships(
       {
         role: 'user',
         content: [
+          { type: 'input_text', text: DASHBOARD_COMPACT_RULES },
           {
             type: 'input_text',
             text: `You are the relationship and workspace compiler for Aether Canvas. Identify only meaningful semantic relationships grounded in the analyzed metadata. Prefer one strongest relationship type for each related file pair. Do not connect unrelated files.\n\nThen compile a declarative dashboard UI plan. You do not write HTML, CSS, React, or arbitrary code. Aether safely renders your plan through a fixed interactive component library. For every module you must choose a visual and only the interactions that are appropriate for its grounded data.\n\nUse this Tokyo Trip card as the exact compositional example:\n{\n  "title": "Tokyo Trip", "subtitle": "Jul 18–25", "headerIcon": "map", "headerAccent": "place",\n  "modules": [\n    {"id":"journey","kind":"timeline","title":"Journey","icon":"plane","accent":"dates","visual":"route-rail","interactions":["expand","focus-source","copy","ai-insights"]},\n    {"id":"budget","kind":"budget","title":"Budget","icon":"wallet","accent":"cost","visual":"ring-metric","interactions":["expand","edit-values","export","ai-insights"]},\n    {"id":"packing","kind":"checklist","title":"Packing","icon":"check-square","accent":"tasks","visual":"progress","interactions":["expand","toggle-item","add-item","ai-insights"]},\n    {"id":"map","kind":"map","title":"Map","icon":"map","accent":"place","visual":"pin-map","interactions":["expand","focus-source","open-map","ai-insights"]}\n  ]\n}\n\nVisual semantics: route-rail = horizontal milestones/route with supporting metadata; ring-metric = a bold central ring, amount, and two-value legend; progress = oversized completion fraction and colored progress bar; pin-map = bounded mini-map with pins; milestone-list = ordered dated events; key-points = concise highlighted facts; source-list = traceable source-file rows. Every visible module uses a white 12px-rounded inset panel, colored circular Lucide icon, concise label, and semantic left-side connection port. The overall card has a large colored header icon/title/subtitle/menu and a generated-from-files sparkle footer.\n\nAdapt Tokyo’s quality, hierarchy, and interactive grammar to the actual domain: study → concepts/progress/resources; work → milestones/tasks/budget; health → results/timeline/actions; recipes → ingredients/checklist/timing. Choose 2–5 grounded modules. Allowed kinds: overview, timeline, budget, checklist, map, tasks, topics, resources, results. Icons: sparkles, plane, wallet, check-square, map, list-checks, book-open, file-text. Accents: dates (blue), cost (green), place (coral), tasks (purple), neutral (soft violet). Visuals: source-list, route-rail, ring-metric, progress, pin-map, milestone-list, key-points. Interactions: expand, focus-source, copy, edit-values, add-item, toggle-item, export, open-map, ai-insights.\n\nReturn a specific short title, concise grounded summary, visual, allowed interactions, and exact contributing source file IDs for every module. Return dashboard null only when the files cannot form a coherent workspace.\n\nFiles: ${JSON.stringify(files)}`,

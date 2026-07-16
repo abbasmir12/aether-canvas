@@ -410,6 +410,16 @@ The Tokyo Trip design is the reference for the entire generated dashboard, not m
 
 GPT-5.6 compiles the source files into a typed presentation plan: each module includes its visual treatment and an allow-list of interactive capabilities. Aether renders that plan with its own local component library. This gives the model meaningful control over structure, visual metaphor, and interaction intent while preserving performance, security, accessibility, and a coherent design system.
 
+## 044. Rich compact previews with progressive disclosure
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The summary card should communicate a complete workspace at a glance without exposing every editor and source row. Each GPT-planned module therefore supplies three short compact facts, which Aether presents through the Tokyo reference’s route rail, ring/legend, progress, map, or contextual preview pattern. Detailed controls are disclosed only after an explicit section expansion.
+
 ## Decision Template
 
 ## NNN. Decision title

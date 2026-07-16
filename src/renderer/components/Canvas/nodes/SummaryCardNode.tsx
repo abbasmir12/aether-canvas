@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Handle, Position, useUpdateNodeInternals, type Node, type NodeProps } from '@xyflow/react';
-import { BookOpen, Check, CheckSquare, ChevronDown, Clipboard, Download, FileText, ListChecks, Map, MapPin, MoreHorizontal, Plane, Plus, Sparkles as SparklesIcon, Wallet, X } from 'lucide-react';
+import { BookOpen, CarFront, Check, CheckSquare, ChevronDown, Clipboard, Download, FileText, ListChecks, Map, MapPin, MoreHorizontal, Plane, Plus, Sparkles as SparklesIcon, Wallet, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type ComponentType } from 'react';
 
 import type { AnalyzedFile, DashboardBudgetRow, DashboardModule, DashboardModuleKind, DashboardPackingItem, DashboardPlan, DashboardState, RelationshipType, SuggestedCluster } from '../../../../shared/types';
@@ -17,25 +17,44 @@ const colorFor = (module: DashboardModule) => module.accent === 'dates' ? COLORS
 const value = (data: Record<string, unknown>, key: string) => typeof data[key] === 'string' ? data[key] : '';
 const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
 const emit = (name: string, detail: unknown) => window.dispatchEvent(new CustomEvent(name, { detail }));
+const dataValue = (files: AnalyzedFile[], key: string) => files.map((file) => value(file.smartPreview.displayData, key)).find(Boolean) ?? '';
+type ModuleWithoutCompact = Omit<DashboardModule, 'compact'>;
+
+function compactFor(module: ModuleWithoutCompact, files: AnalyzedFile[]) {
+  if (module.visual === 'route-rail') return { primary: dataValue(files, 'origin') || files.flatMap((file) => file.entities.dates)[0]?.display || 'Start', secondary: dataValue(files, 'destination') || files.flatMap((file) => file.entities.dates).at(-1)?.display || 'Next', tertiary: dataValue(files, 'checkIn') || 'Next step' };
+  if (module.visual === 'ring-metric') return { primary: dataValue(files, 'total') || 'Budget', secondary: 'Tracked', tertiary: `${files.flatMap((file) => file.entities.costs).length} items` };
+  if (module.visual === 'progress') { const tasks = files.flatMap((file) => file.entities.tasks); return { primary: `${tasks.filter((task) => task.completed).length} / ${tasks.length}`, secondary: 'complete', tertiary: '' }; }
+  if (module.visual === 'pin-map') { const locations = files.flatMap((file) => file.entities.locations); return { primary: locations[0]?.name ?? '', secondary: locations[1]?.name ?? '', tertiary: locations[2]?.name ?? '' }; }
+  return { primary: module.title, secondary: `${module.sourceFileIds.length} source files`, tertiary: '' };
+}
 
 function fallbackPlan(files: AnalyzedFile[], cluster: SuggestedCluster): DashboardPlan {
-  const modules: DashboardModule[] = [{ id: 'overview', kind: 'overview', title: cluster.category === 'education' ? 'Key concepts' : 'Overview', summary: files.map((file) => file.summary).slice(0, 2).join(' '), icon: 'sparkles', accent: 'neutral', visual: 'key-points', interactions: ['expand', 'focus-source'], sourceFileIds: files.map((file) => file.id) }];
+  const modules: ModuleWithoutCompact[] = [{ id: 'overview', kind: 'overview', title: cluster.category === 'education' ? 'Key concepts' : 'Overview', summary: files.map((file) => file.summary).slice(0, 2).join(' '), icon: 'sparkles', accent: 'neutral', visual: 'key-points', interactions: ['expand', 'focus-source'], sourceFileIds: files.map((file) => file.id) }];
   if (files.some((file) => file.entities.dates.length)) modules.push({ id: 'timeline', kind: 'timeline', title: cluster.category === 'travel' ? 'Journey' : 'Timeline', summary: 'Important dates synthesized from your source files.', icon: 'plane', accent: 'dates', visual: cluster.category === 'travel' ? 'route-rail' : 'milestone-list', interactions: ['expand', 'focus-source', 'copy'], sourceFileIds: files.filter((file) => file.entities.dates.length).map((file) => file.id) });
   if (files.some((file) => file.entities.costs.length)) modules.push({ id: 'budget', kind: 'budget', title: 'Budget', summary: 'Editable amounts grounded in the files you added.', icon: 'wallet', accent: 'cost', visual: 'ring-metric', interactions: ['expand', 'edit-values', 'export'], sourceFileIds: files.filter((file) => file.entities.costs.length).map((file) => file.id) });
   if (files.some((file) => file.entities.tasks.length)) modules.push({ id: 'tasks', kind: 'tasks', title: cluster.category === 'travel' ? 'Packing' : 'Tasks', summary: 'Track the actionable items Aether found.', icon: 'list-checks', accent: 'tasks', visual: 'progress', interactions: ['expand', 'toggle-item', 'add-item'], sourceFileIds: files.filter((file) => file.entities.tasks.length).map((file) => file.id) });
   if (files.some((file) => file.entities.locations.length)) modules.push({ id: 'map', kind: 'map', title: cluster.category === 'travel' ? 'Map' : 'Places', summary: 'Places mentioned across this workspace.', icon: 'map', accent: 'place', visual: 'pin-map', interactions: ['expand', 'focus-source', 'open-map'], sourceFileIds: files.filter((file) => file.entities.locations.length).map((file) => file.id) });
-  return { title: cluster.name, subtitle: cluster.dateRange, category: cluster.category, headerIcon: cluster.category === 'travel' ? 'map' : cluster.category === 'education' ? 'book-open' : 'sparkles', headerAccent: cluster.category === 'travel' ? 'place' : 'neutral', modules };
+  return { title: cluster.name, subtitle: cluster.dateRange, category: cluster.category, headerIcon: cluster.category === 'travel' ? 'map' : cluster.category === 'education' ? 'book-open' : 'sparkles', headerAccent: cluster.category === 'travel' ? 'place' : 'neutral', modules: modules.map((module) => ({ ...module, compact: compactFor(module, files) })) };
+}
+
+function CompactPreview({ module, color }: { module: DashboardModule; color: string }) {
+  const compact = module.compact;
+  if (module.visual === 'route-rail') return <div className="mt-2.5"><div className="flex items-center justify-between rounded-[8px] border border-[#E6E5E3] bg-[#FBFBFA] px-2.5 py-2"><span><b className="block text-[13px] text-[#303034]">{compact.primary}</b><small className="block text-[8px] text-[#7D7D83]">Departure</small></span><div className="mx-2 flex flex-1 items-center gap-1 text-[#7D7D83]"><span className="h-px flex-1 border-t border-dashed border-[#BBB9B4]" /><Plane size={17} className="shrink-0 text-[#55555A]" /><span className="h-px flex-1 border-t border-dashed border-[#BBB9B4]" /></div><span className="text-right"><b className="block text-[13px] text-[#303034]">{compact.secondary}</b><small className="block text-[8px] text-[#7D7D83]">Arrival</small></span></div>{compact.tertiary && <p className="mt-1.5 flex items-center gap-1.5 text-[9px] text-[#68686E]"><CarFront size={12} style={{ color }} />{compact.tertiary}</p>}</div>;
+  if (module.visual === 'ring-metric') return <div className="mt-2.5 flex items-center gap-3"><div className="grid h-14 w-14 place-items-center rounded-full border-[7px] border-[#34A853] border-r-[#E8E7E4]"><b className="text-[10px] text-[#333337]">{compact.primary}</b></div><div className="min-w-0 space-y-1 text-[9px]"><p className="flex items-center gap-1.5 text-[#55555A]"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />{compact.secondary}</p><p className="flex items-center gap-1.5 text-[#77777D]"><i className="h-2 w-2 rounded-full bg-[#B8B6B1]" />{compact.tertiary}</p></div></div>;
+  if (module.visual === 'progress') { const match = compact.primary.match(/(\d+)\s*\/\s*(\d+)/); const progress = match ? Math.min(100, Number(match[1]) / Number(match[2]) * 100) : 55; return <div className="mt-2.5"><p className="text-[11px] text-[#55555A]"><b className="text-[21px] leading-none text-[#303034]">{compact.primary}</b> {compact.secondary}</p><div className="mt-2 h-2 overflow-hidden rounded-full bg-[#E7E5E9]"><div className="h-full rounded-full" style={{ backgroundColor: color, width: `${progress}%` }} /></div></div>; }
+  if (module.visual === 'pin-map') return <div className="relative mt-2.5 h-[70px] overflow-hidden rounded-[8px] border border-[#E5E2D9] bg-[#F1EEE7]" style={{ backgroundImage: 'linear-gradient(28deg, transparent 42%, rgba(255,255,255,.82) 43%, rgba(255,255,255,.82) 46%, transparent 47%), linear-gradient(112deg, transparent 48%, rgba(255,255,255,.75) 49%, rgba(255,255,255,.75) 52%, transparent 53%)' }}><MapPin className="absolute left-[22%] top-[34%]" fill={color} size={20} style={{ color }} /><MapPin className="absolute left-[50%] top-[48%]" fill={color} size={18} style={{ color }} /><MapPin className="absolute right-[20%] top-[20%]" fill={color} size={20} style={{ color }} /><span className="absolute bottom-1 left-2 text-[8px] text-[#4C4C51]">{compact.primary}</span><span className="absolute bottom-1 left-[42%] text-[8px] text-[#4C4C51]">{compact.secondary}</span><span className="absolute right-2 top-1 text-[8px] text-[#4C4C51]">{compact.tertiary}</span></div>;
+  return <div className="mt-2.5 rounded-[7px] bg-[#F8F7F5] px-2.5 py-2 text-[10px] text-[#64646A]"><b className="block text-[#38383D]">{compact.primary}</b><span>{[compact.secondary, compact.tertiary].filter(Boolean).join(' · ')}</span></div>;
 }
 
 function ModuleShell({ module, open, onToggle, onHover, children }: { module: DashboardModule; open: boolean; onToggle: () => void; onHover: (active: boolean) => void; children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const Icon = iconForPlan[module.icon] ?? iconForKind[module.kind];
   const relationship = relationshipFor(module.kind);
   const color = colorFor(module);
   return <motion.section layout className="relative rounded-[11px] border border-[#DFDFE2] bg-[#FEFEFF] px-3 py-2.5 transition-shadow hover:shadow-[0_3px_10px_rgba(0,0,0,0.05)]" onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)} transition={{ duration: 0.22 }}>
     {relationship && <><Handle className="!h-[8px] !w-[8px] !border-0 !bg-transparent !opacity-0" id={`summary-${relationship}`} position={Position.Left} style={{ top: '50%' }} type="target" /><span aria-hidden className="pointer-events-none absolute left-[-10px] top-1/2 grid h-[18px] w-[18px] -translate-y-1/2 place-items-center rounded-full border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]" style={{ backgroundColor: color }}><span className="h-1.5 w-1.5 rounded-full bg-white" /></span></>}
     <button aria-expanded={isOpen} className="nodrag flex w-full items-center gap-2 text-left" onClick={() => { setIsOpen((current) => !current); onToggle(); }} type="button"><span className="grid h-5 w-5 place-items-center rounded-full text-white" style={{ backgroundColor: color }}><Icon size={13} strokeWidth={2.4} /></span><span className="flex-1 text-[12px] font-semibold text-[#333337]">{module.title}</span><ChevronDown className={`text-[#89898F] transition-transform ${isOpen ? 'rotate-180' : ''}`} size={15} /></button>
-    {!isOpen && <p className="mt-1.5 line-clamp-2 text-[10px] leading-4 text-[#76767C]">{module.summary}</p>}
+    {!isOpen && <CompactPreview color={color} module={module} />}
     <AnimatePresence>{isOpen && <motion.div animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden" exit={{ height: 0, opacity: 0 }} initial={{ height: 0, opacity: 0 }} transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}>{children}</motion.div>}</AnimatePresence>
   </motion.section>;
 }
@@ -49,7 +68,7 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
   const [newItem, setNewItem] = useState('');
   const dashboard = data.dashboard ?? {};
   const fallback = fallbackPlan(data.files, data.cluster);
-  const plan = data.dashboardPlan?.modules.every((module) => Boolean(module.visual) && Array.isArray(module.interactions)) ? data.dashboardPlan : fallback;
+  const plan = data.dashboardPlan?.modules.every((module) => Boolean(module.visual) && Array.isArray(module.interactions) && Boolean(module.compact)) ? data.dashboardPlan : fallback;
   const HeaderIcon = iconForPlan[plan.headerIcon] ?? SparklesIcon;
   const Sparkles = HeaderIcon;
   const openModule = dashboard.expandedSection;
