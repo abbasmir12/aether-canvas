@@ -104,6 +104,31 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         }
       }
 
+      if (process.env.AETHER_SMOKE_SUMMARY_MAP) {
+        const fitTarget = await window.webContents.executeJavaScript(`(() => {
+          const button = document.querySelector('button[aria-label="Fit canvas to content"]');
+          if (!button) return null;
+          const rect = button.getBoundingClientRect();
+          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        })()`);
+        if (fitTarget) {
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mousePressed', x: fitTarget.x, y: fitTarget.y, button: 'left', clickCount: 1 });
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseReleased', x: fitTarget.x, y: fitTarget.y, button: 'left', clickCount: 1 });
+          await new Promise((done) => setTimeout(done, 500));
+        }
+        const target = await window.webContents.executeJavaScript(`(() => {
+          const button = Array.from(document.querySelectorAll('.react-flow__node-summaryCard button')).find((item) => /^(map|places)/i.test((item.textContent || '').trim()));
+          if (!button) return null;
+          const rect = button.getBoundingClientRect();
+          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        })()`);
+        if (target) {
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mousePressed', x: target.x, y: target.y, button: 'left', clickCount: 1 });
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseReleased', x: target.x, y: target.y, button: 'left', clickCount: 1 });
+          await new Promise((done) => setTimeout(done, 900));
+        }
+      }
+
       if (process.env.AETHER_SMOKE_DEBUG) {
         const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
           ribbons: document.querySelectorAll('.semantic-ribbon').length,

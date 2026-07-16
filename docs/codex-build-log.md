@@ -218,6 +218,18 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Re-art-directed the generic post-hero intelligence area as an editorial briefing: material “Aether Read” masthead, solid semantic tags, varied bento fact cards, color-coded signal rows, and a dark numbered next-moves rail replace the former plain boxes and prose container.
 - Verified the redesign against the cached real flight analysis through a native Electron capture without spending another API request; the smoke harness now supports capture-only regression checks for persisted workspaces.
 
+### Codex contributions — Aether Atlas map polish
+
+- Re-art-directed the existing no-key Leaflet/CARTO map into an Aether-specific spatial surface: animated numbered source pins, distinct AI-discovery markers, Atlas HUD, source legend, animated focus movement, location chips, premium popovers, and a restrained geographic vignette.
+- Restyled Leaflet zoom controls and the legally required OpenStreetMap/CARTO attribution as integrated frosted controls rather than raw third-party defaults; attribution remains visible and legible.
+- Added capture automation for opening persisted Places/Map modules and fixed Summary Card stacking so detached map details remain above the canvas minimap.
+
+### Verification — Aether Atlas map polish
+
+- `npm run lint` passes strict renderer and Electron TypeScript checks.
+- `npx vite build` completes renderer, main, and preload production bundles.
+- A native headless-Ozone capture opened the persisted five-file Places module and verified the new map surface without additional AI usage.
+
 ## Day 3 — July 16, 2026
 
 ### Codex contributions

@@ -474,6 +474,16 @@ Checklist intelligence uses a purpose-built readiness briefing instead of render
 
 Generic source intelligence is rendered as an editorial composition rather than a uniform grid of response fields. Semantic facts receive exact Aether color tags, contextual highlights become visually ranked signals, and suggested actions occupy a distinct numbered rail. The hierarchy makes model output feel product-designed while preserving clear disclosure through the “Aether Read” label.
 
+## 050. Aether Atlas over a provider-default map
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The hackathon build retains the no-key Leaflet map but treats its provider as cartographic infrastructure rather than the product UI. Aether owns the location hierarchy, animated markers, AI-versus-source language, HUD, focus behavior, popovers, and surrounding material system. Required provider attribution stays clearly visible in a compact frosted control. This improves demo polish without introducing Google billing, key distribution, or judge setup friction.
+
 ## Decision Template
 
 ## NNN. Decision title

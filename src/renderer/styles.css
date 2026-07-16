@@ -2,6 +2,46 @@
 @import "@xyflow/react/dist/style.css";
 @import "leaflet/dist/leaflet.css";
 
+.aether-map .leaflet-control-attribution {
+  margin: 0 6px 5px 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82) !important;
+  padding: 2px 7px !important;
+  color: #7d7880;
+  font-size: 8px !important;
+  line-height: 1.25 !important;
+  box-shadow: 0 2px 7px rgba(45, 42, 38, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.aether-map .leaflet-control-attribution a { color: #625e66; font-weight: 600; }
+.aether-map .leaflet-control-zoom { margin-right: 8px !important; margin-top: 54px !important; overflow: hidden; border: 1px solid rgba(255,255,255,.9) !important; border-radius: 10px !important; box-shadow: 0 4px 12px rgba(45,42,38,.12) !important; }
+.aether-map .leaflet-control-zoom a { display: grid !important; width: 26px !important; height: 26px !important; place-items: center; border: 0 !important; background: rgba(255,255,255,.9) !important; color: #5d5961 !important; font: 500 15px/1 system-ui !important; }
+.aether-map .leaflet-control-zoom a + a { border-top: 1px solid #e6e2e7 !important; }
+.aether-map .leaflet-popup-content-wrapper { overflow: hidden; border: 1px solid rgba(220,216,222,.95); border-radius: 14px; background: rgba(255,255,255,.96); box-shadow: 0 14px 35px rgba(35,31,38,.18); backdrop-filter: blur(12px); }
+.aether-map .leaflet-popup-content { margin: 0 !important; }
+.aether-map .leaflet-popup-tip { background: rgba(255,255,255,.96); box-shadow: 3px 3px 8px rgba(35,31,38,.08); }
+.aether-map-popup { width: 184px; padding: 12px; font-family: system-ui, sans-serif; }
+.aether-map-marker-shell { border: 0 !important; background: transparent !important; }
+.aether-map-marker { position: relative; display: grid; place-items: center; color: white; filter: drop-shadow(0 4px 6px rgba(54,42,36,.22)); }
+.aether-map-marker > i { position: absolute; inset: -5px; border: 1px solid currentColor; border-radius: 50%; opacity: .24; animation: aether-map-pulse 2.6s ease-out infinite; }
+.aether-map-marker > b { position: relative; display: grid; place-items: center; border: 2px solid white; color: white; font: 700 8px/1 system-ui; box-shadow: inset 0 1px 1px rgba(255,255,255,.42); }
+.aether-map-marker > b > em { font-style: normal; }
+.aether-map-marker--source { width: 34px; height: 34px; color: #EA4335; }
+.aether-map-marker--source > b { width: 24px; height: 24px; border-radius: 50% 50% 50% 5px; background: linear-gradient(145deg,#F06B58,#D93B2E); transform: rotate(-45deg); }
+.aether-map-marker--source > b > em { transform: rotate(45deg); }
+.aether-map-marker--ai { width: 30px; height: 30px; color: #9B72CF; }
+.aether-map-marker--ai > b { width: 22px; height: 22px; border-radius: 9px; background: linear-gradient(145deg,#AD8AD8,#8660B3); }
+
+@keyframes aether-map-pulse {
+  0% { transform: scale(.72); opacity: .35; }
+  70%, 100% { transform: scale(1.32); opacity: 0; }
+}
+
+.react-flow__node-summaryCard { z-index: 20 !important; }
+.react-flow__node-summaryCard.selected { z-index: 30 !important; }
+
 @theme {
   --color-aether-canvas: #F4F1E9;
   --color-aether-sidebar: #F0F0F4;
