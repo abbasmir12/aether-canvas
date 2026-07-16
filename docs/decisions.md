@@ -244,6 +244,22 @@ The default Electron title bar breaks the product’s premium, calm visual hiera
 
 All visual UI symbols use Lucide React, including the top bar, sidebar, canvas controls, nodes, hubs, and dashboard. Aether does not mix emoji, icon fonts, or unrelated icon sets. This keeps stroke weights, sizing, hover feedback, and semantic color treatment coherent across the desktop experience.
 
+## 029. Local-first workspace persistence
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+Workspace index metadata and individual workspace snapshots are stored as JSON under the operating system’s standard Electron `userData` directory in `aether-workspaces/`. No cloud account, database server, or remote sync is required. The active canvas serializes nodes, edges, analyzed-file cache, relationships, and viewport; autosave only writes a dirty snapshot and flushes before switching workspaces or closing.
+
+## 030. AI-ready workspace naming workflow
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction
+
+New workspaces begin as `Untitled Space` with a semantic icon/color preset and expose immediate inline naming. The persisted workspace model keeps name, icon, color, analyzed-file summaries, and timestamps together so GPT-5.6 contextual naming can update the same user-controlled record without changing canvas content.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted

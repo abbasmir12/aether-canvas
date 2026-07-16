@@ -18,6 +18,7 @@ import {
   mimeTypeForPath,
   prepareFileForAPI,
 } from './services/fileReader';
+import { createWorkspaceStore } from './services/workspaceService';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const authorizedFilePaths = new Set<string>();
@@ -107,6 +108,7 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
 }
 
 function registerIpcHandlers(): void {
+  const workspaces = () => createWorkspaceStore(app.getPath('userData'));
   ipcMain.handle('aether:get-dropped-file-path', (_event, filePath: string) =>
     authorizeFile(filePath),
   );
@@ -198,6 +200,14 @@ function registerIpcHandlers(): void {
   ipcMain.handle('aether:window-close', (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();
   });
+
+  ipcMain.handle('aether:workspace-list', () => workspaces().list());
+  ipcMain.handle('aether:workspace-create', (_event, name?: string) => workspaces().create(name));
+  ipcMain.handle('aether:workspace-load', (_event, id: string) => workspaces().load(id));
+  ipcMain.handle('aether:workspace-save', (_event, workspace) => workspaces().save(workspace));
+  ipcMain.handle('aether:workspace-delete', (_event, id: string) => workspaces().delete(id));
+  ipcMain.handle('aether:workspace-rename', (_event, id: string, name: string) => workspaces().rename(id, name));
+  ipcMain.handle('aether:workspace-set-icon', (_event, id: string, icon: string, color: string) => workspaces().setIcon(id, icon, color));
 }
 
 function createWindow(): BrowserWindow {
