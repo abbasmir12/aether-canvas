@@ -73,11 +73,11 @@ function buildGeometry(
   const dx = targetX - sourceX;
   // Pronounced hand-drawn S: opposing vertical pulls on the two control
   // points guarantee an inflection even on near-horizontal runs.
-  const sway = (14 + (seed % 3) * 7) * (seed % 2 ? 1 : -1);
-  const c1x = sourceX + dx * 0.34;
+  const sway = (44 + (seed % 3) * 14) * (seed % 2 ? 1 : -1);
+  const c1x = sourceX + dx * 0.5;
   const c1y = sourceY + sway;
-  const c2x = targetX - dx * 0.3;
-  const c2y = targetY - sway * 0.9;
+  const c2x = targetX - dx * 0.42;
+  const c2y = targetY - sway;
 
   const raw: Sample[] = [];
   for (let index = 0; index <= SAMPLES; index += 1) {
@@ -236,12 +236,14 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
         <linearGradient gradientUnits="userSpaceOnUse" id={gradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
           <stop offset="0%" stopColor={color} stopOpacity={0.05} />
           <stop offset="55%" stopColor={color} stopOpacity={0.14} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.3} />
+          <stop offset="86%" stopColor={color} stopOpacity={0.3} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.46} />
         </linearGradient>
         <linearGradient gradientUnits="userSpaceOnUse" id={satGradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
           <stop offset="0%" stopColor={color} stopOpacity={0.07} />
           <stop offset="55%" stopColor={color} stopOpacity={0.2} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.42} />
+          <stop offset="86%" stopColor={color} stopOpacity={0.42} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.6} />
         </linearGradient>
       </defs>
       {/* soft grounded shadow under the whole ribbon */}
@@ -266,6 +268,13 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
       {geometry.edgeMarkers.map((marker, markerIndex) => (
         <FlowMarker key={`e-${markerIndex}`} opacity={0.55} {...marker} />
       ))}
+      {/* one bold anchor dot per card, like the reference: colored circle in a white ring */}
+      {index === 0 && !isSummary && (
+        <>
+          <circle cx={sourceX} cy={sourceY} fill="#3B382F" opacity={0.18} r={9.5} transform="translate(0,1.5)" />
+          <circle cx={sourceX} cy={sourceY} fill={color} r={8} stroke="#FFFFFF" strokeWidth={3} />
+        </>
+      )}
     </motion.g>
   );
 }
