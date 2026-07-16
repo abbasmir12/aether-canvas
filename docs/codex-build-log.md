@@ -83,6 +83,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Ribbon precision pass: removed Gaussian blur and all dark outer shadows; widened the filled semantic contour body, strengthened its white center/boundary lines, and added small static filled dot, arrow, and square flow packets that remain stable during dragging.
 - Refined hub pills into framed semantic gradients without drop shadows and added visible circular destination ports inside summary sections so ribbons end cleanly at the dashboard rather than disappearing behind it.
 - Contrast and elevation pass: restored the mockup’s restrained card-equivalent black shadow to ribbons, hubs, flow packets, and ports; increased semantic fill/center-rail contrast; and built the hub’s narrow white gap ring. Flow dots, arrows, and square packets now use deterministic irregular placement and layered faces for a small 3D appearance.
+- Defined-pipe pass: removed the broad atmospheric color spread and replaced it with a source-to-destination opacity gradient inside one bold semantic pipe. Added structural color rims, direction-sensitive fine white outer edges, and a white center rail seated in a lightweight dark border with normal card-level elevation.
 
 ### Human decisions — runtime model configuration
 

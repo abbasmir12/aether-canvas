@@ -113,10 +113,14 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   const center = offsetCurve(curve, centerBias);
   const innerTop = offsetCurve(curve, innerWidths.map((width, position) => width + centerBias[position]));
   const innerBottom = offsetCurve(curve, innerWidths.map((width, position) => -width + centerBias[position]));
-  const atmosphereTop = offsetCurve(curve, widths.map((width) => width * 1.5));
-  const atmosphereBottom = offsetCurve(curve, widths.map((width) => -width * 1.5));
   const terminalOuterRadius = isTrunk ? 8.5 : 7.5;
   const terminalInnerRadius = isTrunk ? 5.1 : 4.2;
+  const safeId = id.replace(/[^a-z0-9]/gi, '');
+  const mainGradientId = `aether-ribbon-main-${safeId}`;
+  const lowerGradientId = `aether-ribbon-lower-${safeId}`;
+  const outsideOnTop = targetY >= sourceY;
+  const topBorderWidth = outsideOnTop ? 0.78 : 0.36;
+  const bottomBorderWidth = outsideOnTop ? 0.36 : 0.78;
   const markerPattern = useMemo(() => {
     const seed = [...id].reduce((total, character) => total + character.charCodeAt(0), 0);
     const spread = (slot: number, min: number, max: number) => min + positiveSeed(seed + slot * 17.3) * (max - min);
@@ -129,30 +133,41 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   return (
     <g className="semantic-ribbon">
       <defs>
-        <filter id={`aether-ribbon-shadow-${id.replace(/[^a-z0-9]/gi, '')}`} x="-30%" y="-35%" width="160%" height="180%">
+        <filter id={`aether-ribbon-shadow-${safeId}`} x="-30%" y="-35%" width="160%" height="180%">
           <feDropShadow dx="0" dy="2" floodColor="#000000" floodOpacity="0.08" stdDeviation="2" />
         </filter>
+        <linearGradient id={mainGradientId} gradientUnits="userSpaceOnUse" x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
+          <stop offset="0%" stopColor={color} stopOpacity="0.12" />
+          <stop offset="54%" stopColor={color} stopOpacity="0.31" />
+          <stop offset="100%" stopColor={color} stopOpacity={isTrunk ? "0.62" : "0.52"} />
+        </linearGradient>
+        <linearGradient id={lowerGradientId} gradientUnits="userSpaceOnUse" x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
+          <stop offset="0%" stopColor={color} stopOpacity="0.08" />
+          <stop offset="54%" stopColor={color} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={color} stopOpacity={isTrunk ? "0.42" : "0.34"} />
+        </linearGradient>
       </defs>
-      <g filter={`url(#aether-ribbon-shadow-${id.replace(/[^a-z0-9]/gi, '')})`}>
-      {/* A restrained semantic atmosphere behind the higher-contrast ribbon body. */}
-      <path d={enclosedPath(atmosphereTop, atmosphereBottom)} fill={color} fillOpacity={isTrunk ? 0.1 : 0.08} />
+      <g filter={`url(#aether-ribbon-shadow-${safeId})`}>
 
-      {/* Main ribbon: its two halves deliberately carry different weight. */}
-      <path d={enclosedPath(outerTop, center)} fill={color} fillOpacity={isTrunk ? 0.38 : 0.34} />
-      <path d={enclosedPath(center, outerBottom)} fill={color} fillOpacity={isTrunk ? 0.26 : 0.22} />
-      <path d={pathFor(outerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.68} strokeWidth={1.05} />
-      <path d={pathFor(outerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.56} strokeWidth={0.95} />
+      {/* One defined pipe: it starts translucent at the source and gains semantic contrast at its destination. */}
+      <path d={enclosedPath(outerTop, center)} fill={`url(#${mainGradientId})`} />
+      <path d={enclosedPath(center, outerBottom)} fill={`url(#${lowerGradientId})`} />
+      <path d={pathFor(outerTop)} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={0.8} strokeWidth={isTrunk ? 1.55 : 1.25} />
+      <path d={pathFor(outerBottom)} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={0.72} strokeWidth={isTrunk ? 1.4 : 1.15} />
+      <path d={pathFor(outerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.82} strokeWidth={topBorderWidth} />
+      <path d={pathFor(outerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.76} strokeWidth={bottomBorderWidth} />
 
       {/* Secondary inner ribbon: a quieter translucent channel nested in the main body. */}
-      <path d={enclosedPath(innerTop, center)} fill="#FFFFFF" fillOpacity={0.22} />
-      <path d={enclosedPath(center, innerBottom)} fill={color} fillOpacity={0.2} />
-      <path d={pathFor(innerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.72} strokeWidth={0.8} />
-      <path d={pathFor(innerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.48} strokeWidth={0.68} />
+      <path d={enclosedPath(innerTop, center)} fill="#FFFFFF" fillOpacity={0.18} />
+      <path d={enclosedPath(center, innerBottom)} fill={color} fillOpacity={0.14} />
+      <path d={pathFor(innerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.74} strokeWidth={0.5} />
+      <path d={pathFor(innerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.44} strokeWidth={0.35} />
 
       {/* Optical divider that makes the asymmetric halves legible. */}
-      <path d={pathFor(center)} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={0.65} strokeWidth={isTrunk ? 5.2 : 4.2} />
-      <path d={pathFor(center)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.96} strokeWidth={isTrunk ? 2.05 : 1.7} />
-      <path d={pathFor(offsetCurve(center, [-0.65, -0.75, -0.6, -0.45]))} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.76} strokeWidth={isTrunk ? 0.76 : 0.62} />
+      <path d={pathFor(center)} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={0.82} strokeWidth={isTrunk ? 5.3 : 4.3} />
+      <path d={pathFor(center)} fill="none" stroke="#131416" strokeLinecap="round" strokeOpacity={0.34} strokeWidth={isTrunk ? 3.35 : 2.75} />
+      <path d={pathFor(center)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.96} strokeWidth={isTrunk ? 1.95 : 1.58} />
+      <path d={pathFor(offsetCurve(center, [-0.55, -0.65, -0.5, -0.4]))} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.74} strokeWidth={isTrunk ? 0.62 : 0.5} />
 
       {/* Small filled flow packets: dots and compact arrowheads are decorative data cues, never controls. */}
       {markerPattern.dots.map((progress, markerIndex) => (

@@ -208,6 +208,16 @@ The reference uses controlled elevation rather than flat color. Semantic ribbons
 
 Flow markers use deterministic but irregular spacing derived from each edge ID. Their layered dark underlay, white face, and small semantic-color inset provide a tactile three-dimensional cue without introducing random visual movement during dragging.
 
+## 025. Defined-pipe ribbon hierarchy
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+Semantic ribbons are one defined pipe rather than an atmospheric color spread. The broad contour is filled by a source-to-destination semantic gradient: quiet at the file source and more saturated at the synthesized destination. A colored structural rim, very fine white contour edge, and nested translucent channel give the pipe depth without enlarging its visual footprint.
+
+The white center rail sits inside a lightweight charcoal border and shares the normal card-equivalent drop shadow. Outer edge weights respond to the ribbon’s vertical direction so the outside of a curve reads slightly stronger than its inside, echoing the dimensional line treatment in the reference.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted
