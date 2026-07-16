@@ -3,29 +3,49 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { PinnedFolderContents, PinnedFolderFile, WorkspaceListItem } from '../../../shared/types';
 
+type LocalFilesLayout = 'list' | 'grid' | 'compact';
+
+const LAYOUT_OPTIONS = [{ id: 'list', label: 'List view', Icon: LayoutList }, { id: 'grid', label: 'Grid view', Icon: Grid2X2 }, { id: 'compact', label: 'Compact view', Icon: Rows3 }] as const;
+
+function useLayoutPreference(key: string, fallback: LocalFilesLayout) {
+  const [layout, setLayout] = useState<LocalFilesLayout>(() => {
+    const saved = window.localStorage.getItem(key);
+    return saved === 'list' || saved === 'grid' || saved === 'compact' ? saved : fallback;
+  });
+  useEffect(() => { window.localStorage.setItem(key, layout); }, [key, layout]);
+  return [layout, setLayout] as const;
+}
+
+function LayoutControls({ layout, onChange }: { layout: LocalFilesLayout; onChange: (layout: LocalFilesLayout) => void }) {
+  return <div aria-label="File layout" className="flex h-8 items-center rounded-[8px] border border-[#DEDCD9] bg-white p-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">{LAYOUT_OPTIONS.map(({ id, label, Icon }) => <button aria-label={label} className={`grid h-6 w-7 place-items-center rounded-[5px] transition ${layout === id ? 'bg-[#EEEDEB] text-[#343438]' : 'text-[#8A8A90] hover:bg-[#F5F4F2] hover:text-[#505055]'}`} key={id} onClick={() => onChange(id)} title={label} type="button"><Icon size={15} /></button>)}</div>;
+}
+
 export function SpacesView({ workspaces, onCreate, onSelect }: { workspaces: WorkspaceListItem[]; onCreate: () => void; onSelect: (id: string) => void }) {
   return <div className="h-full overflow-auto bg-[#F8F8FA] p-8"><h1 className="text-[22px] font-semibold text-[#29292D]">Spaces</h1><p className="mt-1 text-[13px] text-[#85858B]">Your saved canvases, locally stored.</p><div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">{workspaces.map((space) => <button className="h-[160px] rounded-[12px] border border-[#E5E3E1] bg-white p-4 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(0,0,0,0.09)]" key={space.id} onClick={() => onSelect(space.id)} type="button"><span className="grid h-10 w-10 place-items-center rounded-full text-white" style={{ backgroundColor: space.iconColor }}><Layers size={19} /></span><p className="mt-4 truncate text-[16px] font-semibold">{space.name}</p><p className="mt-1 text-[12px] text-[#8A8A90]">{space.fileCount} files · Updated {new Date(space.updatedAt).toLocaleDateString()}</p><div className="mt-4 flex gap-1"><i className="h-2 w-2 rounded-full bg-[#4A90D9]" /><i className="h-2 w-2 rounded-full bg-[#34A853]" /><i className="h-2 w-2 rounded-full bg-[#9B72CF]" /></div></button>)}<button className="grid h-[160px] place-items-center rounded-[12px] border border-dashed border-[#CFCBC7] text-[#88888E] transition hover:bg-white" onClick={onCreate} type="button"><span className="flex flex-col items-center gap-2"><Plus size={22} />Create new space</span></button></div></div>;
 }
 
 export function RecentView({ workspaces, onSelect }: { workspaces: WorkspaceListItem[]; onSelect: (id: string) => void }) {
   const [files, setFiles] = useState<Array<{ workspace: WorkspaceListItem; name: string; summary: string }>>([]);
+  const [layout, setLayout] = useLayoutPreference('aether:recent-files-layout', 'grid');
   useEffect(() => {
     void Promise.all(workspaces.map(async (workspace) => ({ workspace, data: await window.aether.workspace.load(workspace.id) }))).then((items) => {
       const recent = items.flatMap(({ workspace, data }) => data.analyzedFiles.map((file) => ({ workspace, name: file.fileName, summary: file.summary }))).slice(0, 50);
       setFiles(recent);
     });
   }, [workspaces]);
-  return <div className="h-full overflow-auto bg-[#F8F8FA] p-8"><h1 className="text-[22px] font-semibold">Recent</h1><div className="mt-6 max-w-3xl space-y-2">{files.length ? files.map((file, index) => <button className="flex w-full items-center gap-3 rounded-[10px] border border-[#E6E4E1] bg-white p-3 text-left hover:bg-[#FCFBFA]" key={`${file.workspace.id}-${index}`} onClick={() => onSelect(file.workspace.id)} type="button"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#EAF3FC] text-[#4A90D9]"><FileText size={17} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[13px]">{file.name}</b><small className="block truncate text-[12px] text-[#88888E]">{file.summary}</small></span><span className="rounded-full bg-[#F1EFED] px-2 py-1 text-[10px] text-[#66666B]">{file.workspace.name}</span></button>) : <div className="grid place-items-center py-24 text-center text-[#98989D]"><Clock size={28} /><p className="mt-3 text-[14px]">No recent files yet</p></div>}</div></div>;
+  return <div className="h-full overflow-auto bg-[#F8F8FA] p-8"><div className="flex items-end justify-between gap-4"><div><h1 className="text-[22px] font-semibold tracking-[-0.025em] text-[#29292D]">Recent</h1><p className="mt-1 text-[13px] text-[#85858B]">Files recently understood across your spaces.</p></div><LayoutControls layout={layout} onChange={setLayout} /></div><div className={`mt-6 max-w-4xl ${layout === 'grid' ? 'grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3' : 'space-y-2'}`}>{files.length ? files.map((file, index) => <RecentFileItem file={file} key={`${file.workspace.id}-${index}`} layout={layout} onSelect={() => onSelect(file.workspace.id)} />) : <div className="col-span-full grid place-items-center py-24 text-center text-[#98989D]"><Clock size={28} /><p className="mt-3 text-[14px]">No recent files yet</p></div>}</div></div>;
 }
 
-function fileIcon(file: PinnedFolderFile) {
-  const extension = file.name.split('.').pop()?.toLowerCase();
+function fileIconForName(fileName: string) {
+  const extension = fileName.split('.').pop()?.toLowerCase();
   if (extension === 'pdf') return { Icon: FileText, color: '#EA4335' };
   if (['xlsx', 'xls', 'csv'].includes(extension ?? '')) return { Icon: Table, color: '#34A853' };
-  if (['png', 'jpg', 'jpeg'].includes(extension ?? '')) return { Icon: ImageIcon, color: '#4A90D9' };
+  if (['png', 'jpg', 'jpeg'].includes(extension ?? '')) return { Icon: ImageIcon, color: '#34A853' };
   if (extension === 'docx') return { Icon: File, color: '#77777D' };
   return { Icon: FileText, color: '#4A90D9' };
 }
+
+function fileIcon(file: PinnedFolderFile) { return fileIconForName(file.name); }
 
 function humanSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -42,10 +62,14 @@ function modifiedLabel(value: string) {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-type LocalFilesLayout = 'list' | 'grid' | 'compact';
-
 function folderName(folderPath: string) {
   return folderPath.split(/[\\/]/).filter(Boolean).at(-1) || folderPath;
+}
+
+function RecentFileItem({ file, layout, onSelect }: { file: { workspace: WorkspaceListItem; name: string; summary: string }; layout: LocalFilesLayout; onSelect: () => void }) {
+  const { Icon, color } = fileIconForName(file.name);
+  if (layout === 'grid') return <button className="group min-h-[158px] rounded-[12px] border border-[#E5E3E1] bg-white p-4 text-left shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(0,0,0,0.09)]" onClick={onSelect} type="button"><span className="grid h-10 w-10 place-items-center rounded-[10px]" style={{ backgroundColor: `${color}18`, color }}><Icon size={20} /></span><b className="mt-4 block truncate text-[13px] text-[#36363B]">{file.name}</b><small className="mt-1 line-clamp-2 block min-h-[30px] text-[11px] leading-[15px] text-[#85858B]">{file.summary}</small><span className="mt-3 inline-flex rounded-full bg-[#F1EFED] px-2 py-1 text-[10px] text-[#66666B]">{file.workspace.name}</span></button>;
+  return <button className={`flex w-full items-center gap-3 rounded-[10px] border border-[#E6E4E1] bg-white text-left transition hover:bg-[#FCFBFA] ${layout === 'compact' ? 'px-3 py-2' : 'p-3'}`} onClick={onSelect} type="button"><span className={`grid shrink-0 place-items-center rounded-full ${layout === 'compact' ? 'h-7 w-7' : 'h-9 w-9'}`} style={{ backgroundColor: `${color}18`, color }}><Icon size={layout === 'compact' ? 14 : 17} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[13px] text-[#36363B]">{file.name}</b>{layout === 'list' && <small className="block truncate text-[12px] text-[#88888E]">{file.summary}</small>}</span><span className="rounded-full bg-[#F1EFED] px-2 py-1 text-[10px] text-[#66666B]">{file.workspace.name}</span></button>;
 }
 
 function PinnedFileItem({ file, layout, onAdd }: { file: PinnedFolderFile; layout: LocalFilesLayout; onAdd: (filePath: string) => void }) {
@@ -69,7 +93,7 @@ export function LocalFilesView({ onAddFiles }: { onAddFiles: (filePaths: string[
   const [folders, setFolders] = useState<PinnedFolderContents[]>([]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
-  const [layout, setLayout] = useState<LocalFilesLayout>('list');
+  const [layout, setLayout] = useLayoutPreference('aether:local-files-layout', 'grid');
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -94,7 +118,5 @@ export function LocalFilesView({ onAddFiles }: { onAddFiles: (filePaths: string[
     return <div className="grid h-full place-items-center bg-[#F8F8FA]"><div className="max-w-[370px] text-center"><span className="relative mx-auto grid h-16 w-16 place-items-center rounded-[18px] border border-[#E5E3E1] bg-white text-[#6D6D73] shadow-[0_4px_14px_rgba(0,0,0,0.07)]"><Folder size={29} /><span className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full border-2 border-[#F8F8FA] bg-[#4A90D9] text-white"><Plus size={14} /></span></span><h1 className="mt-5 text-[22px] font-semibold tracking-[-0.02em] text-[#29292D]">Pin folders to watch</h1><p className="mt-2 text-[13px] leading-6 text-[#88888E]">Add folders from your computer. Their files will appear here, ready to add to any canvas.</p><button className="mt-6 inline-flex items-center gap-2 rounded-[8px] bg-[#29292D] px-4 py-2.5 text-[13px] font-medium text-white shadow-[0_3px_9px_rgba(0,0,0,0.14)] transition hover:bg-[#3B3B40]" onClick={() => void addFolder()} type="button"><Plus size={16} />Add folder</button></div></div>;
   }
 
-  const viewOptions: Array<{ id: LocalFilesLayout; label: string; Icon: typeof LayoutList }> = [{ id: 'list', label: 'List view', Icon: LayoutList }, { id: 'grid', label: 'Grid view', Icon: Grid2X2 }, { id: 'compact', label: 'Compact view', Icon: Rows3 }];
-
-  return <div className="h-full overflow-auto bg-[#F8F8FA] p-8"><div className="flex items-end justify-between gap-4"><div><h1 className="text-[22px] font-semibold tracking-[-0.025em] text-[#29292D]">Local files</h1><p className="mt-1 text-[13px] text-[#85858B]">Pinned folders, ready for your canvas.</p></div><div className="flex items-center gap-2"><div aria-label="File layout" className="flex h-8 items-center rounded-[8px] border border-[#DEDCD9] bg-white p-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">{viewOptions.map(({ id, label, Icon }) => <button aria-label={label} className={`grid h-6 w-7 place-items-center rounded-[5px] transition ${layout === id ? 'bg-[#EEEDEB] text-[#343438]' : 'text-[#8A8A90] hover:bg-[#F5F4F2] hover:text-[#505055]'}`} key={id} onClick={() => setLayout(id)} title={label} type="button"><Icon size={15} /></button>)}</div><button className="inline-flex items-center gap-2 rounded-[8px] border border-[#DCD9D5] bg-white px-3 py-2 text-[12px] font-medium text-[#515157] shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition hover:bg-[#F5F4F2]" onClick={() => void addFolder()} type="button"><FolderPlus size={16} />Add folder</button></div></div><div className="mt-6 max-w-4xl space-y-3">{folders.map((folder) => <PinnedFolderSection expanded={expanded[folder.path] ?? true} folder={folder} key={folder.path} layout={layout} onAdd={onAddFiles} onRemove={(item) => void removeFolder(item)} onToggle={() => setExpanded((current) => ({ ...current, [folder.path]: !(current[folder.path] ?? true) }))} />)}</div></div>;
+  return <div className="h-full overflow-auto bg-[#F8F8FA] p-8"><div className="flex items-end justify-between gap-4"><div><h1 className="text-[22px] font-semibold tracking-[-0.025em] text-[#29292D]">Local files</h1><p className="mt-1 text-[13px] text-[#85858B]">Pinned folders, ready for your canvas.</p></div><div className="flex items-center gap-2"><LayoutControls layout={layout} onChange={setLayout} /><button className="inline-flex items-center gap-2 rounded-[8px] border border-[#DCD9D5] bg-white px-3 py-2 text-[12px] font-medium text-[#515157] shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition hover:bg-[#F5F4F2]" onClick={() => void addFolder()} type="button"><FolderPlus size={16} />Add folder</button></div></div><div className="mt-6 max-w-4xl space-y-3">{folders.map((folder) => <PinnedFolderSection expanded={expanded[folder.path] ?? true} folder={folder} key={folder.path} layout={layout} onAdd={onAddFiles} onRemove={(item) => void removeFolder(item)} onToggle={() => setExpanded((current) => ({ ...current, [folder.path]: !(current[folder.path] ?? true) }))} />)}</div></div>;
 }

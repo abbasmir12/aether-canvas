@@ -93,6 +93,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Restored the mockup’s visible source-card ports: each card now has a semantic-color, white-ringed circular connection point rendered above its right edge while retaining the underlying real React Flow source handle.
 - Replaced the Local Files placeholder with a persistent pinned-folder workflow: a native `openDirectory` picker, local `pinned-folders.json` store, safe immediate-directory indexing, extension filtering, modified-date sorting, expand/collapse sections, unpin confirmation, and direct add-to-canvas actions through the existing analysis pipeline.
 - Refined pinned-folder presentation with concise folder-only labels, an on-demand information popover for the full path and pin details, plus detailed-list, visual-grid, and compact layout modes for different browsing density preferences.
+- Made Grid the default presentation for Local Files and Recent, persisted each view’s List/Grid/Compact choice locally, and upgraded Recent with extension-aware semantic icons so PDFs, spreadsheets, images, documents, and text are distinguishable before a workspace is opened.
 
 ### Human decisions — runtime model configuration
 

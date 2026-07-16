@@ -290,6 +290,16 @@ Local Files is deliberately a short list of user-pinned folders, not a replica o
 
 Pinned folder headers show only the human-readable folder name to keep the library calm. The full local path, file count, and pin details are available through an adjacent information control rather than becoming permanent visual noise. A segmented List/Grid/Compact switch lets people choose between metadata-rich rows, visual scanning, and high-density browsing without changing what Aether imports.
 
+## 034. Persist lightweight browsing preferences in renderer storage
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+Grid is the default because it supports rapid visual recognition of mixed personal-file types. Local Files and Recent retain independent List/Grid/Compact selections in the renderer’s local storage, which is local to the Electron profile and survives restarts without adding a database or sync requirement. File-extension-aware icons apply the same semantic color vocabulary to both surfaces.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted
