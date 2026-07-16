@@ -84,17 +84,6 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
       initial={{ opacity: 0, scale: 0.8, y: 6 }}
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Handle
-        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
-        position={Position.Left}
-        type="target"
-      />
-      <Handle
-        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
-        id="top"
-        position={Position.Top}
-        type="target"
-      />
       <div className="flex items-center gap-2 px-3 py-2.5">
         <span
           className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold text-white shadow-sm"
@@ -120,14 +109,8 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
         </div>
       )}
       <Handle
-        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
+        className="!h-[8px] !w-[8px] !border-0 !bg-transparent !opacity-0"
         position={Position.Right}
-        type="source"
-      />
-      <Handle
-        className="!h-[6px] !w-[6px] !border !border-[#4A90D9]/45 !bg-[#4A90D9]/30 transition-transform hover:!scale-125"
-        id="bottom"
-        position={Position.Bottom}
         type="source"
       />
     </motion.article>

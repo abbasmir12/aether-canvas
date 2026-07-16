@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import type { EdgeProps } from '@xyflow/react';
 
@@ -14,8 +13,6 @@ const COLORS: Record<RelationshipType, string> = {
   place: '#EA4335',
   tasks: '#9B72CF',
 };
-
-const ease = [0.16, 1, 0.3, 1] as const;
 
 function pathFor({ start, controlA, controlB, end }: Cubic): string {
   return `M ${start.x} ${start.y} C ${controlA.x} ${controlA.y}, ${controlB.x} ${controlB.y}, ${end.x} ${end.y}`;
@@ -76,13 +73,13 @@ function markerTransform(curve: Cubic, progress: number, turn = 0): string {
 function ribbonCurve(sourceX: number, sourceY: number, targetX: number, targetY: number, phase: 'file' | 'summary', index: number): Cubic {
   const distance = targetX - sourceX;
   const vertical = targetY - sourceY;
-  const drift = phase === 'file' ? [-12, 8, 15, -7][index % 4] : 0;
-  const first = phase === 'file' ? 0.56 : 0.42;
-  const second = phase === 'file' ? 0.31 : 0.38;
+  const drift = phase === 'file' ? [-24, 15, 29, -18, 9][index % 5] : [-7, 5, -4, 8][index % 4];
+  const first = phase === 'file' ? [0.48, 0.58, 0.43, 0.63, 0.52][index % 5] : 0.39;
+  const second = phase === 'file' ? [0.25, 0.34, 0.29, 0.22, 0.37][index % 5] : 0.35;
   return {
     start: { x: sourceX, y: sourceY },
-    controlA: { x: sourceX + distance * first, y: sourceY + drift + vertical * 0.06 },
-    controlB: { x: targetX - distance * second, y: targetY - drift * 0.55 - vertical * 0.08 },
+    controlA: { x: sourceX + distance * first, y: sourceY + drift + vertical * 0.11 },
+    controlB: { x: targetX - distance * second, y: targetY - drift * 0.72 - vertical * 0.14 },
     end: { x: targetX, y: targetY },
   };
 }
@@ -100,7 +97,7 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   const index = ribbon?.index ?? 0;
   const isTrunk = phase === 'summary';
   const curve = useMemo(() => ribbonCurve(sourceX, sourceY, targetX, targetY, phase, index), [sourceX, sourceY, targetX, targetY, phase, index]);
-  const widths = isTrunk ? [9, 19, 17, 10] : [6, 15, 13, 8];
+  const widths = isTrunk ? [12, 26, 23, 14] : [8, 20, 18, 11];
   const innerWidths = widths.map((width) => Math.max(2.6, width * 0.52));
   const centerBias = widths.map((width, position) => position === 0 || position === 3 ? 0 : width * (position === 1 ? 0.18 : -0.12));
   const outerTop = offsetCurve(curve, widths);
@@ -108,43 +105,45 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   const center = offsetCurve(curve, centerBias);
   const innerTop = offsetCurve(curve, innerWidths.map((width, position) => width + centerBias[position]));
   const innerBottom = offsetCurve(curve, innerWidths.map((width, position) => -width + centerBias[position]));
-  const glowId = `aether-ribbon-glow-${id.replace(/[^a-z0-9]/gi, '')}`;
-  const drawDelay = (isTrunk ? 1.72 : 0.5) + index * 0.1;
+  const atmosphereTop = offsetCurve(curve, widths.map((width) => width * 1.5));
+  const atmosphereBottom = offsetCurve(curve, widths.map((width) => -width * 1.5));
+  const terminalOuterRadius = isTrunk ? 8.5 : 7.5;
+  const terminalInnerRadius = isTrunk ? 5.1 : 4.2;
   return (
     <g className="semantic-ribbon">
-      <defs>
-        <filter id={glowId} x="-60%" y="-90%" width="220%" height="280%"><feGaussianBlur stdDeviation={isTrunk ? 4 : 3} /></filter>
-      </defs>
-
-      <path d={pathFor(center)} fill="none" filter={`url(#${glowId})`} stroke={color} strokeLinecap="round" strokeOpacity={isTrunk ? 0.14 : 0.1} strokeWidth={isTrunk ? 44 : 34} />
+      {/* A quiet color atmosphere—filled rather than blurred, so it never becomes a grey/black drop shadow. */}
+      <path d={enclosedPath(atmosphereTop, atmosphereBottom)} fill={color} fillOpacity={isTrunk ? 0.065 : 0.05} />
 
       {/* Main ribbon: its two halves deliberately carry different weight. */}
       <path d={enclosedPath(outerTop, center)} fill={color} fillOpacity={isTrunk ? 0.25 : 0.22} />
       <path d={enclosedPath(center, outerBottom)} fill={color} fillOpacity={isTrunk ? 0.14 : 0.11} />
-      <path d={pathFor(outerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.5} strokeWidth={0.9} />
-      <path d={pathFor(outerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.38} strokeWidth={0.8} />
+      <path d={pathFor(outerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.68} strokeWidth={1.05} />
+      <path d={pathFor(outerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.56} strokeWidth={0.95} />
 
       {/* Secondary inner ribbon: a quieter translucent channel nested in the main body. */}
       <path d={enclosedPath(innerTop, center)} fill="#FFFFFF" fillOpacity={0.16} />
       <path d={enclosedPath(center, innerBottom)} fill={color} fillOpacity={0.13} />
-      <path d={pathFor(innerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.52} strokeWidth={0.62} />
-      <path d={pathFor(innerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.34} strokeWidth={0.55} />
+      <path d={pathFor(innerTop)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.72} strokeWidth={0.8} />
+      <path d={pathFor(innerBottom)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.48} strokeWidth={0.68} />
 
       {/* Optical divider that makes the asymmetric halves legible. */}
-      <motion.path animate={{ pathLength: 1 }} d={pathFor(center)} fill="none" initial={{ pathLength: 0 }} stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.78} strokeWidth={isTrunk ? 1.35 : 1.05} transition={{ delay: drawDelay + 0.05, duration: 0.7, ease }} />
+      <path d={pathFor(center)} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.92} strokeWidth={isTrunk ? 1.7 : 1.35} />
 
-      {/* Directional packets: chevrons on the optical divider, small square packets on its inner boundary. */}
-      {[0.26, 0.52, 0.77].map((progress, markerIndex) => (
-        <motion.path animate={{ opacity: 0.86, scale: 1 }} d="M -3 -2.25 L 2.4 0 L -3 2.25" fill="none" initial={{ opacity: 0, scale: 0.7 }} key={`chevron-${markerIndex}`} stroke="#FFFFFF" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.15} transform={markerTransform(center, progress)} transition={{ delay: drawDelay + 0.8 + markerIndex * 0.08, duration: 0.22 }} />
+      {/* Small filled flow packets: dots and compact arrowheads are decorative data cues, never controls. */}
+      {[0.18, 0.42, 0.67, 0.88].map((progress, markerIndex) => (
+        <circle cx={pointAt(innerTop, progress).x} cy={pointAt(innerTop, progress).y} fill="#FFFFFF" fillOpacity={0.86} key={`dot-${markerIndex}`} r={isTrunk ? 1.9 : 1.55} />
       ))}
-      {[0.38, 0.68].map((progress, markerIndex) => (
-        <motion.rect animate={{ opacity: 0.68, scale: 1 }} fill="#FFFFFF" height={2.6} initial={{ opacity: 0, scale: 0.7 }} key={`packet-${markerIndex}`} rx={0.7} transform={markerTransform(innerTop, progress, 45)} transition={{ delay: drawDelay + 0.88 + markerIndex * 0.08, duration: 0.2 }} width={2.6} x={-1.3} y={-1.3} />
+      {[0.3, 0.57, 0.79].map((progress, markerIndex) => (
+        <path d="M -3.4 -2.15 L 3.2 0 L -3.4 2.15 L -1.25 0 Z" fill="#FFFFFF" fillOpacity={0.88} key={`arrow-${markerIndex}`} transform={markerTransform(center, progress)} />
+      ))}
+      {[0.5, 0.84].map((progress, markerIndex) => (
+        <rect fill="#FFFFFF" fillOpacity={0.72} height={2.6} key={`packet-${markerIndex}`} rx={0.65} transform={markerTransform(innerBottom, progress, 45)} width={2.6} x={-1.3} y={-1.3} />
       ))}
 
-      <circle cx={sourceX} cy={sourceY} fill="#FFFFFF" fillOpacity={0.9} r={4} stroke={color} strokeOpacity={0.56} strokeWidth={1} />
-      <circle cx={sourceX} cy={sourceY} fill={color} r={2} />
-      <circle cx={targetX} cy={targetY} fill="#FFFFFF" fillOpacity={0.9} r={4} stroke={color} strokeOpacity={0.56} strokeWidth={1} />
-      <circle cx={targetX} cy={targetY} fill={color} r={2} />
+      <circle cx={sourceX} cy={sourceY} fill="#FFFFFF" r={terminalOuterRadius} stroke={color} strokeOpacity={0.9} strokeWidth={1.5} />
+      <circle cx={sourceX} cy={sourceY} fill={color} r={terminalInnerRadius} />
+      <circle cx={targetX} cy={targetY} fill="#FFFFFF" r={terminalOuterRadius} stroke={color} strokeOpacity={0.9} strokeWidth={1.5} />
+      <circle cx={targetX} cy={targetY} fill={color} r={terminalInnerRadius} />
     </g>
   );
 }

@@ -32,7 +32,14 @@ function Section({ children, index, relationshipType }: { children: React.ReactN
       initial={{ opacity: 0 }}
       transition={{ delay: 2.2 + index * 0.1, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Handle id={`summary-${relationshipType}`} className="!h-[6px] !w-[6px] !border !border-white/85 transition-transform hover:!scale-125" position={Position.Left} style={{ backgroundColor: colors[relationshipType], top: '50%' }} type="target" />
+      <Handle id={`summary-${relationshipType}`} className="!h-[8px] !w-[8px] !border-0 !bg-transparent !opacity-0" position={Position.Left} style={{ top: '50%' }} type="target" />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-[-10px] top-1/2 grid h-[18px] w-[18px] -translate-y-1/2 place-items-center rounded-full border-2 border-white"
+        style={{ backgroundColor: colors[relationshipType] }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-white" />
+      </span>
       {children}
     </motion.section>
   );

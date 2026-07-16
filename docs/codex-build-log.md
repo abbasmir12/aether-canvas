@@ -80,6 +80,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Removed Framer Motion layout interpolation from draggable file cards and edge-container remounting from coordinate changes. React Flow now owns live movement of file cards, hubs, summary handles, and edge endpoints without a competing transform animation.
 - Reduced visual handle size to six pixels across cards, hubs, and dashboard sections so connection points remain discoverable without reading as controls.
 - Verified the five-file native Electron flow using the configured GPT-5.6 runtime: the captured canvas rendered all analyzed cards, category hubs, high-fidelity ribbons, and section-specific dashboard trunks. `npm run lint` and `npx vite build` pass.
+- Ribbon precision pass: removed Gaussian blur and all dark outer shadows; widened the filled semantic contour body, strengthened its white center/boundary lines, and added small static filled dot, arrow, and square flow packets that remain stable during dragging.
+- Refined hub pills into framed semantic gradients without drop shadows and added visible circular destination ports inside summary sections so ribbons end cleanly at the dashboard rather than disappearing behind it.
 
 ### Human decisions — runtime model configuration
 

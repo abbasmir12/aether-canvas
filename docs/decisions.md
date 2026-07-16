@@ -188,6 +188,16 @@ The visual language moved beyond stacked uniform strokes. Every connection now u
 
 React Flow remains the sole owner of draggable node positions and live edge coordinates. Framer Motion supplies entrance effects only; it no longer applies layout interpolation to file cards or remounts edge containers as their coordinates change. This prevents the renderer from competing with React Flow during a drag, so cards, hubs, handles, and connector geometry update in the same interaction frame.
 
+## 023. Shadow-free semantic flow language
+
+**Status:** Accepted
+**Date:** July 16, 2026
+**Decision owner:** Human direction, Codex implementation
+
+Ribbons do not use Gaussian blur or dark drop shadows. Their sense of depth comes from broad, low-opacity semantic-color contour fills and fine white boundary lines, which retain the bright paper-like quality of the reference canvas. Small static filled dots, compact arrow packets, and square packets stay legible during live drags without behaving like UI controls.
+
+The dashboard owns visible section-end ports in its node layer, while the hidden React Flow handle preserves the exact anchor coordinate below it. This ensures each hub stream visibly terminates in a round, color-matched dashboard connection even though graph edges render behind nodes.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted
