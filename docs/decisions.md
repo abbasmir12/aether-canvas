@@ -470,6 +470,8 @@ Each GPT-planned module now has two layers: a dominant visual that preserves det
 
 Opening a source file should explain why it matters, not repeat raw extraction output. GPT-5.6 therefore returns a bounded intelligence layer—headline, status, semantic facts, highlights, and suggested next steps—while Aether owns a type-aware local renderer. Older cached analyses fall back to deterministic entity-derived facts, so the upgrade is backwards compatible and never requires invented UI or data.
 
+Checklist intelligence uses a purpose-built readiness briefing instead of rendering the generic AI fields verbatim. Authoritative counts and actual unchecked items form the primary visual structure; model-authored context is supporting material only. This prevents the card from looking like formatted JSON and keeps truncated preview arrays from overriding the complete source totals.
+
 ## Decision Template
 
 ## NNN. Decision title

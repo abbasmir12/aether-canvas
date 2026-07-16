@@ -320,6 +320,7 @@ CREATE INDEX idx_suggestions_space_status ON suggestions(space_id, status);
     │       │   ├── AetherCanvas.tsx
     │       │   ├── FileIntelligenceHero.tsx # type-aware source intelligence visual
     │       │   ├── FileQuickPreview.tsx     # source details and provenance actions
+    │       │   ├── PackingReadinessBrief.tsx # checklist-specific readiness briefing
     │       │   └── nodes
     │       │       ├── DashboardComposition.tsx # bounded visual-grammar renderer
     │       │       ├── FileCardNode.tsx

@@ -3,6 +3,7 @@ import { CalendarDays, CheckSquare, CircleDollarSign, Copy, ExternalLink, File, 
 
 import type { AnalyzedFile, FileInsightAccent } from '../../../shared/types';
 import FileIntelligenceHero from './FileIntelligenceHero';
+import PackingReadinessBrief from './PackingReadinessBrief';
 
 type FileQuickPreviewProps = {
   file: AnalyzedFile;
@@ -53,6 +54,7 @@ export default function FileQuickPreview({ file, onClose, onOpen, onReveal, onRe
   const facts = (file.intelligence?.keyFacts.length ? file.intelligence.keyFacts : fallbackFacts(file)).slice(0, 4);
   const highlights = file.intelligence?.highlights.slice(0, 3) ?? [];
   const actions = file.intelligence?.suggestedActions.slice(0, 3) ?? [];
+  const isChecklist = file.smartPreview.type === 'checklist';
   const copyBrief = async () => {
     const lines = [file.title, file.summary, ...facts.map((fact) => `${fact.label}: ${fact.value}`)];
     await navigator.clipboard.writeText(lines.join('\n'));
@@ -68,14 +70,14 @@ export default function FileQuickPreview({ file, onClose, onOpen, onReveal, onRe
 
     <FileIntelligenceHero file={file} />
 
-    <section className="px-1 pb-1 pt-4">
+    {isChecklist ? <PackingReadinessBrief file={file} /> : <><section className="px-1 pb-1 pt-4">
       <div className="flex items-center gap-2"><span className="grid h-5 w-5 place-items-center rounded-[7px] bg-[#F1ECF7] text-[#9B72CF]"><Sparkles size={11} /></span><span className="text-[8px] font-semibold uppercase tracking-[.14em] text-[#8C8992]">Aether read</span>{file.intelligence?.status && <span className="ml-auto rounded-full border border-[#E4E1E7] bg-white px-2 py-1 text-[8px] font-semibold text-[#65636A] shadow-[0_1px_2px_rgba(0,0,0,.03)]">{file.intelligence.status}</span>}</div>
       <p className="mt-2.5 text-[12px] font-medium leading-[1.55] tracking-[-.01em] text-[#55535B]">{file.intelligence?.headline || file.summary}</p>
     </section>
 
     {facts.length > 0 && <section className="mt-2 grid grid-cols-2 gap-2">{facts.map((fact, index) => { const style = accents[fact.accent] ?? accents.neutral; const Icon = style.Icon; return <motion.div className="min-w-0 rounded-[12px] border border-[#E7E5E8] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.95)]" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} key={`${fact.label}-${index}`} style={{ background: `linear-gradient(145deg,#FFFFFF,${style.background})` }} transition={{ delay: .08 + index * .04 }}><div className="flex items-center gap-1.5"><Icon size={11} style={{ color: style.color }} /><span className="truncate text-[7px] font-semibold uppercase tracking-[.12em] text-[#96949A]">{fact.label}</span></div><b className="mt-1.5 block line-clamp-2 text-[10px] font-semibold leading-[1.35] text-[#49474E]">{fact.value}</b></motion.div>; })}</section>}
 
-    <AnimatePresence>{(highlights.length > 0 || actions.length > 0) && <motion.section animate={{ opacity: 1, height: 'auto' }} className="mt-3 rounded-[13px] border border-[#E8E6E9] bg-white/72 p-3" initial={{ opacity: 0, height: 0 }}><p className="text-[8px] font-semibold uppercase tracking-[.13em] text-[#96939A]">Useful context</p><div className="mt-2 space-y-1.5">{highlights.map((highlight) => <div className="flex gap-2 text-[9px] leading-[1.45] text-[#626068]" key={highlight}><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#4A90D9]" />{highlight}</div>)}</div>{actions.length > 0 && <div className="mt-2.5 flex flex-wrap gap-1.5">{actions.map((action) => <span className="rounded-full border border-[#E1DFE4] bg-[#F8F7F9] px-2 py-1 text-[8px] font-medium text-[#69676E]" key={action}>{action}</span>)}</div>}</motion.section>}</AnimatePresence>
+    <AnimatePresence>{(highlights.length > 0 || actions.length > 0) && <motion.section animate={{ opacity: 1, height: 'auto' }} className="mt-3 rounded-[13px] border border-[#E8E6E9] bg-white/72 p-3" initial={{ opacity: 0, height: 0 }}><p className="text-[8px] font-semibold uppercase tracking-[.13em] text-[#96939A]">Useful context</p><div className="mt-2 space-y-1.5">{highlights.map((highlight) => <div className="flex gap-2 text-[9px] leading-[1.45] text-[#626068]" key={highlight}><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#4A90D9]" />{highlight}</div>)}</div>{actions.length > 0 && <div className="mt-2.5 flex flex-wrap gap-1.5">{actions.map((action) => <span className="rounded-full border border-[#E1DFE4] bg-[#F8F7F9] px-2 py-1 text-[8px] font-medium text-[#69676E]" key={action}>{action}</span>)}</div>}</motion.section>}</AnimatePresence></>}
 
     <div className="mt-3 grid grid-cols-[1fr_auto_auto_auto] gap-1.5 border-t border-[#E9E7EA] pt-3">
       <button className="flex h-9 items-center justify-center gap-1.5 rounded-[10px] bg-[#2D2D32] px-3 text-[10px] font-semibold text-white shadow-[0_4px_10px_rgba(35,35,40,.15)] transition hover:-translate-y-0.5 hover:bg-[#3A3A40]" onClick={onOpen} type="button"><ExternalLink size={13} />Open original</button>

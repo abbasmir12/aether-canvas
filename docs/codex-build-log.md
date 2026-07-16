@@ -213,6 +213,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - `npx vite build` completes the renderer, main, and preload production bundles.
 - A real GPT-5.6 run on `flight-ticket.txt` returned a grounded Confirmed brief with passenger Alex Morgan, confirmation AETH42, exact schedule, $820 USD fare, cabin, seat, route, and two practical next steps.
 - The native headless-Ozone capture verified the full source card and its route hero, semantic fact grid, context, and action bar. The smoke harness can open the first source card automatically for repeatable visual regression inspection.
+- Replaced the checklist card's repetitive AI prose and duplicate fact tiles with a designed departure-readiness briefing driven by authoritative checklist state: open-item queue, secured signal, attention signal, destination context, and finish-line sequence.
+- Runtime inspection caught and fixed truncation drift: the preview may expose only 12 item objects, so the readiness count now uses `totalCount - checkedCount` and explicitly accounts for undisplayed source-list items.
 
 ## Day 3 — July 16, 2026
 
