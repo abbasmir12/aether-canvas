@@ -75,7 +75,7 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
     .map((filePath) => filePath.trim())
     .filter(Boolean);
 
-  if (!capturePath || smokeFilePaths.length === 0) return;
+  if (!capturePath) return;
 
   window.webContents.once('did-finish-load', async () => {
     try {

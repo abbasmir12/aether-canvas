@@ -472,6 +472,8 @@ Opening a source file should explain why it matters, not repeat raw extraction o
 
 Checklist intelligence uses a purpose-built readiness briefing instead of rendering the generic AI fields verbatim. Authoritative counts and actual unchecked items form the primary visual structure; model-authored context is supporting material only. This prevents the card from looking like formatted JSON and keeps truncated preview arrays from overriding the complete source totals.
 
+Generic source intelligence is rendered as an editorial composition rather than a uniform grid of response fields. Semantic facts receive exact Aether color tags, contextual highlights become visually ranked signals, and suggested actions occupy a distinct numbered rail. The hierarchy makes model output feel product-designed while preserving clear disclosure through the “Aether Read” label.
+
 ## Decision Template
 
 ## NNN. Decision title
