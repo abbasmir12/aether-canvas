@@ -31,6 +31,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - _Show structured file understanding with input, JSON Schema, runtime-validated output, and visible smart preview result._
 - _Show relationship or cluster reasoning that cannot be reduced to file extensions._
 - _Show generated Summary Dashboard content grounded in multiple source files._
+- _Interactive dashboard evidence:_ The generated card persists user-entered actual expenses, checklist state, item additions, AI suggestion choices, cached context-aware Responses API insights, and real map interactions inside the local workspace—not in a separate web account or database.
 - _Show metadata-only relationship discovery after two or more files and explain how spatial proximity will remain a user-controlled signal._
 
 ### Verification evidence
@@ -66,6 +67,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - Local Files and Recent default to a visual Grid layout while respecting independently persisted browsing-density choices. Recent also carries the product’s semantic file-type icon language, so mixed PDFs, spreadsheets, images, documents, and notes are quickly scannable.
 - Spaces cards preserve each workspace’s semantic identity and show a compact, color-coded inventory of its source-file types, with an explicit `+X` indicator that scales cleanly beyond nine files.
 - The canvas is genuinely explorable, not a static visualization: right-click menus, Quick Preview, source-file open/reveal, re-analysis, non-destructive canvas removal, semantic hub highlighting, source-linked Journey/Map controls, and persistent packing progress turn the generated dashboard into a usable mini-workspace.
+- The Summary Dashboard is now an interactive mini-app: its sections expand into a timeline/countdown and airport actions, a live editable budget and CSV export, a checkable list with AI-assisted additions, and a real Leaflet map with source/AI pins and external directions. Section hover traces the semantic relationship back through the canvas.
 - **Quality of Idea:** The workspace model shows that users do not need to pre-organize files into folders. Aether locally preserves the evolving canvas, its AI analysis cache, and its semantic workspace identity, so the product organizes itself around the user’s projects.
 - **Visual verification:** A live five-file GPT-5.6 Electron capture on July 15 shows blue, green, coral, and purple tributaries converging into semantic hubs, then heavier trunks entering their matching dashboard sections. This is captured from the actual native drag/drop and analysis flow, not a static design mockup.
 - **Demo reliability:** Summary section handles are explicitly remeasured after their Framer Motion entrance, preventing hub-to-dashboard ribbons from anchoring at the card’s pre-animation offset.
@@ -97,6 +99,7 @@ Aether addresses the repeated work of reconstructing context from personal files
 - _Demo moment where moving or adding a file changes a suggestion or workspace._
 - _Comparison showing why folders, search, and chat attachments do not produce the same interaction._
 - _Example of a generated dashboard adapting its modules to the cluster's goal._
+- _General-purpose evidence:_ The card renders only the sections grounded in discovered dates, costs, tasks, and locations. The same persisted interaction model supports trips, coursework, work projects, household jobs, and other clusters; travel is the visual demo dataset rather than a hard-coded data source.
 - _Evidence that the output remains grounded in and traceable to its source files._
 
 ## Submission Checklist

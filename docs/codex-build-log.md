@@ -98,12 +98,24 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Added the shared interactive-canvas foundation: file cards now open a Quick Preview on double-click, all node types expose a premium right-click context menu, original files can be opened or revealed through narrow authorized IPC calls, files can be re-analyzed or non-destructively removed from a canvas, and hubs can focus their semantic ribbon flow.
 - Made dashboard content actionable: Journey and map locations focus their analyzed source card; the Packing card marks the next item complete and persists that user override in the workspace while leaving the original source file untouched.
 - Refined transient error feedback so local-access and analysis notices automatically dismiss after 4.5 seconds rather than remaining on the canvas.
+- Built the interactive Summary Dashboard Card on `feature/interactive-summary`: expandable, section-specific mini-app modules now turn clustered file analysis into editable and persistent user state rather than a static summary.
+- Added an interactive Journey timeline with a live countdown, source-linked events, airport details, external map links, and clipboard-ready flight details; a live Budget tracker with editable actuals, animated donut updates, inline expenses, and CSV export; and a persistent clickable Packing checklist with user and AI-suggested items.
+- Added an embedded Carto/Leaflet map with sourced location pins, AI-discovered place pins, fit-to-locations, browser directions, and map expansion. Coordinates are requested as confidence-gated structured GPT-5.6 output rather than using a separate geocoding service.
+- Added demand-driven, cached GPT-5.6 insight flows for Journey, Budget, Packing, and Map sections through the Responses API. Loading, retry-safe failure feedback, and saved workspace cache state keep costs predictable and the UI responsive.
+- Added card header editing/export/remove actions, section-to-source relationship focus events, workspace-persisted dashboard overrides, and a reusable bottom-center toast system.
 
 ### Human decisions — runtime model configuration
 
 - Funded the direct OpenAI API account and selected GPT-5.6 Luna as Aether's default runtime model.
 - Selected a “light” reasoning default, implemented using the Responses API's official `low` effort value, while retaining environment switches for higher-capability models and reasoning levels.
 - Required the sidebar to represent real, usable workspace actions rather than static navigation labels, and asked for the Aether identity to carry through the empty canvas.
+- Required the generated dashboard to become a general-purpose, interactive workspace rather than a travel-only visual summary; the Tokyo Trip presentation remains a concrete demo example, not a hard-coded product boundary.
+
+### Verification — interactive dashboard
+
+- `npm run lint` passes strict renderer and main-process TypeScript checks.
+- `npm run build` completes renderer, Electron main/preload, and electron-builder production compilation after adding Leaflet and the dashboard IPC contract.
+- The production renderer reports a 761 KB initial JavaScript chunk after the map dependency; code splitting remains a deliberate follow-up before submission packaging rather than a correctness failure.
 
 ## Day 3 — July 16, 2026
 

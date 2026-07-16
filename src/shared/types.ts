@@ -20,7 +20,7 @@ export type FileCategory =
 export interface AnalysisEntities {
   dates: Array<{ label: string; date: string; display: string }>;
   costs: Array<{ label: string; amount: number; currency: string }>;
-  locations: Array<{ name: string; type: string }>;
+  locations: Array<{ name: string; type: string; lat?: number; lng?: number }>;
   people: string[];
   tasks: Array<{ item: string; completed: boolean }>;
 }
@@ -100,6 +100,42 @@ export interface SummaryCard {
   title: string;
   dateRange: string;
   sections: SummarySection[];
+}
+
+export type DashboardSectionKey = 'journey' | 'budget' | 'packing' | 'map';
+export type DashboardInsightKind = 'journey' | 'budget' | 'packing' | 'map';
+
+export interface DashboardBudgetRow {
+  id: string;
+  category: string;
+  estimate: number;
+  actual?: number;
+}
+
+export interface DashboardPackingItem {
+  id: string;
+  text: string;
+  checked: boolean;
+  source: 'file' | 'user' | 'ai';
+  reason?: string;
+}
+
+export interface DashboardAiInsight {
+  title: string;
+  body: string;
+  category: string;
+  lat: number | null;
+  lng: number | null;
+}
+
+export interface DashboardState {
+  expandedSection?: DashboardSectionKey;
+  budgetRows?: DashboardBudgetRow[];
+  packingItems?: DashboardPackingItem[];
+  aiCache?: Partial<Record<DashboardInsightKind, DashboardAiInsight[]>>;
+  aiCacheInputs?: Partial<Record<DashboardInsightKind, string>>;
+  aiLoading?: DashboardInsightKind;
+  dismissedAiItems?: string[];
 }
 
 export interface FileCluster {
@@ -200,6 +236,9 @@ export interface AetherBridge {
   closeWindow: () => Promise<void>;
   openOriginalFile: (filePath: string) => Promise<void>;
   revealFile: (filePath: string) => Promise<void>;
+  openExternal: (url: string) => Promise<void>;
+  saveTextFile: (defaultName: string, contents: string) => Promise<boolean>;
+  getDashboardInsights: (kind: DashboardInsightKind, context: string) => Promise<DashboardAiInsight[]>;
   fs: {
     addPinnedFolder: () => Promise<PinnedFolder | null>;
     removePinnedFolder: (folderPath: string) => Promise<void>;

@@ -18,6 +18,9 @@ const aetherBridge: AetherBridge = {
   closeWindow: () => ipcRenderer.invoke('aether:window-close'),
   openOriginalFile: (filePath) => ipcRenderer.invoke('aether:open-original-file', filePath),
   revealFile: (filePath) => ipcRenderer.invoke('aether:reveal-file', filePath),
+  openExternal: (url) => ipcRenderer.invoke('aether:open-external', url),
+  saveTextFile: (defaultName, contents) => ipcRenderer.invoke('aether:save-text-file', defaultName, contents),
+  getDashboardInsights: (kind, context) => ipcRenderer.invoke('aether:get-dashboard-insights', kind, context),
   fs: {
     addPinnedFolder: () => ipcRenderer.invoke('aether:pinned-folder-add'),
     removePinnedFolder: (folderPath) => ipcRenderer.invoke('aether:pinned-folder-remove', folderPath),

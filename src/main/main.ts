@@ -13,7 +13,7 @@ import {
 } from 'electron';
 
 import type { AnalyzedFile, LocalFileMetadata } from '../shared/types';
-import { analyzeFile, findRelationships } from './services/aiService';
+import { analyzeFile, findRelationships, generateDashboardInsights } from './services/aiService';
 import {
   generateThumbnail,
   mimeTypeForPath,
@@ -211,6 +211,21 @@ function registerIpcHandlers(): void {
   });
   ipcMain.handle('aether:reveal-file', (_event, filePath: string) => {
     shell.showItemInFolder(requireAuthorizedFile(filePath));
+  });
+  ipcMain.handle('aether:open-external', async (_event, url: string) => {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') throw new Error('Aether only opens secure web links.');
+    await shell.openExternal(parsed.toString());
+  });
+  ipcMain.handle('aether:save-text-file', async (_event, defaultName: string, contents: string) => {
+    const result = await dialog.showSaveDialog({ title: 'Export from Aether Canvas', defaultPath: defaultName, filters: [{ name: 'Text files', extensions: ['txt', 'md', 'csv'] }] });
+    if (result.canceled || !result.filePath) return false;
+    await fs.writeFile(result.filePath, contents, 'utf8');
+    return true;
+  });
+  ipcMain.handle('aether:get-dashboard-insights', async (_event, kind: 'journey' | 'budget' | 'packing' | 'map', context: string) => {
+    if (!['journey', 'budget', 'packing', 'map'].includes(kind) || typeof context !== 'string') throw new Error('Invalid dashboard insight request.');
+    return generateDashboardInsights(kind, context);
   });
 
   ipcMain.handle('aether:workspace-list', () => workspaces().list());

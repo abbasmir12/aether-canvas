@@ -5,6 +5,8 @@ import type {
   AnalyzedFile,
   FileAnalysis,
   RelationshipDiscovery,
+  DashboardAiInsight,
+  DashboardInsightKind,
   SmartPreviewType,
 } from '../../shared/types';
 import type { PreparedFile } from './fileReader';
@@ -37,7 +39,7 @@ function configuredReasoningEffort(): ReasoningEffort {
 
 export const ANALYSIS_PROMPT = `You are the file analysis engine for Aether Canvas, a spatial desktop where grouping files expresses user intent.
 
-Analyze the attached file. Extract only information grounded in the file. Use ISO YYYY-MM-DD dates when a full date is known. Keep smart preview data concise enough for a 220px desktop card.
+Analyze the attached file. Extract only information grounded in the file. Use ISO YYYY-MM-DD dates when a full date is known. Keep smart preview data concise enough for a 220px desktop card. For well-known cities, districts, landmarks, airports, and venues, include approximate latitude and longitude when you know them; otherwise omit coordinates rather than guessing.
 
 Choose one smart preview type: flight, hotel, budget, checklist, guide, document, or image.
 - flight displayData: origin, destination, originCity, destCity, departDate, departTime, arriveDate, arriveTime.
@@ -100,6 +102,8 @@ const FILE_ANALYSIS_SCHEMA = {
             properties: {
               name: { type: 'string' },
               type: { type: 'string' },
+              lat: { type: 'number' },
+              lng: { type: 'number' },
             },
           },
         },
@@ -166,6 +170,12 @@ const RELATIONSHIP_SCHEMA = {
       },
     },
     shouldCluster: { type: 'boolean' },
+  },
+} as const;
+
+const DASHBOARD_INSIGHT_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['items'], properties: {
+    items: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['title', 'body', 'category', 'lat', 'lng'], properties: { title: { type: 'string' }, body: { type: 'string' }, category: { type: 'string' }, lat: { type: ['number', 'null'] }, lng: { type: ['number', 'null'] } } } },
   },
 } as const;
 
@@ -327,4 +337,20 @@ export async function findRelationships(
     suggestedCluster: result.shouldCluster ? result.suggestedCluster : null,
     shouldCluster: Boolean(result.shouldCluster),
   };
+}
+
+export async function generateDashboardInsights(kind: DashboardInsightKind, context: string): Promise<DashboardAiInsight[]> {
+  const prompts: Record<DashboardInsightKind, string> = {
+    journey: 'Provide 3 concise, specific travel timeline or arrival tips. Focus on time zones, transfer planning, timing, and practical logistics. Do not invent bookings.',
+    budget: 'Provide 3 concise practical budget observations grounded in the listed amounts: realism, one risk, and one saving idea. Never claim current prices as facts.',
+    packing: 'Suggest 5 destination- or context-specific packing items that are not already listed. Explain each briefly. Do not repeat existing items.',
+    map: 'Suggest up to 5 useful nearby places only when location context supports it. Include coordinates only when confidently known; otherwise return null coordinates.',
+  };
+  const response = await client().responses.create({
+    model: configuredModel(), reasoning: { effort: configuredReasoningEffort() },
+    input: [{ role: 'user', content: [{ type: 'input_text', text: `You are Aether Canvas's contextual assistant. ${prompts[kind]} Return JSON matching the supplied schema.\n\nContext:\n${context}` }] }],
+    text: { format: { type: 'json_schema', name: `aether_${kind}_insights`, description: 'Small, cacheable dashboard insights.', schema: DASHBOARD_INSIGHT_SCHEMA, strict: false }, verbosity: 'low' },
+  });
+  const parsed = parseJSON<{ items?: DashboardAiInsight[] }>(response.output_text, `${kind} insights`);
+  return Array.isArray(parsed.items) ? parsed.items.filter((item) => typeof item.title === 'string' && typeof item.body === 'string') : [];
 }
