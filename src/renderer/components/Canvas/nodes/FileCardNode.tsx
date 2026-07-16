@@ -29,6 +29,29 @@ type FileKind = {
   Icon: typeof File;
 };
 
+function connectionColor(data: FileCardNodeData): string {
+  switch (data.analysis?.smartPreview.type) {
+    case 'flight':
+    case 'hotel':
+      return '#4A90D9';
+    case 'budget':
+      return '#34A853';
+    case 'checklist':
+      return '#9B72CF';
+    case 'guide':
+      return '#EA4335';
+    default:
+      break;
+  }
+
+  const entities = data.analysis?.entities;
+  if (entities?.dates.length) return '#4A90D9';
+  if (entities?.costs.length) return '#34A853';
+  if (entities?.locations.length) return '#EA4335';
+  if (entities?.tasks.length) return '#9B72CF';
+  return '#4A90D9';
+}
+
 function fileKind(fileName: string, mimeType: string): FileKind {
   const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
 
@@ -51,6 +74,7 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
   const kind = fileKind(data.fileName, data.mimeType);
   const FileIcon = kind.Icon;
   const preview = data.analysis?.smartPreview;
+  const portColor = connectionColor(data);
 
   const smartPreview = preview ? (() => {
     switch (preview.type) {
@@ -76,7 +100,7 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
   return (
     <motion.article
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      className={`w-[220px] overflow-hidden rounded-[12px] border bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow] ${
+      className={`relative w-[220px] rounded-[12px] border bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow] ${
         selected
           ? 'border-[#4A90D9] shadow-[0_5px_18px_rgba(74,144,217,0.18)]'
           : 'border-[#D8D8DC]'
@@ -84,6 +108,7 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
       initial={{ opacity: 0, scale: 0.8, y: 6 }}
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
+      <div className="overflow-hidden rounded-[11px]">
       <div className="flex items-center gap-2 px-3 py-2.5">
         <span
           className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold text-white shadow-sm"
@@ -108,11 +133,14 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
           {data.errorMessage ?? 'Aether could not analyze this file.'}
         </div>
       )}
+      </div>
       <Handle
-        className="!h-[8px] !w-[8px] !border-0 !bg-transparent !opacity-0"
+        className="!z-20 !h-[18px] !w-[18px] !border-2 !border-white !opacity-100 !shadow-[0_2px_8px_rgba(0,0,0,0.14)]"
         position={Position.Right}
+        style={{ backgroundColor: portColor, right: -10, top: '50%' }}
         type="source"
       />
+      <span aria-hidden="true" className="pointer-events-none absolute right-[-10px] top-1/2 z-30 grid h-[18px] w-[18px] -translate-y-1/2 place-items-center rounded-full border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.14)]" style={{ backgroundColor: portColor }}><span className="h-1.5 w-1.5 rounded-full bg-white" /></span>
     </motion.article>
   );
 }

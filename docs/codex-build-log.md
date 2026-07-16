@@ -90,6 +90,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Follow-up interaction repair: removed unused topbar privacy/avatar elements and increased chrome breathing room; routed native file-dialog paths through the same canvas analysis pipeline as OS drops; made the empty-state Browse action functional; connected top search to live file-card filtering; and added confirmed workspace deletion from the sidebar.
 - Activated the remaining sidebar navigation with workspace-backed surfaces: **Spaces** now presents selectable persisted canvas cards, **Recent** composes analyzed-file summaries from every stored workspace, and **Local Files** launches the native picker then returns selected paths to the active canvas for the same analysis flow as a drop.
 - Replaced the generic empty-canvas sparkle with a floating Aether brand mark, keeping the first-run experience visually connected to the custom desktop chrome.
+- Restored the mockup’s visible source-card ports: each card now has a semantic-color, white-ringed circular connection point rendered above its right edge while retaining the underlying real React Flow source handle.
 
 ### Human decisions — runtime model configuration
 
