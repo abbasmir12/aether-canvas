@@ -300,6 +300,16 @@ Pinned folder headers show only the human-readable folder name to keep the libra
 
 Grid is the default because it supports rapid visual recognition of mixed personal-file types. Local Files and Recent retain independent List/Grid/Compact selections in the renderer’s local storage, which is local to the Electron profile and survives restarts without adding a database or sync requirement. File-extension-aware icons apply the same semantic color vocabulary to both surfaces.
 
+## 035. Non-destructive interaction layer over source files
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Codex proposal accepted through human-directed implementation
+
+Context menus and dashboard controls operate on the canvas workspace, never destructively on the underlying local file. “Remove from canvas” changes only workspace state; opening and revealing remain explicit, authorized IPC actions; and interactive packing progress is persisted as a workspace-level user override alongside GPT-5.6’s extracted data. This gives users agency while preserving provenance and trust.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted

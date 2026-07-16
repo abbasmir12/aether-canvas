@@ -8,6 +8,7 @@ import {
   BrowserWindow,
   dialog,
   ipcMain,
+  shell,
   type OpenDialogOptions,
 } from 'electron';
 
@@ -201,6 +202,15 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('aether:window-close', (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();
+  });
+
+  ipcMain.handle('aether:open-original-file', async (_event, filePath: string) => {
+    const normalized = requireAuthorizedFile(filePath);
+    const error = await shell.openPath(normalized);
+    if (error) throw new Error(error);
+  });
+  ipcMain.handle('aether:reveal-file', (_event, filePath: string) => {
+    shell.showItemInFolder(requireAuthorizedFile(filePath));
   });
 
   ipcMain.handle('aether:workspace-list', () => workspaces().list());

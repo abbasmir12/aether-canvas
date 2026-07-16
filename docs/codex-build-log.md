@@ -95,6 +95,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Refined pinned-folder presentation with concise folder-only labels, an on-demand information popover for the full path and pin details, plus detailed-list, visual-grid, and compact layout modes for different browsing density preferences.
 - Made Grid the default presentation for Local Files and Recent, persisted each view’s List/Grid/Compact choice locally, and upgraded Recent with extension-aware semantic icons so PDFs, spreadsheets, images, documents, and text are distinguishable before a workspace is opened.
 - Updated Spaces cards to reuse each workspace’s saved semantic icon and color, and replaced fixed decorative marks with extension-derived file dots. Cards show up to nine actual file-color dots and a leading `+X` overflow count for larger spaces.
+- Added the shared interactive-canvas foundation: file cards now open a Quick Preview on double-click, all node types expose a premium right-click context menu, original files can be opened or revealed through narrow authorized IPC calls, files can be re-analyzed or non-destructively removed from a canvas, and hubs can focus their semantic ribbon flow.
+- Made dashboard content actionable: Journey and map locations focus their analyzed source card; the Packing card marks the next item complete and persists that user override in the workspace while leaving the original source file untouched.
 
 ### Human decisions — runtime model configuration
 

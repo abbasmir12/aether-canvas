@@ -198,6 +198,8 @@ export interface AetherBridge {
   minimizeWindow: () => Promise<void>;
   maximizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;
+  openOriginalFile: (filePath: string) => Promise<void>;
+  revealFile: (filePath: string) => Promise<void>;
   fs: {
     addPinnedFolder: () => Promise<PinnedFolder | null>;
     removePinnedFolder: (folderPath: string) => Promise<void>;

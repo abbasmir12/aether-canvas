@@ -6,6 +6,8 @@ import { Maximize2, Minus, Plus } from 'lucide-react';
 import type { AnalyzedFile, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
 import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
 import SmartSuggestion from './SmartSuggestion';
+import CanvasContextMenu, { type CanvasMenuTarget } from './CanvasContextMenu';
+import FileQuickPreview from './FileQuickPreview';
 import SemanticRibbonEdge from './edges/SemanticRibbonEdge';
 import FileCardNode, { type FileCardNodeType } from './nodes/FileCardNode';
 import HubNode, { type HubNodeType } from './nodes/HubNode';
@@ -14,6 +16,7 @@ import EmptyCanvasState from './EmptyCanvasState';
 
 type CanvasNode = FileCardNodeType | HubNodeType | SummaryCardNodeType;
 type Suggestion = { fileId: string; category: string; clusterName: string };
+type ContextMenu = { x: number; y: number; target: CanvasMenuTarget };
 
 const initialNodes: CanvasNode[] = [];
 const RIBBON_COLORS: Record<RelationshipType, string> = { dates: '#4A90D9', cost: '#34A853', place: '#EA4335', tasks: '#9B72CF' };
@@ -37,6 +40,9 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const [dropError, setDropError] = useState<string | null>(null);
   const [cluster, setCluster] = useState<SuggestedCluster | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const [semanticFocus, setSemanticFocus] = useState<RelationshipType | null>(null);
+  const [quickPreview, setQuickPreview] = useState<AnalyzedFile | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const analyzedFiles = useRef(new Map<string, AnalyzedFile>());
   const pendingFiles = useRef(new Map<string, AnalyzedFile>());
   const candidateIds = useRef(new Set<string>());
@@ -47,7 +53,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const workspaceRef = useRef<WorkspaceData | null>(workspace);
   const hydratedWorkspaceId = useRef<string | null>(null);
   const workspaceReady = useRef(false);
-  const { fitView, getViewport, screenToFlowPosition, setViewport } = useReactFlow();
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const { fitView, getViewport, screenToFlowPosition, setCenter, setViewport } = useReactFlow();
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { clusterRef.current = cluster; }, [cluster]);
@@ -73,7 +80,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   }, [fitView, focusRequest]);
 
   const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
-  const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);
+  const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: (props) => <SemanticRibbonEdge {...props} isDimmed={Boolean(semanticFocus && (props.data as { relationshipType?: RelationshipType } | undefined)?.relationshipType !== semanticFocus)} /> }), [semanticFocus]);
   const importPaths = useCallback(async (paths: string[]) => {
     const base = screenToFlowPosition({ x: 460, y: 240 });
     const entries = await Promise.all(paths.map(async (filePath, index) => { const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`; return { id, filePath, node: { id, type: 'fileCard' as const, position: { x: base.x + index * 28, y: base.y + index * 72 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } }; }));
@@ -126,6 +133,64 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   }, [onWorkspaceSnapshot, setEdges, setNodes, workspace]);
   useEffect(() => { applyDiscoveryRef.current = applyDiscovery; }, [applyDiscovery]);
 
+  const previewFile = useCallback((id: string) => { const file = analyzedFiles.current.get(id); if (file) setQuickPreview(file); }, []);
+  const openOriginal = useCallback(async (id: string) => { const file = analyzedFiles.current.get(id); if (!file) return; try { await window.aether.openOriginalFile(file.filePath); } catch (error) { setDropError(readableError(error)); } }, []);
+  const revealOriginal = useCallback(async (id: string) => { const file = analyzedFiles.current.get(id); if (!file) return; try { await window.aether.revealFile(file.filePath); } catch (error) { setDropError(readableError(error)); } }, []);
+  const reanalyzeFile = useCallback(async (id: string) => {
+    const fileNode = nodesRef.current.find((node): node is FileCardNodeType => node.id === id && node.type === 'fileCard');
+    if (!fileNode) return;
+    setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'loading', errorMessage: null } } as FileCardNodeType : node));
+    try {
+      const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(fileNode.data.filePath, id), window.aether.getThumbnail(fileNode.data.filePath)]);
+      analyzedFiles.current.set(id, analysis); setQuickPreview(analysis);
+      setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null } } as FileCardNodeType : node));
+      await applyDiscoveryRef.current();
+    } catch (error) { const message = readableError(error); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'error', errorMessage: message } } as FileCardNodeType : node)); setDropError(message); }
+  }, [setNodes]);
+  const removeFromCanvas = useCallback(async (id: string) => {
+    const file = analyzedFiles.current.get(id);
+    if (file && !window.confirm(`Remove “${file.fileName}” from this canvas? The original file stays untouched.`)) return;
+    analyzedFiles.current.delete(id); pendingFiles.current.delete(id); candidateIds.current.delete(id); setQuickPreview(null);
+    if (analyzedFiles.current.size < 2) { setCluster(null); setEdges([]); setNodes((current) => current.filter((node) => node.type === 'fileCard' && node.id !== id)); return; }
+    setNodes((current) => current.filter((node) => node.id !== id));
+    await applyDiscoveryRef.current();
+  }, [setEdges, setNodes]);
+  const highlightFlow = useCallback((type: RelationshipType) => setSemanticFocus(type), []);
+  const reorganizeCanvas = useCallback(async () => { setSemanticFocus(null); await applyDiscoveryRef.current(); }, []);
+  const focusSourceFile = useCallback((id: string) => {
+    previewFile(id);
+    const node = nodesRef.current.find((item) => item.id === id);
+    if (node) setCenter(node.position.x + 110, node.position.y + 80, { duration: 360, zoom: 1.05 });
+  }, [previewFile, setCenter]);
+  useEffect(() => {
+    const focusFile = (event: Event) => focusSourceFile(String((event as CustomEvent<string>).detail ?? ''));
+    const focusLocation = (event: Event) => {
+      const location = String((event as CustomEvent<string>).detail ?? '');
+      const file = [...analyzedFiles.current.values()].find((item) => item.entities.locations.some((entry) => entry.name === location));
+      if (file) focusSourceFile(file.id);
+    };
+    const togglePackingTask = (event: Event) => {
+      const detail = (event as CustomEvent<{ fileId?: string; taskIndex?: number }>).detail;
+      if (!detail?.fileId || typeof detail.taskIndex !== 'number') return;
+      const current = analyzedFiles.current.get(detail.fileId);
+      const displayData = current?.smartPreview.displayData;
+      const currentItems = Array.isArray(displayData?.items) ? displayData.items as Array<{ text?: string; checked?: boolean }> : [];
+      if (!current || !currentItems[detail.taskIndex] || currentItems[detail.taskIndex].checked) return;
+      const items = currentItems.map((item, index) => index === detail.taskIndex ? { ...item, checked: true } : item);
+      const checkedCount = items.filter((item) => item.checked).length;
+      const taskText = items[detail.taskIndex]?.text;
+      const next: AnalyzedFile = { ...current, entities: { ...current.entities, tasks: current.entities.tasks.map((task) => task.item === taskText ? { ...task, completed: true } : task) }, smartPreview: { ...current.smartPreview, displayData: { ...current.smartPreview.displayData, items, checkedCount, totalCount: items.length } } };
+      analyzedFiles.current.set(next.id, next);
+      setNodes((currentNodes) => currentNodes.map((node) => {
+        if (node.type === 'fileCard' && node.id === next.id) return { ...node, data: { ...node.data, analysis: next } } as FileCardNodeType;
+        if (node.type === 'summaryCard') return { ...node, data: { ...node.data, files: node.data.files.map((file) => file.id === next.id ? next : file) } } as SummaryCardNodeType;
+        return node;
+      }));
+    };
+    window.addEventListener('aether:focus-source-file', focusFile); window.addEventListener('aether:focus-source-location', focusLocation); window.addEventListener('aether:toggle-packing-task', togglePackingTask);
+    return () => { window.removeEventListener('aether:focus-source-file', focusFile); window.removeEventListener('aether:focus-source-location', focusLocation); window.removeEventListener('aether:toggle-packing-task', togglePackingTask); };
+  }, [focusSourceFile, setNodes]);
+
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setIsDragActive(true); }, []);
   const onDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => { if (event.currentTarget.contains(event.relatedTarget as globalThis.Node | null)) return; setIsDragActive(false); }, []);
 
@@ -157,14 +222,16 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const connectSuggestion = useCallback(async () => { if (!suggestion) return; const file = pendingFiles.current.get(suggestion.fileId); if (file) { analyzedFiles.current.set(file.id, file); pendingFiles.current.delete(file.id); candidateIds.current.delete(file.id); await applyDiscovery(); } setSuggestion(null); }, [applyDiscovery, suggestion]);
   const keepSeparate = useCallback(() => { if (suggestion) { pendingFiles.current.delete(suggestion.fileId); candidateIds.current.delete(suggestion.fileId); } setSuggestion(null); }, [suggestion]);
 
-  return <div className="relative h-full w-full bg-[#F4F1E9]" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
-    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
+  return <div className="relative h-full w-full bg-[#F4F1E9]" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop} ref={canvasRef}>
+    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onNodeClick={(_event, node) => { if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onNodeContextMenu={(event, node) => { event.preventDefault(); const bounds = canvasRef.current?.getBoundingClientRect(); const analysis = node.type === 'fileCard' ? (node as FileCardNodeType).data.analysis : null; const relationshipType = node.type === 'hub' ? (node as HubNodeType).data.relationshipType : analysis ? categoriesForFile(analysis)[0] : undefined; setContextMenu({ x: event.clientX - (bounds?.left ?? 0), y: event.clientY - (bounds?.top ?? 0), target: { id: node.id, type: node.type as CanvasMenuTarget['type'], relationshipType } }); }} onNodeDoubleClick={(_event, node) => { if (node.type === 'fileCard') previewFile(node.id); if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onPaneClick={() => { setContextMenu(null); setSemanticFocus(null); }} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
       <Background bgColor="#F4F1E9" color="#DBD5C6" gap={18} size={1} variant={BackgroundVariant.Dots} />
       <MiniMap className="!bottom-5 !right-5 !m-0 !h-[112px] !w-[176px] !rounded-[13px] !border !border-[#D3D3D8] !bg-white/90 !shadow-[0_3px_14px_rgba(33,33,36,0.08)]" maskColor="rgba(242, 242, 245, 0.58)" nodeBorderRadius={5} nodeColor={(node) => node.type === 'summaryCard' ? '#E7A271' : '#8AB99A'} pannable zoomable />
       <CanvasControls />
       {nodes.length === 0 && !isDragActive && <EmptyCanvasState />}
       <AnimatePresence>{suggestion && <Panel className="!bottom-[145px] !right-5 !m-0" position="bottom-right"><SmartSuggestion category={suggestion.category} clusterName={suggestion.clusterName} onConnect={() => void connectSuggestion()} onKeepSeparate={keepSeparate} /></Panel>}</AnimatePresence>
     </ReactFlow>
+    <AnimatePresence>{quickPreview && <div className="absolute right-5 top-5 z-40"><FileQuickPreview file={quickPreview} onClose={() => setQuickPreview(null)} onOpen={() => void openOriginal(quickPreview.id)} onReanalyze={() => void reanalyzeFile(quickPreview.id)} onReveal={() => void revealOriginal(quickPreview.id)} /></div>}</AnimatePresence>
+    {contextMenu && <CanvasContextMenu onClose={() => setContextMenu(null)} onHighlight={highlightFlow} onOpen={() => void openOriginal(contextMenu.target.id)} onPreview={() => { if (contextMenu.target.type === 'summaryCard') setSemanticFocus(null); else previewFile(contextMenu.target.id); }} onReanalyze={() => void reanalyzeFile(contextMenu.target.id)} onReorganize={() => void reorganizeCanvas()} onRemove={() => void removeFromCanvas(contextMenu.target.id)} onReveal={() => void revealOriginal(contextMenu.target.id)} position={{ x: Math.min(contextMenu.x, 940), y: Math.min(contextMenu.y, 600) }} target={contextMenu.target} />}
     <AnimatePresence>{isDragActive && <motion.div animate={{ opacity: 1 }} className="pointer-events-none absolute inset-3 z-30 grid place-items-center rounded-[18px] border-2 border-dashed border-[#4A90D9]/55 bg-[#EAF3FC]/50 backdrop-blur-[2px]" exit={{ opacity: 0 }} initial={{ opacity: 0 }}><motion.div animate={{ scale: 1, y: 0 }} className="rounded-[16px] border border-white/90 bg-white/90 px-7 py-5 text-center shadow-[0_12px_38px_rgba(42,91,137,0.14)]" initial={{ scale: 0.97, y: 4 }}><div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-[12px] bg-[#4A90D9] text-white shadow-[0_4px_12px_rgba(74,144,217,0.28)]"><Plus size={22} /></div><p className="text-[14px] font-semibold text-[#2B2B2E]">Place files in this space</p><p className="mt-1 text-[11px] text-[#7D7D83]">Release to add them at this position</p></motion.div></motion.div>}</AnimatePresence>
     <AnimatePresence>{dropError && <motion.div animate={{ opacity: 1, y: 0 }} className="absolute left-1/2 top-5 z-40 -translate-x-1/2 rounded-[11px] border border-[#EA4335]/20 bg-white px-4 py-2.5 text-[12px] font-medium text-[#9A322A] shadow-[0_5px_18px_rgba(0,0,0,0.09)]" exit={{ opacity: 0, y: -4 }} initial={{ opacity: 0, y: -4 }}>{dropError}</motion.div>}</AnimatePresence>
   </div>;

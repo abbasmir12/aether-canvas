@@ -207,7 +207,7 @@ function FlowMarker({ x, y, angle, size, opacity }: { x: number; y: number; angl
   );
 }
 
-export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targetY, data }: EdgeProps) {
+export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targetY, data, isDimmed = false }: EdgeProps & { isDimmed?: boolean }) {
   const ribbon = data as RibbonData | undefined;
   const color = COLORS[ribbon?.relationshipType ?? 'place'];
   const isSummary = ribbon?.phase === 'summary';
@@ -226,7 +226,7 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
 
   return (
     <motion.g
-      animate={{ opacity: 1 }}
+      animate={{ opacity: isDimmed ? 0.14 : 1 }}
       className="semantic-ribbon"
       initial={{ opacity: 0 }}
       transition={{ delay: drawDelay, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
