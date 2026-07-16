@@ -486,6 +486,18 @@ The hackathon build retains the no-key Leaflet map but treats its provider as ca
 
 Automatic bounds fitting is initialization behavior, not a continuously enforced layout. Aether records the normalized coordinate signature it has fitted; it only reframes the map when that set genuinely changes. Hovering a marker opens an interactive card without auto-panning, so users can move into the card and launch directions while retaining their chosen viewport.
 
+## 051. Budget truth model: explicit actuals with aggregate fallback
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+Missing actual spending is unknown, not equal to the planned estimate. GPT-5.6 now preserves per-category actuals and explicit zeroes from budget files, while Aether retains planned and actual aggregate totals as a compatibility and grounding layer. Older cached workspaces recover their authoritative imported total instead of fabricating full spend. The expanded ledger clearly identifies aggregate-only imports and invites re-analysis for category-level reconciliation.
+
+The Budget detail is a local interactive component rather than model-authored markup: the model supplies grounded financial data, while Aether owns health status, variance, editing, persistence, and export. This keeps live values trustworthy and the generated mini-app consistent with the design system.
+
 ## Decision Template
 
 ## NNN. Decision title

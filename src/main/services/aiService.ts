@@ -43,7 +43,7 @@ Analyze the attached file. Extract only information grounded in the file. Use IS
 
 Choose one smart preview type: flight, hotel, budget, checklist, guide, document, or image.
 - flight displayData: origin, destination, originCity, destCity, departDate, departTime, arriveDate, arriveTime.
-- budget displayData: rows (up to 5, each with category and estimate), total, currency.
+- budget displayData: rows (up to 6, each with category, estimate, and actual when the source provides it), estimatedTotal, actualTotal, total (the estimated total for compatibility), currency. Preserve explicit zero actual amounts; zero means nothing has been spent in that category, not missing data.
 - checklist displayData: items (up to 12, each with text and checked), checkedCount, totalCount.
 - hotel displayData: hotelName, location, checkIn, checkOut, nightlyRate, currency.
 - guide displayData: title, highlights (up to 5), pages when known.

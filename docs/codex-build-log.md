@@ -237,15 +237,20 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 ### Codex contributions
 
-_Record what Codex built or proposed, including affected files._
+- Traced the expanded Budget card's false `$0 left` state to missing per-category actuals being treated as fully spent estimates.
+- Extended GPT-5.6's file-analysis contract to preserve actual amounts—including explicit zeroes—and both planned and actual totals from budget sources.
+- Added backward-compatible recovery from cached `Estimated total` / `Actual total` cost entities, then rebuilt the expanded Budget surface as an interactive ledger with budget health, authoritative remaining balance, category variance, reconciliation status, editable actuals, allocation bars, add-category, persistence, and CSV export.
+- Added automatic canvas reframing and a bounded scroll surface so detached Summary details open within the usable viewport instead of being stranded beyond the right edge.
 
 ### Human decisions
 
-_Record choices, overrides, constraints, and product direction from the human._
+- The human requested that the Budget module be tested against the supplied sample asset, corrected at the data level, and made substantially more interesting in its expanded state.
 
 ### Verification
 
-_Record commands run, tests passed, and observable behavior._
+- `npm run lint` passes strict renderer and Electron TypeScript checks.
+- `npx vite build` completes renderer, main, and preload production bundles.
+- A native Electron headless-Ozone capture loaded the persisted sample `budget.csv`, opened Budget, and showed `$2,200 planned`, `$1,460 spent`, and `$740 available`—replacing the incorrect `$0 left` result without another API call.
 
 ## Day 4 — July 17, 2026
 

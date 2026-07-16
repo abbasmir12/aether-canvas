@@ -121,6 +121,23 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         if (opened) await new Promise((done) => setTimeout(done, 900));
       }
 
+      if (process.env.AETHER_SMOKE_SUMMARY_BUDGET) {
+        const fitted = await window.webContents.executeJavaScript(`(() => {
+          const button = document.querySelector('button[aria-label="Fit canvas to content"]');
+          if (!button) return false;
+          button.click();
+          return true;
+        })()`);
+        if (fitted) await new Promise((done) => setTimeout(done, 500));
+        const opened = await window.webContents.executeJavaScript(`(() => {
+          const button = Array.from(document.querySelectorAll('.react-flow__node-summaryCard button')).find((item) => /^budget/i.test((item.textContent || '').trim()));
+          if (!button) return false;
+          if (button.getAttribute('aria-expanded') !== 'true') button.click();
+          return true;
+        })()`);
+        if (opened) await new Promise((done) => setTimeout(done, 900));
+      }
+
       if (process.env.AETHER_SMOKE_MAP_INTERACTION) {
         await window.webContents.executeJavaScript(`(() => {
           const button = document.querySelector('.aether-map .leaflet-control-zoom-in');
