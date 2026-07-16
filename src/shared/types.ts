@@ -78,12 +78,16 @@ export interface RelationshipDiscovery {
 }
 
 export type DashboardModuleKind = 'overview' | 'timeline' | 'budget' | 'checklist' | 'map' | 'tasks' | 'topics' | 'resources' | 'results';
+export type DashboardModuleIcon = 'sparkles' | 'plane' | 'wallet' | 'check-square' | 'map' | 'list-checks' | 'book-open' | 'file-text';
+export type DashboardModuleAccent = 'dates' | 'cost' | 'place' | 'tasks' | 'neutral';
 
 export interface DashboardModule {
   id: string;
   kind: DashboardModuleKind;
   title: string;
   summary: string;
+  icon: DashboardModuleIcon;
+  accent: DashboardModuleAccent;
   sourceFileIds: string[];
 }
 
@@ -147,6 +151,7 @@ export interface DashboardAiInsight {
 
 export interface DashboardState {
   expandedSection?: string;
+  expandedSections?: string[];
   budgetRows?: DashboardBudgetRow[];
   packingItems?: DashboardPackingItem[];
   aiCache?: Partial<Record<DashboardInsightKind, DashboardAiInsight[]>>;

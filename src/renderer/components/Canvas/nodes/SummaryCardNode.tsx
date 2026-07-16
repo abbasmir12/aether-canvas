@@ -10,30 +10,33 @@ export type SummaryCardNodeData = { cluster: SuggestedCluster; files: AnalyzedFi
 export type SummaryCardNodeType = Node<SummaryCardNodeData, 'summaryCard'>;
 
 const COLORS: Record<RelationshipType, string> = { dates: '#4A90D9', cost: '#34A853', place: '#EA4335', tasks: '#9B72CF' };
-const iconFor: Record<DashboardModuleKind, ComponentType<{ size?: number; strokeWidth?: number }>> = { overview: Sparkles, timeline: Plane, budget: Wallet, checklist: CheckSquare, map: Map, tasks: ListChecks, topics: BookOpen, resources: FileText, results: Sparkles };
+const iconForKind: Record<DashboardModuleKind, ComponentType<{ size?: number; strokeWidth?: number }>> = { overview: Sparkles, timeline: Plane, budget: Wallet, checklist: CheckSquare, map: Map, tasks: ListChecks, topics: BookOpen, resources: FileText, results: Sparkles };
+const iconForPlan = { sparkles: Sparkles, plane: Plane, wallet: Wallet, 'check-square': CheckSquare, map: Map, 'list-checks': ListChecks, 'book-open': BookOpen, 'file-text': FileText } as const;
 const relationshipFor = (kind: DashboardModuleKind): RelationshipType | null => ({ timeline: 'dates', budget: 'cost', checklist: 'tasks', tasks: 'tasks', map: 'place' } as Partial<Record<DashboardModuleKind, RelationshipType>>)[kind] ?? null;
+const colorFor = (module: DashboardModule) => module.accent === 'dates' ? COLORS.dates : module.accent === 'cost' ? COLORS.cost : module.accent === 'place' ? COLORS.place : module.accent === 'tasks' ? COLORS.tasks : '#9B72CF';
 const value = (data: Record<string, unknown>, key: string) => typeof data[key] === 'string' ? data[key] : '';
 const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
 const emit = (name: string, detail: unknown) => window.dispatchEvent(new CustomEvent(name, { detail }));
 
 function fallbackPlan(files: AnalyzedFile[], cluster: SuggestedCluster): DashboardPlan {
-  const modules: DashboardModule[] = [{ id: 'overview', kind: 'overview', title: cluster.category === 'education' ? 'Key concepts' : 'Overview', summary: files.map((file) => file.summary).slice(0, 2).join(' '), sourceFileIds: files.map((file) => file.id) }];
-  if (files.some((file) => file.entities.dates.length)) modules.push({ id: 'timeline', kind: 'timeline', title: cluster.category === 'travel' ? 'Journey' : 'Timeline', summary: 'Important dates synthesized from your source files.', sourceFileIds: files.filter((file) => file.entities.dates.length).map((file) => file.id) });
-  if (files.some((file) => file.entities.costs.length)) modules.push({ id: 'budget', kind: 'budget', title: 'Budget', summary: 'Editable amounts grounded in the files you added.', sourceFileIds: files.filter((file) => file.entities.costs.length).map((file) => file.id) });
-  if (files.some((file) => file.entities.tasks.length)) modules.push({ id: 'tasks', kind: 'tasks', title: cluster.category === 'travel' ? 'Packing' : 'Tasks', summary: 'Track the actionable items Aether found.', sourceFileIds: files.filter((file) => file.entities.tasks.length).map((file) => file.id) });
-  if (files.some((file) => file.entities.locations.length)) modules.push({ id: 'map', kind: 'map', title: cluster.category === 'travel' ? 'Map' : 'Places', summary: 'Places mentioned across this workspace.', sourceFileIds: files.filter((file) => file.entities.locations.length).map((file) => file.id) });
+  const modules: DashboardModule[] = [{ id: 'overview', kind: 'overview', title: cluster.category === 'education' ? 'Key concepts' : 'Overview', summary: files.map((file) => file.summary).slice(0, 2).join(' '), icon: 'sparkles', accent: 'neutral', sourceFileIds: files.map((file) => file.id) }];
+  if (files.some((file) => file.entities.dates.length)) modules.push({ id: 'timeline', kind: 'timeline', title: cluster.category === 'travel' ? 'Journey' : 'Timeline', summary: 'Important dates synthesized from your source files.', icon: 'plane', accent: 'dates', sourceFileIds: files.filter((file) => file.entities.dates.length).map((file) => file.id) });
+  if (files.some((file) => file.entities.costs.length)) modules.push({ id: 'budget', kind: 'budget', title: 'Budget', summary: 'Editable amounts grounded in the files you added.', icon: 'wallet', accent: 'cost', sourceFileIds: files.filter((file) => file.entities.costs.length).map((file) => file.id) });
+  if (files.some((file) => file.entities.tasks.length)) modules.push({ id: 'tasks', kind: 'tasks', title: cluster.category === 'travel' ? 'Packing' : 'Tasks', summary: 'Track the actionable items Aether found.', icon: 'list-checks', accent: 'tasks', sourceFileIds: files.filter((file) => file.entities.tasks.length).map((file) => file.id) });
+  if (files.some((file) => file.entities.locations.length)) modules.push({ id: 'map', kind: 'map', title: cluster.category === 'travel' ? 'Map' : 'Places', summary: 'Places mentioned across this workspace.', icon: 'map', accent: 'place', sourceFileIds: files.filter((file) => file.entities.locations.length).map((file) => file.id) });
   return { title: cluster.name, subtitle: cluster.dateRange, category: cluster.category, modules };
 }
 
 function ModuleShell({ module, open, onToggle, onHover, children }: { module: DashboardModule; open: boolean; onToggle: () => void; onHover: (active: boolean) => void; children: React.ReactNode }) {
-  const Icon = iconFor[module.kind];
+  const [isOpen, setIsOpen] = useState(true);
+  const Icon = iconForPlan[module.icon] ?? iconForKind[module.kind];
   const relationship = relationshipFor(module.kind);
-  const color = relationship ? COLORS[relationship] : '#9B72CF';
+  const color = colorFor(module);
   return <motion.section layout className="relative rounded-[11px] border border-[#DFDFE2] bg-[#FEFEFF] px-3 py-2.5 transition-shadow hover:shadow-[0_3px_10px_rgba(0,0,0,0.05)]" onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)} transition={{ duration: 0.22 }}>
     {relationship && <><Handle className="!h-[8px] !w-[8px] !border-0 !bg-transparent !opacity-0" id={`summary-${relationship}`} position={Position.Left} style={{ top: '50%' }} type="target" /><span aria-hidden className="pointer-events-none absolute left-[-10px] top-1/2 grid h-[18px] w-[18px] -translate-y-1/2 place-items-center rounded-full border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]" style={{ backgroundColor: color }}><span className="h-1.5 w-1.5 rounded-full bg-white" /></span></>}
-    <button aria-expanded={open} className="nodrag flex w-full items-center gap-2 text-left" onClick={onToggle} type="button"><span className="grid h-5 w-5 place-items-center rounded-full text-white" style={{ backgroundColor: color }}><Icon size={13} strokeWidth={2.4} /></span><span className="flex-1 text-[12px] font-semibold text-[#333337]">{module.title}</span><ChevronDown className={`text-[#89898F] transition-transform ${open ? 'rotate-180' : ''}`} size={15} /></button>
-    {!open && <p className="mt-1.5 line-clamp-2 text-[10px] leading-4 text-[#76767C]">{module.summary}</p>}
-    <AnimatePresence>{open && <motion.div animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden" exit={{ height: 0, opacity: 0 }} initial={{ height: 0, opacity: 0 }} transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}>{children}</motion.div>}</AnimatePresence>
+    <button aria-expanded={isOpen} className="nodrag flex w-full items-center gap-2 text-left" onClick={() => { setIsOpen((current) => !current); onToggle(); }} type="button"><span className="grid h-5 w-5 place-items-center rounded-full text-white" style={{ backgroundColor: color }}><Icon size={13} strokeWidth={2.4} /></span><span className="flex-1 text-[12px] font-semibold text-[#333337]">{module.title}</span><ChevronDown className={`text-[#89898F] transition-transform ${isOpen ? 'rotate-180' : ''}`} size={15} /></button>
+    {!isOpen && <p className="mt-1.5 line-clamp-2 text-[10px] leading-4 text-[#76767C]">{module.summary}</p>}
+    <AnimatePresence>{isOpen && <motion.div animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden" exit={{ height: 0, opacity: 0 }} initial={{ height: 0, opacity: 0 }} transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}>{children}</motion.div>}</AnimatePresence>
   </motion.section>;
 }
 

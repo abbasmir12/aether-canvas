@@ -183,12 +183,14 @@ const RELATIONSHIP_SCHEMA = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['id', 'kind', 'title', 'summary', 'sourceFileIds'],
+            required: ['id', 'kind', 'title', 'summary', 'icon', 'accent', 'sourceFileIds'],
             properties: {
               id: { type: 'string' },
               kind: { type: 'string', enum: ['overview', 'timeline', 'budget', 'checklist', 'map', 'tasks', 'topics', 'resources', 'results'] },
               title: { type: 'string' },
               summary: { type: 'string' },
+              icon: { type: 'string', enum: ['sparkles', 'plane', 'wallet', 'check-square', 'map', 'list-checks', 'book-open', 'file-text'] },
+              accent: { type: 'string', enum: ['dates', 'cost', 'place', 'tasks', 'neutral'] },
               sourceFileIds: { type: 'array', items: { type: 'string' } },
             },
           },
@@ -330,7 +332,7 @@ export async function findRelationships(
         content: [
           {
             type: 'input_text',
-            text: `You are the relationship and workspace compiler for Aether Canvas. Identify only meaningful semantic relationships grounded in the analyzed metadata. Prefer one strongest relationship type for each related file pair. Do not connect unrelated files.\n\nThen design the dashboard this exact cluster needs. The dashboard is not a travel template: choose 2-5 modules based on the files. Allowed module kinds: overview, timeline, budget, checklist, map, tasks, topics, resources, results.\n\nExamples: travel → timeline/budget/checklist/map; study → overview/topics/timeline/tasks/resources; work project → overview/timeline/tasks/budget/resources; medical → results/timeline/tasks/resources; recipes → overview/checklist/timeline/resources. Only use modules grounded in the files. Give each module a specific short title, a concise grounded summary, and the exact source file IDs that contributed. Return dashboard null only when the files cannot form a coherent workspace.\n\nFiles: ${JSON.stringify(files)}`,
+            text: `You are the relationship and workspace compiler for Aether Canvas. Identify only meaningful semantic relationships grounded in the analyzed metadata. Prefer one strongest relationship type for each related file pair. Do not connect unrelated files.\n\nThen design the dashboard this exact cluster needs. The dashboard is not a travel template, but every module must follow Aether's premium summary-card grammar: a compact white rounded section, a colored circular Lucide icon, a clear title, a concise useful preview, and an expanded interactive detail area. The visual inspiration is: a Journey timeline with a plane, a Budget ring with a wallet, a Packing checklist with a check-square, and a Map with pins. Translate that same quality and clarity to the user’s actual domain.\n\nChoose 2-5 modules based only on the files. Allowed kinds: overview, timeline, budget, checklist, map, tasks, topics, resources, results. Choose an icon from: sparkles, plane, wallet, check-square, map, list-checks, book-open, file-text. Choose an accent: dates (blue), cost (green), place (coral), tasks (purple), neutral (soft violet).\n\nExamples: travel → timeline/budget/checklist/map; study → overview/topics/timeline/tasks/resources; work project → overview/timeline/tasks/budget/resources; medical → results/timeline/tasks/resources; recipes → overview/checklist/timeline/resources. Only use modules grounded in the files. Give each module a specific short title, concise grounded summary, visual icon/accent, and exact source file IDs that contributed. Return dashboard null only when the files cannot form a coherent workspace.\n\nFiles: ${JSON.stringify(files)}`,
           },
         ],
       },

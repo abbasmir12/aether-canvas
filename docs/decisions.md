@@ -380,6 +380,16 @@ GPT-5.6 now compiles cluster metadata into a typed dashboard plan: title, subtit
 
 Hover state must never replace React Flow’s custom edge component. A shared interaction store changes only ribbon opacity on focus, and rich variable-width ribbon geometry is temporarily replaced with a single cubic SVG path during direct node movement. This prevents re-mount/fade replay and avoids expensive multi-layer geometry work while pointer coordinates are changing.
 
+## 041. Give GPT the dashboard visual grammar, not unrestricted UI authority
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The relationship compiler prompt now includes the original Summary Card’s visual grammar—colored circular Lucide icon, semantic accent, compact useful preview, and expanded detailed module. GPT chooses the specific icon and accent from a closed design-system vocabulary for each planned module. This preserves the intentional premium template while allowing the information architecture to adapt to any coherent cluster.
+
 ## Decision Template
 
 ## NNN. Decision title
