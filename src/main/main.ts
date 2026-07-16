@@ -19,6 +19,7 @@ import {
   prepareFileForAPI,
 } from './services/fileReader';
 import { createWorkspaceStore } from './services/workspaceService';
+import { createPinnedFolderStore } from './services/pinnedFolderService';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const authorizedFilePaths = new Set<string>();
@@ -109,6 +110,7 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
 
 function registerIpcHandlers(): void {
   const workspaces = () => createWorkspaceStore(app.getPath('userData'));
+  const pinnedFolders = () => createPinnedFolderStore(app.getPath('userData'), authorizeFile);
   ipcMain.handle('aether:get-dropped-file-path', (_event, filePath: string) =>
     authorizeFile(filePath),
   );
@@ -208,6 +210,14 @@ function registerIpcHandlers(): void {
   ipcMain.handle('aether:workspace-delete', (_event, id: string) => workspaces().delete(id));
   ipcMain.handle('aether:workspace-rename', (_event, id: string, name: string) => workspaces().rename(id, name));
   ipcMain.handle('aether:workspace-set-icon', (_event, id: string, icon: string, color: string) => workspaces().setIcon(id, icon, color));
+  ipcMain.handle('aether:pinned-folder-add', async () => {
+    const result = await dialog.showOpenDialog({ title: 'Pin a folder in Aether', properties: ['openDirectory'] });
+    if (result.canceled || !result.filePaths[0]) return null;
+    return pinnedFolders().add(result.filePaths[0]);
+  });
+  ipcMain.handle('aether:pinned-folder-remove', (_event, folderPath: string) => pinnedFolders().remove(folderPath));
+  ipcMain.handle('aether:pinned-folder-list', () => pinnedFolders().list());
+  ipcMain.handle('aether:pinned-folder-read', (_event, folderPath: string) => pinnedFolders().read(folderPath));
 }
 
 function createWindow(): BrowserWindow {

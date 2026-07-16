@@ -26,11 +26,10 @@ export default function App() {
   const selectWorkspace = useCallback(async (id: string) => { await saveCurrent(); const loaded = await window.aether.workspace.load(id); workspaceRef.current = loaded; setWorkspace(loaded); setActiveNavItem('canvas'); await refreshIndex(); }, [refreshIndex, saveCurrent]);
   const createWorkspace = useCallback(async () => { await saveCurrent(); const created = await window.aether.workspace.create(); workspaceRef.current = created; setWorkspace(created); setActiveNavItem('canvas'); await refreshIndex(); }, [refreshIndex, saveCurrent]);
   const snapshotWorkspace = useCallback((snapshot: WorkspaceData) => { workspaceRef.current = snapshot; setWorkspace(snapshot); dirty.current = true; }, []);
-  const browseLocalFiles = useCallback(async () => {
-    const selected = await window.aether.openFileDialog();
-    if (selected.canceled || !selected.filePaths.length) return;
+  const importPinnedFiles = useCallback((filePaths: string[]) => {
+    if (!filePaths.length) return;
     setActiveNavItem('canvas');
-    requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('aether:import-paths', { detail: selected.filePaths })));
+    requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('aether:import-paths', { detail: filePaths })));
   }, []);
 
   useEffect(() => { void (async () => { const index = await window.aether.workspace.list(); setWorkspaceIndex(index); const first = index.activeWorkspaceId ?? index.workspaces[0]?.id; if (first) await selectWorkspace(first); else await createWorkspace(); })(); }, [createWorkspace, selectWorkspace]);
@@ -42,7 +41,7 @@ export default function App() {
       ? <SpacesView onCreate={() => void createWorkspace()} onSelect={(id) => void selectWorkspace(id)} workspaces={workspaceIndex.workspaces} />
       : activeNavItem === 'recent'
         ? <RecentView onSelect={(id) => void selectWorkspace(id)} workspaces={workspaceIndex.workspaces} />
-        : <LocalFilesView onBrowse={() => void browseLocalFiles()} />;
+        : <LocalFilesView onAddFiles={importPinnedFiles} />;
 
   return <main className="flex h-screen w-screen flex-col overflow-hidden bg-[#F8F8FA] text-aether-ink"><TopBar /><div className="flex min-h-0 flex-1"><Sidebar activeNavItem={activeNavItem} activeWorkspaceId={workspace?.id ?? null} onCreateWorkspace={() => void createWorkspace()} onDeleteWorkspace={(id) => void (async () => { await window.aether.workspace.delete(id); await refreshIndex(); const index = await window.aether.workspace.list(); const next = index.activeWorkspaceId ?? index.workspaces[0]?.id; if (next) await selectWorkspace(next); })()} onFocusTokyoTrip={() => { setActiveNavItem('canvas'); setFocusRequest((request) => request + 1); }} onHelp={() => setPanel('help')} onNavChange={setActiveNavItem} onRenameWorkspace={(id, name) => { if (workspace?.id === id) snapshotWorkspace({ ...workspace, name }); void window.aether.workspace.rename(id, name).then(refreshIndex); }} onSelectWorkspace={(id) => void selectWorkspace(id)} onSettings={() => setPanel('settings')} workspaces={workspaceIndex.workspaces} /><section className="relative min-w-0 flex-1 bg-[#F8F8FA]"><>{content}{panel === 'settings' && <Panel onClose={() => setPanel(null)} title="Settings"><div className="space-y-5 text-[13px]"><section><h3 className="mb-2 font-semibold">General</h3><p className="text-[#77777D]">Light theme · Canvas background · Default zoom</p></section><section><h3 className="mb-2 font-semibold">AI configuration</h3><p className="text-[#77777D]">Runtime model: GPT-5.6 · Auto-analyze on drop enabled</p></section></div></Panel>}</></section></div></main>;
 }

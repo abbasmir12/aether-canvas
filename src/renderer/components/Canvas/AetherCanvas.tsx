@@ -131,6 +131,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
 
   const onDrop = useCallback(async (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault(); setIsDragActive(false); setDropError(null);
+    const pinnedFilePath = event.dataTransfer.getData('application/x-aether-file-path');
+    if (pinnedFilePath) { await importPaths([pinnedFilePath]); return; }
     const droppedFiles = Array.from(event.dataTransfer.files); if (!droppedFiles.length) return;
     const basePosition = screenToFlowPosition({ x: event.clientX, y: event.clientY });
     const clusterFileNodes = nodesRef.current.filter((node): node is FileCardNodeType => node.type === 'fileCard' && analyzedFiles.current.has(node.id));
@@ -150,7 +152,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
         analyzedFiles.current.set(id, analysis); await applyDiscovery();
       } catch (error) { const message = readableError(error); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'error', errorMessage: message } } as FileCardNodeType : node)); setDropError(message); }
     }));
-  }, [applyDiscovery, screenToFlowPosition, setNodes]);
+  }, [applyDiscovery, importPaths, screenToFlowPosition, setNodes]);
 
   const connectSuggestion = useCallback(async () => { if (!suggestion) return; const file = pendingFiles.current.get(suggestion.fileId); if (file) { analyzedFiles.current.set(file.id, file); pendingFiles.current.delete(file.id); candidateIds.current.delete(file.id); await applyDiscovery(); } setSuggestion(null); }, [applyDiscovery, suggestion]);
   const keepSeparate = useCallback(() => { if (suggestion) { pendingFiles.current.delete(suggestion.fileId); candidateIds.current.delete(suggestion.fileId); } setSuggestion(null); }, [suggestion]);

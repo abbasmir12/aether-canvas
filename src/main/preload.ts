@@ -16,6 +16,12 @@ const aetherBridge: AetherBridge = {
   minimizeWindow: () => ipcRenderer.invoke('aether:window-minimize'),
   maximizeWindow: () => ipcRenderer.invoke('aether:window-maximize'),
   closeWindow: () => ipcRenderer.invoke('aether:window-close'),
+  fs: {
+    addPinnedFolder: () => ipcRenderer.invoke('aether:pinned-folder-add'),
+    removePinnedFolder: (folderPath) => ipcRenderer.invoke('aether:pinned-folder-remove', folderPath),
+    getPinnedFolders: () => ipcRenderer.invoke('aether:pinned-folder-list'),
+    readPinnedFolder: (folderPath) => ipcRenderer.invoke('aether:pinned-folder-read', folderPath),
+  },
   workspace: {
     list: () => ipcRenderer.invoke('aether:workspace-list'),
     create: (name) => ipcRenderer.invoke('aether:workspace-create', name),

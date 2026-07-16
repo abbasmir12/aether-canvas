@@ -270,6 +270,16 @@ New workspaces begin as `Untitled Space` with a semantic icon/color preset and e
 
 The Spaces, Recent, and Local Files navigation destinations are derived from the same local workspace records that power the canvas. Spaces is a browseable index of persisted canvases, Recent reads cached analyzed-file summaries across those spaces, and Local Files uses the secure native picker before routing selected paths through Aether's established file-analysis path. This preserves a single source of truth and ensures every sidebar action advances a user task rather than displaying inert chrome.
 
+## 032. Pinned folders instead of an unrestricted local file browser
+
+**Status:** Accepted
+
+**Date:** July 16, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+Local Files is deliberately a short list of user-pinned folders, not a replica of the operating system’s entire file manager. Aether stores only the explicitly selected directory paths in `userData/pinned-folders.json`, refreshes direct supported-file contents whenever the view opens, and authorizes those displayed files for the existing metadata, thumbnail, and GPT-5.6 import flow. This keeps the consumer workflow focused on repeat-use folders while preserving the local-first security boundary.
+
 ## 020. Resilient workspace assembly after file analysis
 
 **Status:** Accepted

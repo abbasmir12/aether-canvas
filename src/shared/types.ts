@@ -147,6 +147,23 @@ export interface OpenFileDialogResult {
   filePaths: string[];
 }
 
+export interface PinnedFolder {
+  path: string;
+  addedAt: string;
+}
+
+export interface PinnedFolderFile {
+  name: string;
+  path: string;
+  size: number;
+  modifiedAt: string;
+  type: string;
+}
+
+export interface PinnedFolderContents extends PinnedFolder {
+  files: PinnedFolderFile[];
+}
+
 export interface WorkspaceListItem {
   id: string;
   name: string;
@@ -181,6 +198,12 @@ export interface AetherBridge {
   minimizeWindow: () => Promise<void>;
   maximizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;
+  fs: {
+    addPinnedFolder: () => Promise<PinnedFolder | null>;
+    removePinnedFolder: (folderPath: string) => Promise<void>;
+    getPinnedFolders: () => Promise<PinnedFolderContents[]>;
+    readPinnedFolder: (folderPath: string) => Promise<PinnedFolderContents>;
+  };
   workspace: {
     list: () => Promise<WorkspaceIndex>;
     create: (name?: string) => Promise<WorkspaceData>;
