@@ -166,6 +166,18 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 - `npm run lint` passes strict renderer and main-process TypeScript checks.
 
+### Codex contributions — live-inspected Summary Card art direction
+
+- Ran the real Electron renderer with the five sample files in an isolated user-data profile and captured populated before, complete-card, and expanded-Journey states without modifying saved workspaces.
+- Refined the card as a single premium desktop object: stronger header identity, restrained semantic atmosphere, tuned 22px silhouette, more dimensional section surfaces, clearer connection terminals, and a quieter provenance treatment.
+- Rebalanced the compact Budget ring from the actual GPT compact values, polished the live packing rail, redesigned expanded Budget into a composed metric-and-table surface, upgraded Packing into tactile checklist rows, and brought the Leaflet map container and popovers into the same material system.
+
+### Verification — live-inspected Summary Card art direction
+
+- `npm run lint` passes after the visual pass.
+- `npx vite build` completes the renderer, Electron main process, and preload production bundles.
+- Native headless-Ozone Electron captures verified the real five-file card at runtime, including its detached Journey detail panel; no Xvfb was used.
+
 ## Day 3 — July 16, 2026
 
 ### Codex contributions
