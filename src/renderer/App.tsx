@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
-import { HelpCircle, Settings, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import type { WorkspaceData, WorkspaceIndex } from '../shared/types';
+import type { AetherSettings, AetherSettingsUpdate, WorkspaceData, WorkspaceIndex } from '../shared/types';
 import AetherCanvas from './components/Canvas/AetherCanvas';
+import HelpPanel from './components/Help/HelpPanel';
+import SettingsPanel from './components/Settings/SettingsPanel';
 import Sidebar, { type NavItem } from './components/Sidebar/Sidebar';
 import TopBar from './components/TopBar/TopBar';
 import { LocalFilesView, RecentView, SpacesView } from './components/Views/WorkspaceViews';
@@ -13,13 +14,24 @@ const SIDEBAR_MIN = 240;
 const SIDEBAR_MAX = 360;
 const SIDEBAR_COLLAPSE_POINT = 190;
 
+const DEFAULT_SETTINGS: AetherSettings = {
+  ribbonMode: 'rich',
+  showMinimap: true,
+  minimapConnectors: true,
+  liveFileSync: true,
+  canvasTone: 'warm',
+  defaultZoom: 1,
+  model: 'gpt-5.6-luna',
+  reasoningEffort: 'low',
+  apiKeyConfigured: false,
+  apiKeySource: 'missing',
+  secureStorageAvailable: false,
+  settingsPath: '',
+};
+
 function savedSidebarWidth(): number {
   const stored = Number(window.localStorage.getItem('aether:sidebar-width'));
   return Number.isFinite(stored) ? Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, stored)) : SIDEBAR_MIN;
-}
-
-function Panel({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
-  return <div className="absolute inset-0 z-50 grid place-items-center bg-[#252529]/15 p-5 backdrop-blur-sm"><section className="w-full max-w-[440px] rounded-[16px] border border-[#E6E4E1] bg-white p-5 shadow-[0_18px_48px_rgba(0,0,0,0.16)]"><header className="mb-5 flex items-center justify-between"><h2 className="text-[18px] font-semibold">{title}</h2><button className="grid h-8 w-8 place-items-center rounded-lg text-[#77777D] hover:bg-[#F3F2F0]" onClick={onClose} type="button"><X size={18} /></button></header>{children}</section></div>;
 }
 
 export default function App() {
@@ -32,6 +44,7 @@ export default function App() {
   const [sidebarPinned, setSidebarPinned] = useState(() => window.localStorage.getItem('aether:sidebar-open') !== 'false');
   const [sidebarPreview, setSidebarPreview] = useState(false);
   const [sidebarDragHidden, setSidebarDragHidden] = useState(false);
+  const [settings, setSettings] = useState<AetherSettings>(DEFAULT_SETTINGS);
   const dirty = useRef(false);
   const workspaceRef = useRef<WorkspaceData | null>(null);
 
@@ -45,8 +58,13 @@ export default function App() {
     setActiveNavItem('canvas');
     requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('aether:import-paths', { detail: filePaths })));
   }, []);
+  const updateSettings = useCallback(async (update: AetherSettingsUpdate) => {
+    const next = await window.aether.settings.update(update);
+    setSettings(next);
+  }, []);
 
   useEffect(() => { void (async () => { const index = await window.aether.workspace.list(); setWorkspaceIndex(index); const first = index.activeWorkspaceId ?? index.workspaces[0]?.id; if (first) await selectWorkspace(first); else await createWorkspace(); })(); }, [createWorkspace, selectWorkspace]);
+  useEffect(() => { void window.aether.settings.get().then(setSettings); }, []);
   useEffect(() => { const timer = window.setInterval(() => void saveCurrent(), 10_000); const flush = () => void saveCurrent(); window.addEventListener('beforeunload', flush); return () => { window.clearInterval(timer); window.removeEventListener('beforeunload', flush); void saveCurrent(); }; }, [saveCurrent]);
   useEffect(() => { window.localStorage.setItem('aether:sidebar-width', String(sidebarWidth)); }, [sidebarWidth]);
   useEffect(() => { window.localStorage.setItem('aether:sidebar-open', String(sidebarPinned)); }, [sidebarPinned]);
@@ -85,7 +103,7 @@ export default function App() {
   }, []);
 
   const content = activeNavItem === 'canvas'
-    ? <ReactFlowProvider><AetherCanvas focusRequest={focusRequest} onWorkspaceSnapshot={snapshotWorkspace} workspace={workspace} /></ReactFlowProvider>
+    ? <ReactFlowProvider><AetherCanvas focusRequest={focusRequest} onWorkspaceSnapshot={snapshotWorkspace} settings={settings} workspace={workspace} /></ReactFlowProvider>
     : activeNavItem === 'spaces'
       ? <SpacesView onCreate={() => void createWorkspace()} onSelect={(id) => void selectWorkspace(id)} workspaces={workspaceIndex.workspaces} />
       : activeNavItem === 'recent'
@@ -156,7 +174,10 @@ export default function App() {
 
         <section className="relative min-w-0 flex-1 bg-[#F8F8FA]">
           {content}
-          {panel === 'settings' && <Panel onClose={() => setPanel(null)} title="Settings"><div className="space-y-5 text-[13px]"><section><h3 className="mb-2 font-semibold">General</h3><p className="text-[#77777D]">Light theme · Canvas background · Default zoom</p></section><section><h3 className="mb-2 font-semibold">AI configuration</h3><p className="text-[#77777D]">Runtime model: GPT-5.6 · Auto-analyze on drop enabled</p></section></div></Panel>}
+          <AnimatePresence>
+            {panel === 'settings' && <SettingsPanel key="settings" onClose={() => setPanel(null)} onUpdate={updateSettings} settings={settings} />}
+            {panel === 'help' && <HelpPanel key="help" onClose={() => setPanel(null)} />}
+          </AnimatePresence>
         </section>
       </div>
     </main>

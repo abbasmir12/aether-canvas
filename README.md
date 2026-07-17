@@ -53,6 +53,8 @@ AI_REASONING_EFFORT=low
 
 Supported GPT-5.6 reasoning efforts are `none`, `low`, `medium`, `high`, `xhigh`, and `max`. Aether calls the quick UI-facing setting “light,” which maps to the API's `low` value. Use `gpt-5.6-terra` for a stronger cost/capability balance or `gpt-5.6-sol` for the hardest quality-first analysis.
 
+The same options are available from **Settings → Intelligence**. `.env` supplies first-run defaults; subsequent user selections are stored in the OS application-data directory. A key entered in Settings is encrypted with Electron `safeStorage` and is never exposed to the renderer. On systems without credential encryption, Aether keeps using `OPENAI_API_KEY` and refuses to persist a plaintext key.
+
 Start Aether:
 
 ```bash
@@ -122,7 +124,7 @@ See [`docs/product-spec.md`](docs/product-spec.md) for scope and [`docs/architec
 
 ## Current Interaction
 
-Drag one or more local files from the operating-system file explorer onto the canvas. Aether authorizes only those explicit paths through the preload bridge, reads their metadata in the main process, and creates FileCard nodes at the spatial drop point. After analysis, the original path remains watched: saving that file in Excel, a text editor, or another desktop app updates Aether automatically. Pan by dragging the open canvas, scroll to pan, use the inset controls to zoom or fit content, and use the minimap to navigate larger spaces.
+Drag one or more local files from the operating-system file explorer onto the canvas. Aether authorizes only those explicit paths through the preload bridge, reads their metadata in the main process, and creates FileCard nodes at the spatial drop point. After analysis, the original path remains watched: saving that file in Excel, a text editor, or another desktop app updates Aether automatically. Pan by dragging the open canvas, scroll to pan, use the inset controls to zoom or fit content, and use the topology-aware minimap to navigate files, hubs, dashboards, answers, and their connectors. Settings can switch the signature rich ribbon material to lightweight colored lines without changing semantic relationships.
 
 ## Screenshots
 

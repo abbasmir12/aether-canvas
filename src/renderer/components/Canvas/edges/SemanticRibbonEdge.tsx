@@ -211,7 +211,7 @@ function buildLitePath(sourceX: number, sourceY: number, targetX: number, target
 }
 
 export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targetY, data }: EdgeProps) {
-  const { focus, isDragging } = useRibbonInteraction();
+  const { focus, isDragging, rich } = useRibbonInteraction();
   const ribbon = data as RibbonData | undefined;
   const color = COLORS[ribbon?.relationshipType ?? 'place'];
   const isDimmed = Boolean(focus && ribbon?.relationshipType !== focus);
@@ -226,8 +226,8 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   // Every ribbon carries a different weight, like strands of unequal flow.
   const baseWidth = isSummary ? [22, 26, 20, 24][index % 4] : [24, 30, 20, 33, 26][index % 5];
   const geometry = useMemo(
-    () => isDragging ? null : buildGeometry(visualSourceX, sourceY, visualTargetX, targetY, baseWidth, index, isSummary),
-    [baseWidth, index, isDragging, isSummary, sourceY, targetY, visualSourceX, visualTargetX],
+    () => isDragging || !rich ? null : buildGeometry(visualSourceX, sourceY, visualTargetX, targetY, baseWidth, index, isSummary),
+    [baseWidth, index, isDragging, isSummary, rich, sourceY, targetY, visualSourceX, visualTargetX],
   );
   const litePath = useMemo(() => buildLitePath(visualSourceX, sourceY, visualTargetX, targetY, index), [index, sourceY, targetY, visualSourceX, visualTargetX]);
   const safeId = String(id).replace(/[^a-z0-9]/gi, '');
@@ -241,8 +241,8 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
       initial={false}
       transition={{ duration: isDragging ? 0 : 0.14, ease: 'easeOut' }}
     >
-      {isDragging && <path d={litePath} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={0.42} strokeWidth={2.5} />}
-      {!isDragging && geometry && <>
+      {(isDragging || !rich) && <path d={litePath} fill="none" stroke={color} strokeLinecap="round" strokeOpacity={isDragging ? 0.42 : 0.68} strokeWidth={isDragging ? 2.5 : 3.5} />}
+      {!isDragging && rich && geometry && <>
       <defs>
         {/* Opacity ramps from a near-transparent source to strong color at the hub. */}
         <linearGradient gradientUnits="userSpaceOnUse" id={gradientId} x1={visualSourceX} x2={visualTargetX} y1={sourceY} y2={targetY}>

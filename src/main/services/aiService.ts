@@ -4,6 +4,8 @@ import { promises as fs } from 'node:fs';
 
 import type {
   AnalyzedFile,
+  AIConnectionTest,
+  AIReasoningEffort,
   DashboardModule,
   DashboardPlan,
   FileAnalysis,
@@ -21,13 +23,14 @@ const DEFAULT_REASONING_EFFORT = 'low';
 const REASONING_EFFORTS = ['none', 'low', 'medium', 'high', 'xhigh', 'max'] as const;
 
 type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+let runtimeAIConfig: { apiKey?: string; model?: string; reasoningEffort?: AIReasoningEffort } = {};
 
 function configuredModel(): string {
-  return process.env.AI_MODEL?.trim() || DEFAULT_MODEL;
+  return runtimeAIConfig.model?.trim() || process.env.AI_MODEL?.trim() || DEFAULT_MODEL;
 }
 
 function configuredReasoningEffort(): ReasoningEffort {
-  const configured = process.env.AI_REASONING_EFFORT?.trim().toLowerCase();
+  const configured = runtimeAIConfig.reasoningEffort ?? process.env.AI_REASONING_EFFORT?.trim().toLowerCase();
 
   if (!configured) {
     return DEFAULT_REASONING_EFFORT;
@@ -365,14 +368,52 @@ Non-travel examples:
 Keep all visible strings concise enough for a 300px-wide desktop card. Preserve traceability by grounding every module and primitive in its sourceFileIds and extracted metadata.`;
 
 let openAIClient: OpenAI | null = null;
+let openAIClientKey = '';
+
+export function configureAI(config: { apiKey?: string; model?: string; reasoningEffort?: AIReasoningEffort }): void {
+  const nextKey = config.apiKey?.trim() || undefined;
+  if (nextKey !== runtimeAIConfig.apiKey) {
+    openAIClient = null;
+    openAIClientKey = '';
+  }
+  runtimeAIConfig = {
+    apiKey: nextKey,
+    model: config.model?.trim() || undefined,
+    reasoningEffort: config.reasoningEffort,
+  };
+}
 
 function client(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
+  const apiKey = runtimeAIConfig.apiKey || process.env.OPENAI_API_KEY;
+  if (!apiKey) {
     throw new Error('OPENAI_API_KEY is not configured. Copy .env.example to .env.');
   }
 
-  openAIClient ??= new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  if (!openAIClient || openAIClientKey !== apiKey) {
+    openAIClient = new OpenAI({ apiKey });
+    openAIClientKey = apiKey;
+  }
   return openAIClient;
+}
+
+export async function testAIConnection(): Promise<AIConnectionTest> {
+  const model = configuredModel();
+  try {
+    const response = await client().responses.create({
+      model,
+      reasoning: { effort: configuredReasoningEffort() },
+      input: 'Reply with only: Aether connected',
+      max_output_tokens: 24,
+      store: false,
+    });
+    return {
+      ok: Boolean(response.output_text.trim()),
+      message: response.output_text.trim() ? 'Connection verified' : 'The model returned an empty response',
+      model,
+    };
+  } catch {
+    return { ok: false, message: 'Could not connect. Check the key, model, and network.', model };
+  }
 }
 
 function parseJSON<T>(outputText: string, label: string): T {

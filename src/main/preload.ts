@@ -23,6 +23,11 @@ const aetherBridge: AetherBridge = {
   getDashboardInsights: (kind, context) => ipcRenderer.invoke('aether:get-dashboard-insights', kind, context),
   askWorkspace: (question, fileIds, dashboard) => ipcRenderer.invoke('aether:ask-workspace', question, fileIds, dashboard),
   hydrateAnalyzedFiles: (files) => ipcRenderer.invoke('aether:hydrate-analyzed-files', files),
+  settings: {
+    get: () => ipcRenderer.invoke('aether:settings-get'),
+    update: (update) => ipcRenderer.invoke('aether:settings-update', update),
+    testAI: () => ipcRenderer.invoke('aether:settings-test-ai'),
+  },
   fileWatcher: {
     watch: (filePath, fileId, contentHash) => ipcRenderer.invoke('aether:file-watcher-watch', filePath, fileId, contentHash),
     unwatch: (filePath, fileId) => ipcRenderer.invoke('aether:file-watcher-unwatch', filePath, fileId),

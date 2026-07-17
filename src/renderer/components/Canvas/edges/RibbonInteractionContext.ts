@@ -2,13 +2,13 @@ import { useSyncExternalStore } from 'react';
 
 import type { RelationshipType } from '../../../../shared/types';
 
-export type RibbonInteractionState = { focus: RelationshipType | null; isDragging: boolean };
+export type RibbonInteractionState = { focus: RelationshipType | null; isDragging: boolean; rich: boolean };
 
-let state: RibbonInteractionState = { focus: null, isDragging: false };
+let state: RibbonInteractionState = { focus: null, isDragging: false, rich: true };
 const listeners = new Set<() => void>();
 
 export function setRibbonInteraction(next: RibbonInteractionState) {
-  if (state.focus === next.focus && state.isDragging === next.isDragging) return;
+  if (state.focus === next.focus && state.isDragging === next.isDragging && state.rich === next.rich) return;
   state = next;
   listeners.forEach((listener) => listener());
 }

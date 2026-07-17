@@ -13,7 +13,7 @@ import {
 } from 'electron';
 
 import type { AnalyzedFile, LocalFileMetadata } from '../shared/types';
-import { analyzeFile, answerWorkspaceQuestion, findRelationships, generateDashboardInsights } from './services/aiService';
+import { analyzeFile, answerWorkspaceQuestion, findRelationships, generateDashboardInsights, testAIConnection } from './services/aiService';
 import {
   generateThumbnail,
   mimeTypeForPath,
@@ -22,6 +22,7 @@ import {
 import { createWorkspaceStore } from './services/workspaceService';
 import { createPinnedFolderStore } from './services/pinnedFolderService';
 import { FileWatcherService, hashFile } from './services/fileWatcher';
+import { createSettingsService, type SettingsService } from './services/settingsService';
 
 if (process.env.AETHER_SMOKE_USER_DATA_DIR) {
   app.setPath('userData', resolve(process.env.AETHER_SMOKE_USER_DATA_DIR));
@@ -31,6 +32,8 @@ const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const authorizedFilePaths = new Set<string>();
 const analyzedFiles = new Map<string, AnalyzedFile>();
 let smokeAnalyzeCalls = 0;
+let settingsService: SettingsService | null = null;
+const settings = () => settingsService ??= createSettingsService(app.getPath('userData'));
 const broadcast = (channel: string, payload: unknown) => {
   for (const window of BrowserWindow.getAllWindows()) {
     if (!window.isDestroyed()) window.webContents.send(channel, payload);
@@ -317,6 +320,73 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         console.log(`AETHER_SMOKE_SIDEBAR initial=${initialSidebar} preview=${previewSidebar} dragCollapsed=${dragCollapsed} final=${finalSidebar}`);
       }
 
+      if (process.env.AETHER_SMOKE_SETTINGS) {
+        const opened = await window.webContents.executeJavaScript(`(() => {
+          const button = document.querySelector('button[aria-label="Settings"]');
+          button?.click();
+          return Boolean(button);
+        })()`);
+        await new Promise((done) => setTimeout(done, 650));
+        if (process.env.AETHER_SMOKE_SETTINGS_TAB) {
+          await window.webContents.executeJavaScript(`(() => {
+            const label = ${JSON.stringify(process.env.AETHER_SMOKE_SETTINGS_TAB)};
+            Array.from(document.querySelectorAll('[data-aether-settings-panel] button')).find((button) => (button.textContent || '').trim() === label)?.click();
+          })()`);
+          await new Promise((done) => setTimeout(done, 350));
+        }
+        const settingsState = await window.webContents.executeJavaScript(`JSON.stringify({
+          opened: ${JSON.stringify(opened)},
+          panel: Boolean(document.querySelector('[data-aether-settings-panel]')),
+          ribbonToggle: document.querySelector('button[aria-label="Design-rich ribbons"]')?.getAttribute('aria-checked'),
+          modelChoices: Array.from(document.querySelectorAll('[data-aether-settings-panel] button')).filter((button) => /GPT-5\\.6/.test(button.textContent || '')).length,
+          keyStatus: document.querySelector('[data-aether-settings-panel]')?.textContent?.includes('API key configured') || false
+        })`);
+        console.log(`AETHER_SMOKE_SETTINGS ${settingsState}`);
+        if (process.env.AETHER_SMOKE_SIMPLE_RIBBONS) {
+          await window.webContents.executeJavaScript(`document.querySelector('button[aria-label="Design-rich ribbons"]')?.click()`);
+          await new Promise((done) => setTimeout(done, 350));
+          await window.webContents.executeJavaScript(`document.querySelector('button[aria-label="Close settings"]')?.click()`);
+          await new Promise((done) => setTimeout(done, 500));
+          const simpleRibbonState = await window.webContents.executeJavaScript(`(async () => JSON.stringify({
+            groups: document.querySelectorAll('.semantic-ribbon').length,
+            pathCounts: Array.from(document.querySelectorAll('.semantic-ribbon')).map((group) => group.querySelectorAll('path').length),
+            persisted: (await window.aether.settings.get()).ribbonMode
+          }))()`);
+          console.log(`AETHER_SMOKE_SIMPLE_RIBBONS ${simpleRibbonState}`);
+        }
+      }
+
+      if (process.env.AETHER_SMOKE_HELP) {
+        const opened = await window.webContents.executeJavaScript(`(() => {
+          const button = document.querySelector('button[aria-label="Help"]');
+          button?.click();
+          return Boolean(button);
+        })()`);
+        await new Promise((done) => setTimeout(done, 650));
+        const helpState = await window.webContents.executeJavaScript(`JSON.stringify({
+          opened: ${JSON.stringify(opened)},
+          panel: Boolean(document.querySelector('[data-aether-help-panel]')),
+          shortcuts: document.querySelector('[data-aether-help-panel]')?.textContent?.includes('Keyboard shortcuts') || false,
+          concepts: document.querySelector('[data-aether-help-panel]')?.textContent?.includes('Ask the Canvas') || false
+        })`);
+        console.log(`AETHER_SMOKE_HELP ${helpState}`);
+      }
+
+      if (process.env.AETHER_SMOKE_MINIMAP) {
+        const minimapState = await window.webContents.executeJavaScript(`JSON.stringify((() => {
+          const minimap = document.querySelector('[data-aether-canvas-minimap]');
+          const svg = minimap?.querySelector('svg.cursor-crosshair');
+          return {
+            present: Boolean(minimap),
+            nodes: svg?.querySelectorAll('g > rect').length || 0,
+            edgeGroups: svg?.querySelectorAll('[data-minimap-edge]').length || 0,
+            overflow: minimap ? getComputedStyle(minimap).overflow : '',
+            viewport: svg?.viewBox.baseVal ? [svg.viewBox.baseVal.x, svg.viewBox.baseVal.y, svg.viewBox.baseVal.width, svg.viewBox.baseVal.height] : []
+          };
+        })())`);
+        console.log(`AETHER_SMOKE_MINIMAP ${minimapState}`);
+      }
+
       if (process.env.AETHER_SMOKE_DEBUG) {
         const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
           ribbons: document.querySelectorAll('.semantic-ribbon').length,
@@ -488,6 +558,12 @@ function registerIpcHandlers(): void {
     });
     return answerWorkspaceQuestion(question, files, dashboard?.modules ? dashboard : null);
   });
+  ipcMain.handle('aether:settings-get', () => settings().get());
+  ipcMain.handle('aether:settings-update', (_event, update) => settings().update(update ?? {}));
+  ipcMain.handle('aether:settings-test-ai', async () => {
+    await settings().initialize();
+    return testAIConnection();
+  });
 
   ipcMain.handle('aether:workspace-list', () => workspaces().list());
   ipcMain.handle('aether:workspace-create', (_event, name?: string) => workspaces().create(name));
@@ -542,7 +618,8 @@ function createWindow(): BrowserWindow {
 
 registerIpcHandlers();
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await settings().initialize();
   createWindow();
 
   app.on('activate', () => {

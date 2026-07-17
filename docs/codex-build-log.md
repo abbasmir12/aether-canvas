@@ -364,6 +364,28 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - A native Electron interaction run measured 308px initial width, verified hidden → 308px hover preview → pinned flow, resized to the 360px maximum, collapsed to 0px by dragging past the 190px threshold, and restored from the left edge.
 - The same run verified the top arrows moved the React Flow viewport from `x=-563` to `x=-863` and back to `x=-563`.
 
+### Runtime settings, product guide, and topology-aware minimap
+
+#### Codex contributions
+
+- Replaced the placeholder Settings modal with a polished four-part preferences surface for canvas presentation, GPT runtime intelligence, living-file behavior, and product information.
+- Added main-process settings persistence with serialized writes, `.env` defaults, Electron `safeStorage` encryption for user-entered API keys, and a renderer-safe status contract that never exposes the credential.
+- Wired runtime controls for rich versus simple semantic connectors, minimap visibility and connector detail, canvas tone, default zoom, live file sync, GPT-5.6 model selection, and reasoning effort.
+- Added a user-triggered GPT connection check and rebuilt Help as a searchable product guide covering the four-step workflow, shortcuts, supported sources, core concepts, and the living-file demo.
+- Replaced React Flow's generic minimap with a clipped, topology-aware Aether overview that draws file cards, semantic hubs, the generated dashboard, visual answers, semantic/query connectors, and the actual visible viewport. Click/drag navigation and fit-to-content are built in.
+
+#### Human decisions
+
+- The human asked for Settings and Help to become valuable product surfaces, requested a default-enabled rich-ribbon switch with a lightweight line alternative, and placed GPT model, API-key, and thinking controls in Settings.
+- The human identified that the previous minimap omitted the connector architecture and allowed shapes to escape its bounds.
+
+#### Verification
+
+- `npm run lint`, renderer/main/preload production compilation, and `git diff --check` pass.
+- Native Electron visual captures verified the Canvas, Intelligence, and Help screens against the north-star aesthetic.
+- The isolated settings smoke test switched 18 semantic edges to exactly one SVG path each and confirmed `ribbonMode: "simple"` persisted to disk.
+- The custom minimap rendered 27 node shapes and all 18 connector groups from the loaded workspace, reported a real `1150 × 1515` topology viewBox, and retained `overflow: hidden` clipping.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions

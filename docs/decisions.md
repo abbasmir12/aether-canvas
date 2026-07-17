@@ -560,6 +560,30 @@ The navigation sidebar supports three intentional states instead of continuously
 
 This preserves navigation legibility while supporting focused canvas work. Hover preview does not displace the canvas, the keep-open action converts it into a stable layout, and both width and pinned preference survive relaunches. The top-bar navigation boundary follows the pinned width so custom window chrome remains visually aligned.
 
+## 057. Main-process runtime settings with protected credentials
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+Runtime AI and canvas preferences are persisted in the OS-standard user-data directory and applied through a typed IPC contract. Environment variables remain the first-run defaults, while user choices can override model and reasoning effort without editing files. API keys entered in the UI are encrypted with Electron `safeStorage`; if OS-backed encryption is unavailable, Aether refuses to persist the key rather than silently writing plaintext. The renderer receives only configured/source status and never the secret.
+
+Rich semantic ribbons remain enabled by default because they carry Aether's visual identity. A persisted simple-line mode provides a lower-complexity and lower-render-cost alternative without changing the graph's meaning.
+
+## 058. Topology-aware custom canvas minimap
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human bug report, Codex implementation
+
+The generic React Flow minimap did not communicate Aether's file → semantic hub → dashboard architecture and could allow visual content to escape its frame. Aether now derives a complete miniature scene from measured React Flow nodes and edges: file cards, colored hubs, dashboard modules, answer cards, semantic streams, query traces, and the current viewport.
+
+All geometry is rendered through a bounded SVG clip path inside an overflow-hidden shell. The overview supports click/drag recentering and fit-to-content, turning it into a useful spatial navigator rather than decorative chrome.
+
 ## Decision Template
 
 ## NNN. Decision title

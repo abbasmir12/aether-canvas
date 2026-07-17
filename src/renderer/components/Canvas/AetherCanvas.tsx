@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import { Background, BackgroundVariant, MiniMap, Panel, ReactFlow, useEdgesState, useNodesState, useReactFlow, useViewport, type Edge, type EdgeTypes, type NodeTypes } from '@xyflow/react';
+import { Background, BackgroundVariant, Panel, ReactFlow, useEdgesState, useNodesState, useReactFlow, useViewport, type Edge, type EdgeTypes, type NodeTypes } from '@xyflow/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 
-import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardPlan, DashboardState, FileDeletedEvent, FileSyncChange, FileSyncStatus, RelationshipDiscovery, RelationshipType, SuggestedCluster, VisualQueryResult, WorkspaceData } from '../../../shared/types';
+import type { AetherSettings, AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardPlan, DashboardState, FileDeletedEvent, FileSyncChange, FileSyncStatus, RelationshipDiscovery, RelationshipType, SuggestedCluster, VisualQueryResult, WorkspaceData } from '../../../shared/types';
 import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
 import { useLiveFileSync } from '../../hooks/useLiveFileSync';
 import SmartSuggestion from './SmartSuggestion';
@@ -18,6 +18,7 @@ import SummaryCardNode, { type SummaryCardNodeType } from './nodes/SummaryCardNo
 import VisualAnswerNode, { type VisualAnswerNodeType } from './nodes/VisualAnswerNode';
 import EmptyCanvasState from './EmptyCanvasState';
 import QueryBar from './VisualQuery/QueryBar';
+import CanvasMinimap from './CanvasMinimap';
 
 type CanvasNode = FileCardNodeType | HubNodeType | SummaryCardNodeType | VisualAnswerNodeType;
 type Suggestion = { fileId: string; category: string; clusterName: string };
@@ -45,7 +46,7 @@ function CanvasControls() {
   return <Panel className="!bottom-5 !left-4 !m-0" position="bottom-left"><div className="flex h-7 items-stretch overflow-hidden rounded-[8px] border border-[#DEDCD9] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]"><button aria-label="Zoom out" className={button} onClick={() => zoomOut({ duration: 180 })} type="button"><Minus size={14} /></button><div className="grid min-w-[52px] place-items-center border-x border-[#E5E3E0] px-2 text-[12px] font-medium tabular-nums text-[#55555A]">{Math.round(zoom * 100)}%</div><button aria-label="Zoom in" className={button} onClick={() => zoomIn({ duration: 180 })} type="button"><Plus size={14} /></button><button aria-label="Fit canvas to content" className={`${button} border-l border-[#E5E3E0]`} onClick={() => fitView({ duration: 300, padding: 0.25 })} type="button"><Maximize2 size={14} /></button></div></Panel>;
 }
 
-export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceSnapshot }: { focusRequest?: number; workspace: WorkspaceData | null; onWorkspaceSnapshot: (workspace: WorkspaceData) => void }) {
+export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceSnapshot, settings }: { focusRequest?: number; workspace: WorkspaceData | null; onWorkspaceSnapshot: (workspace: WorkspaceData) => void; settings: AetherSettings }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -125,8 +126,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     return () => window.clearTimeout(timeout);
   }, [toastMessage]);
   useEffect(() => {
-    setRibbonInteraction({ focus: semanticFocus, isDragging: isCanvasNodeDragging });
-  }, [isCanvasNodeDragging, semanticFocus]);
+    setRibbonInteraction({ focus: semanticFocus, isDragging: isCanvasNodeDragging, rich: settings.ribbonMode === 'rich' });
+  }, [isCanvasNodeDragging, semanticFocus, settings.ribbonMode]);
   useEffect(() => {
     const start = (event: PointerEvent) => {
       const target = event.target as HTMLElement | null;
@@ -220,7 +221,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     setNodes((current) => current.map((node) => node.id === event.fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, syncStatus: 'deleted', syncCheckedAt: event.timestamp } } as FileCardNodeType : node));
     setToastMessage(`${event.filePath.split(/[\\/]/).pop() ?? 'Source file'} is no longer available`);
   }, [setNodes]);
-  const watchedSources = useMemo(() => hydratedWorkspaceId.current === workspace?.id ? nodes.filter((node): node is FileCardNodeType => node.type === 'fileCard' && Boolean(node.data.analysis) && node.data.watchEnabled !== false).map((node) => ({ id: node.id, filePath: node.data.filePath, contentHash: node.data.analysis?.contentHash })) : [], [nodes, workspace?.id]);
+  const watchedSources = useMemo(() => settings.liveFileSync && hydratedWorkspaceId.current === workspace?.id ? nodes.filter((node): node is FileCardNodeType => node.type === 'fileCard' && Boolean(node.data.analysis) && node.data.watchEnabled !== false).map((node) => ({ id: node.id, filePath: node.data.filePath, contentHash: node.data.analysis?.contentHash })) : [], [nodes, settings.liveFileSync, workspace?.id]);
   useLiveFileSync({
     workspaceId: workspace?.id,
     sources: watchedSources,
@@ -648,14 +649,16 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const connectSuggestion = useCallback(async () => { if (!suggestion) return; const file = pendingFiles.current.get(suggestion.fileId); if (file) { analyzedFiles.current.set(file.id, file); pendingFiles.current.delete(file.id); candidateIds.current.delete(file.id); await applyDiscovery(); } setSuggestion(null); }, [applyDiscovery, suggestion]);
   const keepSeparate = useCallback(() => { if (suggestion) { pendingFiles.current.delete(suggestion.fileId); candidateIds.current.delete(suggestion.fileId); } setSuggestion(null); }, [suggestion]);
 
-  return <div className="relative h-full w-full bg-[#F4F1E9]" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop} ref={canvasRef}>
-    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onNodeClick={(_event, node) => { if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onNodeContextMenu={(event, node) => { if (node.type === 'visualAnswer') return; event.preventDefault(); const bounds = canvasRef.current?.getBoundingClientRect(); const analysis = node.type === 'fileCard' ? (node as FileCardNodeType).data.analysis : null; const relationshipType = node.type === 'hub' ? (node as HubNodeType).data.relationshipType : analysis ? categoriesForFile(analysis)[0] : undefined; setContextMenu({ x: event.clientX - (bounds?.left ?? 0), y: event.clientY - (bounds?.top ?? 0), target: { id: node.id, type: node.type as CanvasMenuTarget['type'], relationshipType } }); }} onNodeDoubleClick={(_event, node) => { if (node.type === 'fileCard') previewFile(node.id); if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onPaneClick={() => { setContextMenu(null); setSemanticFocus(null); }} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
-      <Background bgColor="#F4F1E9" color="#DBD5C6" gap={18} size={1} variant={BackgroundVariant.Dots} />
-      <MiniMap className="!bottom-5 !right-5 !m-0 !h-[112px] !w-[176px] !rounded-[13px] !border !border-[#D3D3D8] !bg-white/90 !shadow-[0_3px_14px_rgba(33,33,36,0.08)]" maskColor="rgba(242, 242, 245, 0.58)" nodeBorderRadius={5} nodeColor={(node) => node.type === 'summaryCard' ? '#E7A271' : node.type === 'visualAnswer' ? '#9B72CF' : '#8AB99A'} pannable zoomable />
+  const canvasPalette = settings.canvasTone === 'cool' ? { background: '#F2F5F8', dots: '#D6DEE7' } : settings.canvasTone === 'paper' ? { background: '#FCFCFB', dots: '#E2E0DB' } : { background: '#F4F1E9', dots: '#DBD5C6' };
+
+  return <div className="relative h-full w-full" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop} ref={canvasRef} style={{ backgroundColor: canvasPalette.background }}>
+    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: settings.defaultZoom }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onNodeClick={(_event, node) => { if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onNodeContextMenu={(event, node) => { if (node.type === 'visualAnswer') return; event.preventDefault(); const bounds = canvasRef.current?.getBoundingClientRect(); const analysis = node.type === 'fileCard' ? (node as FileCardNodeType).data.analysis : null; const relationshipType = node.type === 'hub' ? (node as HubNodeType).data.relationshipType : analysis ? categoriesForFile(analysis)[0] : undefined; setContextMenu({ x: event.clientX - (bounds?.left ?? 0), y: event.clientY - (bounds?.top ?? 0), target: { id: node.id, type: node.type as CanvasMenuTarget['type'], relationshipType } }); }} onNodeDoubleClick={(_event, node) => { if (node.type === 'fileCard') previewFile(node.id); if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onPaneClick={() => { setContextMenu(null); setSemanticFocus(null); }} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
+      <Background bgColor={canvasPalette.background} color={canvasPalette.dots} gap={18} size={1} variant={BackgroundVariant.Dots} />
       <CanvasControls />
       {nodes.length === 0 && !isDragActive && <EmptyCanvasState />}
       <AnimatePresence>{suggestion && <Panel className="!bottom-[145px] !right-5 !m-0" position="bottom-right"><SmartSuggestion category={suggestion.category} clusterName={suggestion.clusterName} onConnect={() => void connectSuggestion()} onKeepSeparate={keepSeparate} /></Panel>}</AnimatePresence>
     </ReactFlow>
+    {settings.showMinimap && <CanvasMinimap edges={edges} nodes={nodes} showConnectors={settings.minimapConnectors} />}
     <QueryBar
       disabled={analyzedFiles.current.size === 0}
       history={queryHistory.map((entry) => ({ id: entry.id, question: entry.question, answerHeadline: entry.result?.answer.headline }))}

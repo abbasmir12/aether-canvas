@@ -110,11 +110,20 @@ App
 ├── AppChrome
 │   ├── TitleBar
 │   ├── SearchBar
-│   └── PrivacyStatus
+│   └── WindowControls
 ├── Sidebar
 │   ├── PrimaryNavigation
 │   ├── SavedSpaces
 │   └── SidebarActions
+├── SettingsPanel
+│   ├── CanvasPresentation
+│   ├── IntelligenceConfiguration
+│   ├── LivingFileBehavior
+│   └── About
+├── HelpPanel
+│   ├── SearchableConcepts
+│   ├── WorkflowGuide
+│   └── KeyboardShortcuts
 ├── CanvasWorkspace
 │   ├── FileDropZone
 │   ├── AetherFlow
@@ -132,7 +141,10 @@ App
 │   │   │   └── RelationshipPill
 │   │   ├── SmartSuggestion
 │   │   ├── CanvasControls
-│   │   └── Minimap
+│   │   └── CanvasMinimap
+│   │       ├── NodeTopology
+│   │       ├── SemanticAndQueryEdges
+│   │       └── LiveViewport
 │   └── ProcessingStatus
 └── ErrorBoundary
 ```
@@ -157,6 +169,9 @@ All channels use the required `aether:` prefix:
 | `aether:node:update-position` | renderer → main | Persist a debounced node position update |
 | `aether:cluster:recompute` | renderer → main | Re-evaluate cluster membership after meaningful spatial changes |
 | `aether:suggestion:resolve` | renderer → main | Record connect or keep-separate intent |
+| `aether:settings-get` | renderer → main | Load sanitized runtime/UI settings; never returns the API key |
+| `aether:settings-update` | renderer → main | Serialize preferences and optionally encrypt a replacement API key |
+| `aether:settings-test-ai` | renderer → main | Test the configured model/key from the protected main process |
 
 Bridge rules:
 

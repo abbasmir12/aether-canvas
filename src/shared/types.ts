@@ -343,6 +343,44 @@ export interface WorkspaceData extends WorkspaceListItem {
   viewport: CanvasViewport;
 }
 
+export type RibbonMode = 'rich' | 'simple';
+export type CanvasTone = 'warm' | 'cool' | 'paper';
+export type AIReasoningEffort = 'none' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+
+export interface AetherSettings {
+  ribbonMode: RibbonMode;
+  showMinimap: boolean;
+  minimapConnectors: boolean;
+  liveFileSync: boolean;
+  canvasTone: CanvasTone;
+  defaultZoom: number;
+  model: string;
+  reasoningEffort: AIReasoningEffort;
+  apiKeyConfigured: boolean;
+  apiKeySource: 'environment' | 'encrypted-local' | 'missing';
+  secureStorageAvailable: boolean;
+  settingsPath: string;
+}
+
+export interface AetherSettingsUpdate {
+  ribbonMode?: RibbonMode;
+  showMinimap?: boolean;
+  minimapConnectors?: boolean;
+  liveFileSync?: boolean;
+  canvasTone?: CanvasTone;
+  defaultZoom?: number;
+  model?: string;
+  reasoningEffort?: AIReasoningEffort;
+  apiKey?: string;
+  clearStoredApiKey?: boolean;
+}
+
+export interface AIConnectionTest {
+  ok: boolean;
+  message: string;
+  model: string;
+}
+
 export interface AetherBridge {
   readFile: (filePath: string) => Promise<string>;
   getFileMetadata: (filePath: string) => Promise<LocalFileMetadata>;
@@ -361,6 +399,11 @@ export interface AetherBridge {
   getDashboardInsights: (kind: DashboardInsightKind, context: string) => Promise<DashboardAiInsight[]>;
   askWorkspace: (question: string, fileIds: string[], dashboard: DashboardPlan | null) => Promise<VisualQueryResult>;
   hydrateAnalyzedFiles: (files: AnalyzedFile[]) => Promise<void>;
+  settings: {
+    get: () => Promise<AetherSettings>;
+    update: (update: AetherSettingsUpdate) => Promise<AetherSettings>;
+    testAI: () => Promise<AIConnectionTest>;
+  };
   fileWatcher: {
     watch: (filePath: string, fileId: string, contentHash?: string) => Promise<string | null>;
     unwatch: (filePath: string, fileId?: string) => Promise<void>;
