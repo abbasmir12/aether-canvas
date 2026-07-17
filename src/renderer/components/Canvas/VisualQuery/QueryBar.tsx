@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUp, Clock3, Sparkles, Trash2, X } from 'lucide-react';
+import { ArrowUp, Clock3, MessageCircleQuestion, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 type QueryHistoryItem = { id: string; question: string };
@@ -73,7 +73,14 @@ export default function QueryBar({ disabled, history, loading, onClear, onSubmit
         className="flex items-center rounded-full border bg-white/96 px-3 backdrop-blur-xl"
         initial={false}
       >
-        <motion.span animate={loading || expanded ? { scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] } : { scale: 1, opacity: 1 }} className="mr-2.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[linear-gradient(145deg,#EEF5FC,#F2ECF8)] text-[#8460B0]" transition={{ duration: loading ? 1.2 : 2.4, repeat: loading || expanded ? Infinity : 0 }}><Sparkles size={15} /></motion.span>
+        <motion.span
+          animate={loading || expanded ? { scale: [1, 1.055, 1], boxShadow: ['0 3px 9px rgba(45,39,53,.18)', '0 4px 14px rgba(74,144,217,.3)', '0 3px 9px rgba(45,39,53,.18)'] } : { scale: 1, boxShadow: '0 3px 9px rgba(45,39,53,.18)' }}
+          className="relative mr-2.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/70 bg-[linear-gradient(145deg,#27252C_5%,#4C4059_58%,#586F91_115%)] text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.32),0_3px_9px_rgba(45,39,53,.18)]"
+          transition={{ duration: loading ? 1.15 : 2.6, repeat: loading || expanded ? Infinity : 0, ease: 'easeInOut' }}
+        >
+          <MessageCircleQuestion size={16} strokeWidth={2.05} />
+          <span aria-hidden className="absolute right-[1px] top-[1px] h-[5px] w-[5px] rounded-full border border-white/80 bg-[#9B72CF] shadow-[0_0_5px_rgba(155,114,207,.75)]" />
+        </motion.span>
         {expanded ? (
           <input
             aria-label="Ask about this workspace"
