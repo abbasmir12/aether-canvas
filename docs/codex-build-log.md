@@ -293,6 +293,12 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - `npm run lint`, the renderer/main/preload Vite production build, and electron-builder's Linux AppImage packaging pass.
 - A native Electron live-sync run changed Stay from `$140` to `$180`; GPT-5.6 re-analysis updated `budget.csv` to `$2,000`, the Summary Budget to `$1,260 spent / $740 remaining`, and the green COST ribbon remained attached to the Budget section after layout settled.
 
+### Semantic hub terminal polish
+
+- Removed the accumulated semicircular SVG caps that appeared as white liquid bulbs where ribbons entered and exited category hubs.
+- Preserved the existing ribbon material and curvature while using flat terminal cuts and non-rounded refraction-line endings that tuck beneath the hub surface.
+- Verified the DATES, COST, and PLACE junctions in a native Electron capture; source-card and Summary-section anchor ports remain unchanged.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions

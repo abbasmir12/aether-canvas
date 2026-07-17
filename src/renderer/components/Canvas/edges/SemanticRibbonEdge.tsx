@@ -175,14 +175,10 @@ function buildGeometry(
     return { x: point.x, y: point.y, angle: sample.angle, size: 2.2 + ((index + seed) % 2) * 0.7 };
   });
 
-  const cap = (a: { x: number; y: number }, b: { x: number; y: number }, sweep: 0 | 1) => {
-    const radius = Math.hypot(b.x - a.x, b.y - a.y) / 2;
-    return `A ${radius.toFixed(2)} ${radius.toFixed(2)} 0 0 ${sweep} ${b.x.toFixed(2)},${b.y.toFixed(2)}`;
-  };
-  const reversedRight = [...right].reverse();
-  const body = `${polyline(left)} ${cap(left[left.length - 1], reversedRight[0], 1)} ${reversedRight
-    .map((point) => `L ${point.x.toFixed(2)},${point.y.toFixed(2)}`)
-    .join(' ')} ${cap(reversedRight[reversedRight.length - 1], left[0], 1)} Z`;
+  // Flat terminal cuts let the ribbon disappear cleanly beneath node surfaces.
+  // Semicircular caps accumulated all translucent layers into a visible
+  // liquid-like bulb at DATES/COST/PLACE/TASKS hub boundaries.
+  const body = polygon(left, [...right].reverse());
 
   return {
     body,
@@ -259,20 +255,20 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
       </defs>
       {/* soft grounded shadow under the whole ribbon */}
       <path d={geometry.body} fill="#3B382F" opacity={0.03} transform="translate(0,2)" />
-      {/* glass main body, rounded caps at both ends */}
+      {/* glass main body; flat terminal cuts tuck cleanly beneath node surfaces */}
       <path d={geometry.body} fill={`url(#${gradientId})`} />
       {/* primary band — its own stream pooling on the outside of each bend */}
       <path d={geometry.saturated} fill={`url(#${satGradientId})`} />
       {/* secondary inner ribbon */}
       <path d={geometry.inner} fill={color} opacity={0.1} />
       {/* white light lines: outer edges, inner edges */}
-      <path d={geometry.edgeLeft} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.75} strokeWidth={1.6} />
-      <path d={geometry.edgeRight} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.6} strokeWidth={1.2} />
-      <path d={geometry.innerLeft} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.4} strokeWidth={0.9} />
-      <path d={geometry.innerRight} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.35} strokeWidth={0.9} />
+      <path d={geometry.edgeLeft} fill="none" stroke="#FFFFFF" strokeLinecap="butt" strokeOpacity={0.75} strokeWidth={1.6} />
+      <path d={geometry.edgeRight} fill="none" stroke="#FFFFFF" strokeLinecap="butt" strokeOpacity={0.6} strokeWidth={1.2} />
+      <path d={geometry.innerLeft} fill="none" stroke="#FFFFFF" strokeLinecap="butt" strokeOpacity={0.4} strokeWidth={0.9} />
+      <path d={geometry.innerRight} fill="none" stroke="#FFFFFF" strokeLinecap="butt" strokeOpacity={0.35} strokeWidth={0.9} />
       {/* center spine: dark under-stroke gives it lift, white line divides the halves */}
-      <path d={geometry.spine} fill="none" stroke="#33323C" strokeLinecap="round" strokeOpacity={0.14} strokeWidth={4} transform="translate(0,1)" />
-      <path d={geometry.spine} fill="none" stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.9} strokeWidth={2.2} />
+      <path d={geometry.spine} fill="none" stroke="#33323C" strokeLinecap="butt" strokeOpacity={0.14} strokeWidth={4} transform="translate(0,1)" />
+      <path d={geometry.spine} fill="none" stroke="#FFFFFF" strokeLinecap="butt" strokeOpacity={0.9} strokeWidth={2.2} />
       {geometry.markers.map((marker, markerIndex) => (
         <FlowMarker key={`m-${markerIndex}`} opacity={0.92} {...marker} />
       ))}
