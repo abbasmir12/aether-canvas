@@ -121,15 +121,16 @@ function CompactPreview({ module, color }: { module: DashboardModule; color: str
   return <div className="mt-3 rounded-[9px] border border-[#EEEBE6] bg-[#FBFAF8] px-3 py-2.5 text-[10px] leading-4 text-[#6A696F]"><b className="block font-semibold text-[#38383E]">{compact.primary}</b><span>{[compact.secondary, compact.tertiary].filter(Boolean).join(' · ')}</span></div>;
 }
 
-function ModuleShell({ module, open, onToggle, onHover, children }: { module: DashboardModule; open: boolean; onToggle: () => void; onHover: (active: boolean) => void; children: React.ReactNode }) {
+function ModuleShell({ module, open, highlighted, onToggle, onHover, children }: { module: DashboardModule; open: boolean; highlighted: boolean; onToggle: () => void; onHover: (active: boolean) => void; children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const Icon = iconForPlan[module.icon] ?? iconForKind[module.kind];
   const relationship = relationshipFor(module.kind);
   const color = colorFor(module);
   useEffect(() => setIsOpen(open), [open]);
-  return <motion.section layout className="group relative overflow-visible rounded-[14px] border px-3.5 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,.98),0_1px_2px_rgba(25,25,29,.035)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_8px_18px_rgba(25,25,29,.075)]" onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)} style={{ background: `linear-gradient(138deg, #FFFFFF 0%, #FEFEFE 70%, ${color}0B 100%)`, borderColor: isOpen ? `${color}66` : '#E2E1E4' }} transition={{ duration: 0.22 }}>
+  return <motion.section animate={{ scale: highlighted ? [1, 1.012, 1] : 1 }} layout className="group relative overflow-visible rounded-[14px] border px-3.5 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,.98),0_1px_2px_rgba(25,25,29,.035)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_8px_18px_rgba(25,25,29,.075)]" onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)} style={{ background: `linear-gradient(138deg, #FFFFFF 0%, #FEFEFE 70%, ${color}0B 100%)`, borderColor: highlighted || isOpen ? `${color}88` : '#E2E1E4', boxShadow: highlighted ? `inset 0 1px 0 rgba(255,255,255,.98), 0 0 0 3px ${color}22, 0 8px 22px ${color}20` : undefined }} transition={{ duration: 0.22 }}>
     <span aria-hidden className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
     {relationship && <><Handle className="!h-[8px] !w-[8px] !border-0 !bg-transparent !opacity-0" id={`summary-${relationship}`} position={Position.Left} style={{ top: '50%' }} type="target" /><span aria-hidden className="pointer-events-none absolute left-[-11px] top-1/2 grid h-[19px] w-[19px] -translate-y-1/2 place-items-center rounded-full border-[3px] border-white shadow-[0_2px_7px_rgba(24,24,30,0.16)] transition-transform duration-200 group-hover:scale-110" style={{ backgroundColor: color }}><span className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_1px_1px_rgba(0,0,0,.15)]" /></span></>}
+    <Handle className="!h-2 !w-2 !border-0 !bg-transparent !opacity-0" id={`query-${module.id}`} position={Position.Right} style={{ top: '50%' }} type="source" />
     <button aria-expanded={isOpen} className="nodrag flex w-full items-center gap-2.5 rounded-[9px] text-left outline-none focus-visible:ring-2 focus-visible:ring-[#4A90D9]/40" onClick={onToggle} type="button"><motion.span className="grid h-7 w-7 place-items-center rounded-full text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.42),0_3px_7px_rgba(30,30,35,.17)]" style={{ background: `linear-gradient(145deg, ${color}, ${color}D5)` }} whileHover={{ scale: 1.06 }}><Icon size={15} strokeWidth={2.45} /></motion.span><span className="flex-1 text-[12px] font-semibold tracking-[-0.015em] text-[#303036]">{module.title}</span><span className="grid h-6 w-6 place-items-center rounded-full text-[#8D8D94] transition-colors group-hover:bg-white/80 group-hover:text-[#55555C]"><ChevronDown className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} size={15} /></span></button>
     <CompactPreview color={color} module={module} />
     <AnimatePresence>{isOpen && <motion.div animate={{ opacity: 1, scale: 1, x: 0 }} className="nodrag absolute left-[calc(100%+70px)] top-0 z-50 w-[350px]" exit={{ opacity: 0, scale: 0.98, x: -8 }} initial={{ opacity: 0, scale: 0.98, x: -12 }} transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}><svg aria-hidden className="pointer-events-none absolute right-full top-8 h-8 w-[70px] overflow-visible" viewBox="0 0 70 32"><path d="M0 16 C22 16, 42 16, 70 16" fill="none" stroke={color} strokeDasharray="2 5" strokeLinecap="round" strokeOpacity="0.78" strokeWidth="2" /><circle cx="4" cy="16" fill="white" r="4" stroke={color} strokeWidth="2" /><circle cx="66" cy="16" fill="white" r="4" stroke={color} strokeWidth="2" /></svg><div className="max-h-[560px] overflow-y-auto rounded-[17px] border border-[#DCDADF] bg-[linear-gradient(145deg,#FFFFFF_0%,#FCFCFD_100%)] p-4 shadow-[0_20px_48px_rgba(25,25,30,0.18),0_2px_5px_rgba(25,25,30,0.06)]"><div className="mb-3.5 flex items-center gap-2.5 border-b border-[#ECEBED] pb-3"><span className="grid h-8 w-8 place-items-center rounded-[10px] text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.4),0_2px_4px_rgba(25,25,30,.15)]" style={{ background: `linear-gradient(145deg, ${color}, ${color}D9)` }}><Icon size={16} /></span><div className="min-w-0 flex-1"><p className="text-[13px] font-semibold tracking-[-0.02em] text-[#303036]">{module.title}</p><p className="mt-0.5 truncate text-[9px] font-medium tracking-[0.02em] text-[#909096]">EXPANDED DETAILS · {module.sourceFileIds.length} SOURCES</p></div><button aria-label={`Close ${module.title} details`} className="grid h-7 w-7 place-items-center rounded-full text-[#85858B] transition hover:bg-[#F0EFF2] hover:text-[#494950]" onClick={onToggle} type="button"><X size={14} /></button></div>{children}</div></motion.div>}</AnimatePresence>
@@ -142,10 +143,12 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
   const [title, setTitle] = useState(data.cluster.name);
   const [menu, setMenu] = useState(false);
   const [newItem, setNewItem] = useState('');
+  const [queryPulse, setQueryPulse] = useState<string | null>(null);
   const dashboard = data.dashboard ?? {};
   const fallback = fallbackPlan(data.files, data.cluster);
   const generatedPlan = data.dashboardPlan?.modules.every((module) => Boolean(module.visual) && Array.isArray(module.interactions) && Boolean(module.compact)) ? data.dashboardPlan : fallback;
   const plan = generatedPlan === fallback ? fallback : preserveSemanticEndpoints(generatedPlan, fallback);
+  const planModuleIds = plan.modules.map((module) => module.id).join('|');
   const HeaderIcon = iconForPlan[plan.headerIcon] ?? SparklesIcon;
   const Sparkles = HeaderIcon;
   const headerColor = plan.headerAccent === 'dates' ? COLORS.dates : plan.headerAccent === 'cost' ? COLORS.cost : plan.headerAccent === 'place' ? COLORS.place : plan.headerAccent === 'tasks' ? COLORS.tasks : '#7B57A9';
@@ -206,6 +209,18 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
     }
     return module;
   });
+  useEffect(() => {
+    let timeout = 0;
+    const pulse = (event: Event) => {
+      const moduleId = String((event as CustomEvent<string>).detail ?? '');
+      if (!planModuleIds.split('|').includes(moduleId)) return;
+      setQueryPulse(moduleId);
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => setQueryPulse(null), 900);
+    };
+    window.addEventListener('aether:query-section-pulse', pulse);
+    return () => { window.removeEventListener('aether:query-section-pulse', pulse); window.clearTimeout(timeout); };
+  }, [planModuleIds]);
   const moduleGeometrySignature = JSON.stringify(displayModules.map((module) => ({
     id: module.id,
     kind: module.kind,
@@ -259,6 +274,7 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
       initial={{ opacity: 0, x: 80 }}
       transition={{ delay: data.assemblyDelay ?? 1.2, duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
     >
+      <Handle className="!h-2 !w-2 !border-0 !bg-transparent !opacity-0" id="query-all" position={Position.Right} style={{ top: 82 }} type="source" />
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[22px]"><span className="absolute -right-14 -top-16 h-40 w-40 rounded-full blur-3xl" style={{ backgroundColor: `${headerColor}12` }} /><span className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" /></div>
       <header className="relative mb-[18px] flex items-start gap-3.5 px-0.5 pt-0.5">
         <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.5),0_6px_14px_rgba(40,40,46,.18)]" style={{ background: `linear-gradient(145deg, ${headerColor}, ${headerColor}D0)` }}><Sparkles size={23} strokeWidth={2.1} /></span>
@@ -269,7 +285,7 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
         <button aria-label="Summary menu" className="nodrag grid h-8 w-8 place-items-center rounded-full text-[#77777E] transition hover:bg-[#F1F0F2] hover:text-[#424249]" onClick={() => setMenu((current) => !current)} type="button"><MoreHorizontal size={19} /></button>
         {menu && <div className="absolute right-0 top-10 z-30 w-44 rounded-[11px] border border-[#DFDEE2] bg-white p-1.5 shadow-[0_12px_28px_rgba(25,25,30,.15)]"><button className="nodrag block w-full rounded-[7px] px-2.5 py-2 text-left text-[10px] font-medium text-[#4B4B52] transition hover:bg-[#F5F4F3]" onClick={() => { setMenu(false); setEditing(true); }} type="button">Rename</button><button className="nodrag flex w-full items-center gap-1.5 rounded-[7px] px-2.5 py-2 text-left text-[10px] font-medium text-[#4B4B52] transition hover:bg-[#F5F4F3]" onClick={() => emit('aether:export-summary', { cluster: { ...data.cluster, name: plan.title || data.cluster.name }, files: data.files, budgetRows, packingItems: items, locations })} type="button"><Download size={12} />Export summary</button><button className="nodrag flex w-full items-center gap-1.5 rounded-[7px] px-2.5 py-2 text-left text-[10px] font-medium text-[#C43E34] transition hover:bg-[#FFF0EE]" onClick={() => emit('aether:remove-cluster', id)} type="button"><X size={12} />Remove cluster</button></div>}
       </header>
-      <div className="relative space-y-2.5">{displayModules.map((module) => <ModuleShell key={module.id} module={module} onHover={(active) => focus(module, active)} onToggle={() => toggle(module)} open={openModule === module.id}>{content(module)}</ModuleShell>)}</div>
+      <div className="relative space-y-2.5">{displayModules.map((module) => <ModuleShell highlighted={queryPulse === module.id} key={module.id} module={module} onHover={(active) => focus(module, active)} onToggle={() => toggle(module)} open={openModule === module.id}>{content(module)}</ModuleShell>)}</div>
       <footer className="relative mt-4 flex justify-center border-t border-[#ECEBF0] pt-3.5"><button className="nodrag flex items-center gap-1.5 rounded-full border border-[#E2E0E4] bg-[linear-gradient(180deg,#FFFFFF,#F6F6F8)] px-3.5 py-1.5 text-[10px] font-medium text-[#66666D] shadow-[inset_0_1px_0_rgba(255,255,255,.98),0_2px_5px_rgba(25,25,30,.045)] transition duration-200 hover:-translate-y-px hover:border-[#D2D0D6] hover:text-[#44444B] hover:shadow-[0_5px_12px_rgba(25,25,30,.09)]" onClick={() => emit('aether:highlight-sources', data.files.map((file) => file.id))} type="button"><span className="grid h-4 w-4 place-items-center rounded-full bg-[#F1EBF7] text-[#815EA8]"><SparklesIcon size={10} /></span>Generated from {data.files.length} files</button></footer>
     </motion.article>
   );

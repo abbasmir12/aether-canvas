@@ -335,7 +335,18 @@ CREATE INDEX idx_suggestions_space_status ON suggestions(space_id, status);
 
 ### Actual Phase 2 IPC behavior
 
-The bridge includes `aether:read-file`, `aether:get-file-metadata`, `aether:get-thumbnail`, `aether:open-file-dialog`, `aether:get-dropped-file-path`, `aether:analyze-file`, and `aether:find-relationships`. Local `aether:parse-file` was removed when native GPT-5.6 file input replaced local parsing.
+The bridge includes `aether:read-file`, `aether:get-file-metadata`, `aether:get-thumbnail`, `aether:open-file-dialog`, `aether:get-dropped-file-path`, `aether:analyze-file`, `aether:find-relationships`, and `aether:ask-workspace`. Local `aether:parse-file` was removed when native GPT-5.6 file input replaced local parsing. Visual queries resolve renderer-supplied IDs against the main process's analyzed-file cache before any context reaches the model.
+
+Visual query data flow:
+
+```text
+Ctrl/⌘ J question
+  → validated active file IDs + generated dashboard plan
+  → GPT-5.6 Responses API strict JSON Schema
+  → locally validated answer, confidence, file IDs, and module IDs
+  → ephemeral React Flow answer node
+  → animated module-to-answer traces + source-file highlighting
+```
 
 `aether:get-dropped-file-path` is not a general path resolver. The preload obtains an OS-backed path from Electron `webUtils`, and the main handler authorizes it only after absolute-path normalization and a successful file stat. All subsequent file operations check the session authorization set. The native picker authorizes its returned paths through the same function.
 

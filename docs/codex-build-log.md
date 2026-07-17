@@ -321,6 +321,27 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Stay changed from `$540` to `$140`; the source card updated to `$1,800` and the Summary Card immediately reconciled to `$1,060 spent / $740 remaining`.
 - The primary persisted workspace JSON and its validated backup both parsed successfully after Electron shutdown.
 
+### Visual query system — “Ask the canvas”
+
+#### Codex contributions
+
+- Added a schema-constrained GPT-5.6 visual-query pipeline that answers only from analyzed files, bounded source excerpts, and the generated dashboard plan.
+- Built the floating `Ctrl/⌘ J` query bar, ephemeral draggable answer nodes, loading skeletons, calculation breakdowns, source links, and clickable follow-up questions.
+- Added precise dashed React Flow traces from the exact Summary Card modules used in an answer, including animated drawing, reused-connection current pulses, multi-source color treatment, and temporary source-file dimming.
+- Added deterministic provenance recovery: when GPT cites a raw file but omits the relevant on-screen module, Aether restores the grounded file → module → answer trace using the module's declared source IDs and semantic vocabulary.
+- Kept query artifacts deliberately ephemeral by excluding answer nodes and trace edges from workspace autosave and hydration.
+
+#### Human decisions
+
+- The human defined visual explainability as a signature product behavior: answers should live spatially on the canvas and visibly reveal the files and generated modules that support them.
+
+#### Verification
+
+- `npm run lint` passes strict renderer and Electron TypeScript checks.
+- `npx vite build` completes renderer, main, and preload production bundles.
+- A clean five-file Electron run answered “What is my estimated daily food budget?”, rendered a grounded calculation card, cited both raw files and dashboard modules, and drew two live traces from Budget and Journey.
+- A low-confidence two-file run correctly explained that trip duration was missing and drew no misleading source connectors.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions

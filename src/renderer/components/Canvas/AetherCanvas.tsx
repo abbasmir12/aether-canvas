@@ -3,20 +3,23 @@ import { Background, BackgroundVariant, MiniMap, Panel, ReactFlow, useEdgesState
 import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 
-import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardPlan, DashboardState, FileDeletedEvent, FileSyncChange, FileSyncStatus, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
+import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardPlan, DashboardState, FileDeletedEvent, FileSyncChange, FileSyncStatus, RelationshipDiscovery, RelationshipType, SuggestedCluster, VisualQueryResult, WorkspaceData } from '../../../shared/types';
 import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
 import { useLiveFileSync } from '../../hooks/useLiveFileSync';
 import SmartSuggestion from './SmartSuggestion';
 import CanvasContextMenu, { type CanvasMenuTarget } from './CanvasContextMenu';
 import FileQuickPreview from './FileQuickPreview';
 import SemanticRibbonEdge from './edges/SemanticRibbonEdge';
+import VisualQueryEdge from './edges/VisualQueryEdge';
 import { setRibbonInteraction } from './edges/RibbonInteractionContext';
 import FileCardNode, { type FileCardNodeType } from './nodes/FileCardNode';
 import HubNode, { type HubNodeType } from './nodes/HubNode';
 import SummaryCardNode, { type SummaryCardNodeType } from './nodes/SummaryCardNode';
+import VisualAnswerNode, { type VisualAnswerNodeType } from './nodes/VisualAnswerNode';
 import EmptyCanvasState from './EmptyCanvasState';
+import QueryBar from './VisualQuery/QueryBar';
 
-type CanvasNode = FileCardNodeType | HubNodeType | SummaryCardNodeType;
+type CanvasNode = FileCardNodeType | HubNodeType | SummaryCardNodeType | VisualAnswerNodeType;
 type Suggestion = { fileId: string; category: string; clusterName: string };
 type ContextMenu = { x: number; y: number; target: CanvasMenuTarget };
 
@@ -47,6 +50,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const [isCanvasNodeDragging, setIsCanvasNodeDragging] = useState(false);
   const [quickPreview, setQuickPreview] = useState<AnalyzedFile | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
+  const [queryLoading, setQueryLoading] = useState(false);
+  const [queryHistory, setQueryHistory] = useState<Array<{ id: string; question: string }>>([]);
   const analyzedFiles = useRef(new Map<string, AnalyzedFile>());
   const pendingFiles = useRef(new Map<string, AnalyzedFile>());
   const candidateIds = useRef(new Set<string>());
@@ -58,6 +63,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const hydratedWorkspaceId = useRef<string | null>(null);
   const workspaceReady = useRef(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const querySequence = useRef(0);
+  const queryHighlightTimer = useRef<number | null>(null);
   const { fitView, getViewport, screenToFlowPosition, setCenter, setViewport } = useReactFlow();
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
@@ -68,14 +75,22 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     hydratedWorkspaceId.current = workspace.id;
     workspaceReady.current = false;
     analyzedFiles.current = new Map(workspace.analyzedFiles.map((file) => [file.id, file]));
-    setNodes(workspace.nodes as CanvasNode[]);
-    setEdges(workspace.edges as Edge[]);
+    setNodes((workspace.nodes as CanvasNode[]).filter((node) => node.type !== 'visualAnswer'));
+    setEdges((workspace.edges as Edge[]).filter((edge) => edge.type !== 'visualQuery'));
+    setQueryHistory([]);
     requestAnimationFrame(() => { setViewport(workspace.viewport); workspaceReady.current = true; });
   }, [setEdges, setNodes, setViewport, workspace]);
   useEffect(() => {
     const active = workspaceRef.current;
     if (!active || !workspaceReady.current || hydratedWorkspaceId.current !== active.id) return;
-    onWorkspaceSnapshot({ ...active, nodes, edges, analyzedFiles: [...analyzedFiles.current.values()], viewport: getViewport(), fileCount: analyzedFiles.current.size });
+    onWorkspaceSnapshot({
+      ...active,
+      nodes: nodes.filter((node) => node.type !== 'visualAnswer'),
+      edges: edges.filter((edge) => edge.type !== 'visualQuery'),
+      analyzedFiles: [...analyzedFiles.current.values()],
+      viewport: getViewport(),
+      fileCount: analyzedFiles.current.size,
+    });
   }, [edges, getViewport, nodes, onWorkspaceSnapshot]);
   useEffect(() => {
     if (focusRequest === 0) return;
@@ -107,8 +122,8 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     return () => { window.removeEventListener('pointerdown', start, true); window.removeEventListener('pointerup', stop, true); window.removeEventListener('pointercancel', stop, true); };
   }, []);
 
-  const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode }), []);
-  const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);
+  const nodeTypes = useMemo<NodeTypes>(() => ({ fileCard: FileCardNode, hub: HubNode, summaryCard: SummaryCardNode, visualAnswer: VisualAnswerNode }), []);
+  const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge, visualQuery: VisualQueryEdge }), []);
   const importPaths = useCallback(async (paths: string[]) => {
     const base = screenToFlowPosition({ x: 460, y: 240 });
     const entries = await Promise.all(paths.map(async (filePath, index) => { const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`; return { id, filePath, node: { id, type: 'fileCard' as const, position: { x: base.x + index * 28, y: base.y + index * 72 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null, syncStatus: 'pending' as const, watchEnabled: true } } }; }));
@@ -150,17 +165,18 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const summaryId = 'summary:active';
     requestAnimationFrame(() => setNodes((current) => {
       const fileNodes = current.filter((node): node is FileCardNodeType => node.type === 'fileCard');
+      const queryNodes = current.filter((node): node is VisualAnswerNodeType => node.type === 'visualAnswer');
       const laidOutFiles = fileNodes.map((node) => ({ ...node, position: layout.filePositions.get(node.id) ?? node.position, style: { ...node.style, willChange: 'transform' } }));
-      if (!shouldShowSummary) return laidOutFiles;
+      if (!shouldShowSummary) return [...laidOutFiles, ...queryNodes];
       const hubNodes: HubNodeType[] = layout.hubs.map((hub) => ({ id: `hub:${hub.type}`, type: 'hub', draggable: false, position: { x: hub.x, y: hub.y }, data: { relationshipType: hub.type, delay: hub.delay } }));
       const previousSummary = current.find((node): node is SummaryCardNodeType => node.id === summaryId && node.type === 'summaryCard');
       const dashboardPlan: DashboardPlan | undefined = discovery.dashboard ?? previousSummary?.data.dashboardPlan;
-      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: dashboardPlan ? { ...activeCluster, name: dashboardPlan.title || activeCluster.name, dateRange: dashboardPlan.subtitle || activeCluster.dateRange, category: dashboardPlan.category || activeCluster.category } : previousSummary?.data.cluster ?? activeCluster, files: allFiles, dashboard: previousSummary?.data.dashboard, dashboardPlan, assemblyDelay: 1.2 } }];
+      return [...laidOutFiles, ...hubNodes, { id: summaryId, type: 'summaryCard', position: layout.summaryPosition, style: { willChange: 'transform' }, data: { cluster: dashboardPlan ? { ...activeCluster, name: dashboardPlan.title || activeCluster.name, dateRange: dashboardPlan.subtitle || activeCluster.dateRange, category: dashboardPlan.category || activeCluster.category } : previousSummary?.data.cluster ?? activeCluster, files: allFiles, dashboard: previousSummary?.data.dashboard, dashboardPlan, assemblyDelay: 1.2 } }, ...queryNodes];
     }));
     if (!shouldShowSummary) { setEdges([]); return; }
     const fileToHub: Edge[] = allFiles.flatMap((file) => categoriesForFile(file).map((type, index) => ({ id: `file:${file.id}:hub:${type}`, source: file.id, target: `hub:${type}`, type: 'semanticRibbon', data: { relationshipType: type, phase: 'file', index }, style: { stroke: RIBBON_COLORS[type] } })));
     const hubToSummary: Edge[] = layout.hubs.map((hub, index) => ({ id: `hub:${hub.type}:summary`, source: `hub:${hub.type}`, target: summaryId, targetHandle: `summary-${hub.type}`, type: 'semanticRibbon', data: { relationshipType: hub.type, phase: 'summary', index }, style: { stroke: RIBBON_COLORS[hub.type] } }));
-    setEdges([...fileToHub, ...hubToSummary]);
+    setEdges((current) => [...fileToHub, ...hubToSummary, ...current.filter((edge) => edge.type === 'visualQuery')]);
   }, [onWorkspaceSnapshot, setEdges, setNodes, workspace]);
   useEffect(() => { applyDiscoveryRef.current = applyDiscovery; }, [applyDiscovery]);
 
@@ -268,6 +284,162 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const node = nodesRef.current.find((item) => item.id === id);
     if (node) setCenter(node.position.x + 110, node.position.y + 80, { duration: 360, zoom: 1.05 });
   }, [previewFile, setCenter]);
+
+  const restoreQuerySourceStyles = useCallback(() => {
+    if (queryHighlightTimer.current !== null) window.clearTimeout(queryHighlightTimer.current);
+    queryHighlightTimer.current = null;
+    setNodes((current) => current.map((node) => node.type === 'fileCard'
+      ? { ...node, style: { ...node.style, opacity: undefined, filter: undefined, transition: 'opacity 200ms ease, filter 200ms ease' } }
+      : node));
+  }, [setNodes]);
+
+  const highlightQuerySources = useCallback((result: VisualQueryResult) => {
+    const fileSources = result.sources.filter((source) => source.type === 'file' && source.fileId);
+    if (!fileSources.length) return;
+    const sourceIds = new Set(fileSources.map((source) => source.fileId));
+    const sourceColors = new Map(fileSources.map((source) => [source.fileId, source.color]));
+    if (queryHighlightTimer.current !== null) window.clearTimeout(queryHighlightTimer.current);
+    setNodes((current) => current.map((node) => {
+      if (node.type !== 'fileCard') return node;
+      const isSource = sourceIds.has(node.id);
+      return {
+        ...node,
+        style: {
+          ...node.style,
+          opacity: isSource ? 1 : 0.4,
+          filter: isSource ? `drop-shadow(0 0 7px ${sourceColors.get(node.id) ?? '#8B7AA8'}66)` : 'saturate(.65)',
+          transition: 'opacity 200ms ease, filter 200ms ease',
+        },
+      };
+    }));
+    queryHighlightTimer.current = window.setTimeout(restoreQuerySourceStyles, 3_000);
+  }, [restoreQuerySourceStyles, setNodes]);
+
+  const clearVisualQueries = useCallback(() => {
+    setNodes((current) => current.filter((node) => node.type !== 'visualAnswer'));
+    setEdges((current) => current.filter((edge) => edge.type !== 'visualQuery'));
+    setQueryHistory([]);
+    restoreQuerySourceStyles();
+  }, [restoreQuerySourceStyles, setEdges, setNodes]);
+
+  const submitVisualQuery = useCallback(async (question: string, targetAnswerId?: string) => {
+    if (queryLoading || analyzedFiles.current.size === 0) return;
+    const sequence = ++querySequence.current;
+    const summary = nodesRef.current.find((node): node is SummaryCardNodeType => node.type === 'summaryCard');
+    const existingAnswer = targetAnswerId ? nodesRef.current.find((node): node is VisualAnswerNodeType => node.id === targetAnswerId && node.type === 'visualAnswer') : undefined;
+    const visibleAnswers = nodesRef.current.filter((node): node is VisualAnswerNodeType => node.type === 'visualAnswer');
+    const answerId = existingAnswer?.id ?? `query:${crypto.randomUUID()}`;
+    const oldest = !existingAnswer && visibleAnswers.length >= 3 ? visibleAnswers[0] : undefined;
+    const position = existingAnswer?.position ?? {
+      x: (summary?.position.x ?? 760) + 390,
+      y: (summary?.position.y ?? 100) + 90 + Math.min(visibleAnswers.length, 2) * 355,
+    };
+    const ghost: VisualAnswerNodeType = {
+      id: answerId,
+      type: 'visualAnswer',
+      position,
+      style: { willChange: 'transform' },
+      data: { question, result: existingAnswer?.data.result ?? null, loading: true, sequence },
+    };
+
+    setQueryLoading(true);
+    setQueryHistory((current) => [...current, { id: `${answerId}:${sequence}`, question }]);
+    setNodes((current) => {
+      const withoutOldest = oldest ? current.filter((node) => node.id !== oldest.id) : current;
+      return existingAnswer
+        ? withoutOldest.map((node) => node.id === answerId ? ghost : node)
+        : [...withoutOldest, ghost];
+    });
+    setEdges((current) => {
+      const withoutOldest = oldest ? current.filter((edge) => edge.target !== oldest.id) : current;
+      if (existingAnswer) {
+        return withoutOldest.map((edge) => edge.type === 'visualQuery' && edge.target === answerId
+          ? { ...edge, data: { ...edge.data, pulse: sequence } }
+          : edge);
+      }
+      const cleaned = withoutOldest.filter((edge) => edge.target !== answerId);
+      return summary ? [...cleaned, { id: `query-loading:${answerId}`, source: summary.id, sourceHandle: 'query-all', target: answerId, targetHandle: 'query-in', type: 'visualQuery', data: { loading: true, color: '#AAA7AF', index: 0 } }] : cleaned;
+    });
+    const currentZoom = getViewport().zoom;
+    setCenter(position.x + 160, position.y + 210, { duration: 420, zoom: Math.min(currentZoom, 0.9) });
+
+    try {
+      const result = await window.aether.askWorkspace(question, [...analyzedFiles.current.keys()], summary?.data.dashboardPlan ?? null);
+      setNodes((current) => current.map((node) => node.id === answerId && node.type === 'visualAnswer'
+        ? { ...node, data: { question, result, loading: false, sequence } } as VisualAnswerNodeType
+        : node));
+      setEdges((current) => {
+        const previous = new Map(current.filter((edge) => edge.type === 'visualQuery' && edge.target === answerId && !edge.id.startsWith('query-loading:')).map((edge) => [edge.sourceHandle, edge]));
+        const withoutAnswerEdges = current.filter((edge) => edge.target !== answerId);
+        if (result.confidence < 0.5 || !summary) return withoutAnswerEdges;
+        const sectionSources = result.sources.filter((source) => source.type === 'section' && source.sectionId);
+        const queryEdges: Edge[] = sectionSources.map((source, index) => {
+          const sourceHandle = `query-${source.sectionId}`;
+          return {
+            id: `query-trace:${answerId}:${source.sectionId}`,
+            source: summary.id,
+            sourceHandle,
+            target: answerId,
+            targetHandle: 'query-in',
+            type: 'visualQuery',
+            data: { color: source.color, index, pulse: previous.has(sourceHandle) ? sequence : 0 },
+          };
+        });
+        return [...withoutAnswerEdges, ...queryEdges];
+      });
+      highlightQuerySources(result);
+      for (const source of result.sources) {
+        if (source.type === 'section' && source.sectionId) window.dispatchEvent(new CustomEvent('aether:query-section-pulse', { detail: source.sectionId }));
+      }
+    } catch {
+      const failed: VisualQueryResult = {
+        answer: { headline: 'Couldn’t trace an answer', detail: 'Aether could not complete this query right now. Your workspace files are unchanged.', value: null, valueLabel: null, breakdown: [] },
+        sources: [],
+        confidence: 0,
+        followUpSuggestions: ['What information is available in this workspace?', 'Which files should I add to answer this?'],
+      };
+      setNodes((current) => current.map((node) => node.id === answerId && node.type === 'visualAnswer' ? { ...node, data: { question, result: failed, loading: false, sequence } } as VisualAnswerNodeType : node));
+      setEdges((current) => current.filter((edge) => edge.target !== answerId));
+    } finally {
+      setQueryLoading(false);
+    }
+  }, [getViewport, highlightQuerySources, queryLoading, setCenter, setEdges, setNodes]);
+
+  useEffect(() => {
+    const followUp = (event: Event) => {
+      const detail = (event as CustomEvent<{ question?: string; answerId?: string }>).detail;
+      const question = detail?.question?.trim() ?? '';
+      if (question) void submitVisualQuery(question, detail.answerId);
+    };
+    const close = (event: Event) => {
+      const id = String((event as CustomEvent<string>).detail ?? '');
+      setNodes((current) => current.filter((node) => node.id !== id));
+      setEdges((current) => current.filter((edge) => edge.target !== id));
+    };
+    const focusSection = (event: Event) => {
+      const sectionId = String((event as CustomEvent<string>).detail ?? '');
+      const summary = nodesRef.current.find((node): node is SummaryCardNodeType => node.type === 'summaryCard');
+      if (!summary || !sectionId) return;
+      setNodes((current) => current.map((node) => node.id === summary.id && node.type === 'summaryCard'
+        ? { ...node, data: { ...node.data, dashboard: { ...node.data.dashboard, expandedSection: sectionId } } } as SummaryCardNodeType
+        : node));
+      setCenter(summary.position.x + 390, summary.position.y + 360, { duration: 380, zoom: 0.95 });
+      window.dispatchEvent(new CustomEvent('aether:query-section-pulse', { detail: sectionId }));
+    };
+    window.addEventListener('aether:query-follow-up', followUp);
+    window.addEventListener('aether:query-close', close);
+    window.addEventListener('aether:query-focus-section', focusSection);
+    return () => {
+      window.removeEventListener('aether:query-follow-up', followUp);
+      window.removeEventListener('aether:query-close', close);
+      window.removeEventListener('aether:query-focus-section', focusSection);
+    };
+  }, [setCenter, setEdges, setNodes, submitVisualQuery]);
+
+  useEffect(() => () => {
+    if (queryHighlightTimer.current !== null) window.clearTimeout(queryHighlightTimer.current);
+  }, []);
+
   useEffect(() => {
     const focusFile = (event: Event) => focusSourceFile(String((event as CustomEvent<string>).detail ?? ''));
     const focusLocation = (event: Event) => {
@@ -408,17 +580,18 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const keepSeparate = useCallback(() => { if (suggestion) { pendingFiles.current.delete(suggestion.fileId); candidateIds.current.delete(suggestion.fileId); } setSuggestion(null); }, [suggestion]);
 
   return <div className="relative h-full w-full bg-[#F4F1E9]" onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop} ref={canvasRef}>
-    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onNodeClick={(_event, node) => { if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onNodeContextMenu={(event, node) => { event.preventDefault(); const bounds = canvasRef.current?.getBoundingClientRect(); const analysis = node.type === 'fileCard' ? (node as FileCardNodeType).data.analysis : null; const relationshipType = node.type === 'hub' ? (node as HubNodeType).data.relationshipType : analysis ? categoriesForFile(analysis)[0] : undefined; setContextMenu({ x: event.clientX - (bounds?.left ?? 0), y: event.clientY - (bounds?.top ?? 0), target: { id: node.id, type: node.type as CanvasMenuTarget['type'], relationshipType } }); }} onNodeDoubleClick={(_event, node) => { if (node.type === 'fileCard') previewFile(node.id); if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onPaneClick={() => { setContextMenu(null); setSemanticFocus(null); }} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
+    <ReactFlow colorMode="light" defaultViewport={{ x: 70, y: 45, zoom: 1 }} deleteKeyCode={['Backspace', 'Delete']} edgeTypes={edgeTypes} edges={edges} fitViewOptions={{ padding: 0.25 }} maxZoom={2.2} minZoom={0.25} nodeTypes={nodeTypes} nodes={nodes} onNodeClick={(_event, node) => { if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onNodeContextMenu={(event, node) => { if (node.type === 'visualAnswer') return; event.preventDefault(); const bounds = canvasRef.current?.getBoundingClientRect(); const analysis = node.type === 'fileCard' ? (node as FileCardNodeType).data.analysis : null; const relationshipType = node.type === 'hub' ? (node as HubNodeType).data.relationshipType : analysis ? categoriesForFile(analysis)[0] : undefined; setContextMenu({ x: event.clientX - (bounds?.left ?? 0), y: event.clientY - (bounds?.top ?? 0), target: { id: node.id, type: node.type as CanvasMenuTarget['type'], relationshipType } }); }} onNodeDoubleClick={(_event, node) => { if (node.type === 'fileCard') previewFile(node.id); if (node.type === 'hub') highlightFlow((node as HubNodeType).data.relationshipType); }} onPaneClick={() => { setContextMenu(null); setSemanticFocus(null); }} onEdgesChange={onEdgesChange} onNodesChange={onNodesChange} panOnDrag panOnScroll proOptions={{ hideAttribution: true }} selectionOnDrag={false} zoomOnDoubleClick={false}>
       <Background bgColor="#F4F1E9" color="#DBD5C6" gap={18} size={1} variant={BackgroundVariant.Dots} />
-      <MiniMap className="!bottom-5 !right-5 !m-0 !h-[112px] !w-[176px] !rounded-[13px] !border !border-[#D3D3D8] !bg-white/90 !shadow-[0_3px_14px_rgba(33,33,36,0.08)]" maskColor="rgba(242, 242, 245, 0.58)" nodeBorderRadius={5} nodeColor={(node) => node.type === 'summaryCard' ? '#E7A271' : '#8AB99A'} pannable zoomable />
+      <MiniMap className="!bottom-5 !right-5 !m-0 !h-[112px] !w-[176px] !rounded-[13px] !border !border-[#D3D3D8] !bg-white/90 !shadow-[0_3px_14px_rgba(33,33,36,0.08)]" maskColor="rgba(242, 242, 245, 0.58)" nodeBorderRadius={5} nodeColor={(node) => node.type === 'summaryCard' ? '#E7A271' : node.type === 'visualAnswer' ? '#9B72CF' : '#8AB99A'} pannable zoomable />
       <CanvasControls />
       {nodes.length === 0 && !isDragActive && <EmptyCanvasState />}
       <AnimatePresence>{suggestion && <Panel className="!bottom-[145px] !right-5 !m-0" position="bottom-right"><SmartSuggestion category={suggestion.category} clusterName={suggestion.clusterName} onConnect={() => void connectSuggestion()} onKeepSeparate={keepSeparate} /></Panel>}</AnimatePresence>
     </ReactFlow>
+    <QueryBar disabled={analyzedFiles.current.size === 0} history={queryHistory} loading={queryLoading} onClear={clearVisualQueries} onSubmit={(question) => void submitVisualQuery(question)} />
     <AnimatePresence>{quickPreview && <div className="absolute right-5 top-5 z-40"><FileQuickPreview file={quickPreview} onClose={() => setQuickPreview(null)} onOpen={() => void openOriginal(quickPreview.id)} onReanalyze={() => void reanalyzeFile(quickPreview.id)} onReveal={() => void revealOriginal(quickPreview.id)} onTrace={() => highlightFlow(categoriesForFile(quickPreview)[0])} /></div>}</AnimatePresence>
     {contextMenu && <CanvasContextMenu onClose={() => setContextMenu(null)} onHighlight={highlightFlow} onOpen={() => void openOriginal(contextMenu.target.id)} onPreview={() => { if (contextMenu.target.type === 'summaryCard') setSemanticFocus(null); else previewFile(contextMenu.target.id); }} onReanalyze={() => void reanalyzeFile(contextMenu.target.id)} onReorganize={() => void reorganizeCanvas()} onRemove={() => void removeFromCanvas(contextMenu.target.id)} onReveal={() => void revealOriginal(contextMenu.target.id)} position={{ x: Math.min(contextMenu.x, 940), y: Math.min(contextMenu.y, 600) }} target={contextMenu.target} />}
     <AnimatePresence>{isDragActive && <motion.div animate={{ opacity: 1 }} className="pointer-events-none absolute inset-3 z-30 grid place-items-center rounded-[18px] border-2 border-dashed border-[#4A90D9]/55 bg-[#EAF3FC]/50 backdrop-blur-[2px]" exit={{ opacity: 0 }} initial={{ opacity: 0 }}><motion.div animate={{ scale: 1, y: 0 }} className="rounded-[16px] border border-white/90 bg-white/90 px-7 py-5 text-center shadow-[0_12px_38px_rgba(42,91,137,0.14)]" initial={{ scale: 0.97, y: 4 }}><div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-[12px] bg-[#4A90D9] text-white shadow-[0_4px_12px_rgba(74,144,217,0.28)]"><Plus size={22} /></div><p className="text-[14px] font-semibold text-[#2B2B2E]">Place files in this space</p><p className="mt-1 text-[11px] text-[#7D7D83]">Release to add them at this position</p></motion.div></motion.div>}</AnimatePresence>
     <AnimatePresence>{dropError && <motion.div animate={{ opacity: 1, y: 0 }} className="absolute left-1/2 top-5 z-40 -translate-x-1/2 rounded-[11px] border border-[#EA4335]/20 bg-white px-4 py-2.5 text-[12px] font-medium text-[#9A322A] shadow-[0_5px_18px_rgba(0,0,0,0.09)]" exit={{ opacity: 0, y: -4 }} initial={{ opacity: 0, y: -4 }}>{dropError}</motion.div>}</AnimatePresence>
-    <AnimatePresence>{toastMessage && <motion.div animate={{ opacity: 1, y: 0 }} className="pointer-events-none absolute bottom-5 left-1/2 z-40 -translate-x-1/2 rounded-full border border-[#E2E0DE] bg-[#2F2F33] px-4 py-2 text-[11px] font-medium text-white shadow-[0_8px_20px_rgba(0,0,0,0.16)]" exit={{ opacity: 0, y: 6 }} initial={{ opacity: 0, y: 8 }}>{toastMessage}</motion.div>}</AnimatePresence>
+    <AnimatePresence>{toastMessage && <motion.div animate={{ opacity: 1, y: 0 }} className="pointer-events-none absolute bottom-[84px] left-1/2 z-[60] -translate-x-1/2 rounded-full border border-[#E2E0DE] bg-[#2F2F33] px-4 py-2 text-[11px] font-medium text-white shadow-[0_8px_20px_rgba(0,0,0,0.16)]" exit={{ opacity: 0, y: 6 }} initial={{ opacity: 0, y: 8 }}>{toastMessage}</motion.div>}</AnimatePresence>
   </div>;
 }

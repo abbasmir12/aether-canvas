@@ -94,6 +94,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Reactive topology reliability:** After live GPT-5.6 regeneration, Aether preserves a grounded Summary endpoint for every active semantic hub and remeasures it after layout settles. A native Stay-price edit changed both source and dashboard totals while the COST stream remained continuously attached to Budget.
 - **Windows live-sync reliability:** Aether handles ordinary writes and atomic replacement saves, normalizes Windows path identity, detects edits made while closed, and retries transient analysis failures without escaping its API rate guard. Grounded Summary values refresh immediately while GPT relationship recompilation runs in the background.
 - **Persistence safety:** Workspace autosaves use serialized atomic replacement with validated backup recovery, preventing app shutdown during a write from truncating the user's living canvas.
+- **Visual explainability:** “Ask the canvas” renders GPT-5.6 answers as draggable spatial cards with animated traces to the exact Summary modules and source files used. Multi-source answers visibly combine semantic colors; source links focus the supporting artifact; low-confidence answers draw no misleading trace.
 - _Add before/after screenshots proving fidelity for the shell, nodes, ribbons, dashboard, and minimap._
 - _Add animation, loading, empty, error, accessibility, and keyboard-navigation evidence._
 - _Add demo timestamp showing the complete polished interaction loop._
@@ -121,6 +122,8 @@ Files remain useful after the initial “wow” moment: users can keep working i
 
 “Living files” extend that idea beyond import: the canvas is a reactive mirror of the user's actual filesystem. Source changes propagate through multimodal understanding, semantic relationships, and generated mini-app state while preserving traceability to the original artifact.
 
+The visual query system makes AI provenance part of the product language rather than a footnote. Answers, calculations, dashboard modules, and local files occupy one inspectable graph; follow-up questions visibly reuse or revise that evidence path.
+
 ### Evidence to collect
 
 - _Demo moment where moving or adding a file changes a suggestion or workspace._
@@ -128,6 +131,7 @@ Files remain useful after the initial “wow” moment: users can keep working i
 - _Example of a generated dashboard adapting its modules to the cluster's goal._
 - _General-purpose evidence:_ The card renders only the sections grounded in discovered dates, costs, tasks, and locations. The same persisted interaction model supports trips, coursework, work projects, household jobs, and other clusters; travel is the visual demo dataset rather than a hard-coded data source.
 - _Evidence that the output remains grounded in and traceable to its source files._
+- **Implemented evidence:** A five-file runtime query calculated a daily food estimate from Budget and Journey, cited the contributing files, and drew separate green and blue source traces into the answer card.
 
 ## Submission Checklist
 

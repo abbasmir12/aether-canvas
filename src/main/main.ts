@@ -13,7 +13,7 @@ import {
 } from 'electron';
 
 import type { AnalyzedFile, LocalFileMetadata } from '../shared/types';
-import { analyzeFile, findRelationships, generateDashboardInsights } from './services/aiService';
+import { analyzeFile, answerWorkspaceQuestion, findRelationships, generateDashboardInsights } from './services/aiService';
 import {
   generateThumbnail,
   mimeTypeForPath,
@@ -22,6 +22,10 @@ import {
 import { createWorkspaceStore } from './services/workspaceService';
 import { createPinnedFolderStore } from './services/pinnedFolderService';
 import { FileWatcherService, hashFile } from './services/fileWatcher';
+
+if (process.env.AETHER_SMOKE_USER_DATA_DIR) {
+  app.setPath('userData', resolve(process.env.AETHER_SMOKE_USER_DATA_DIR));
+}
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const authorizedFilePaths = new Set<string>();
@@ -198,6 +202,33 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         console.log(`AETHER_SMOKE_MAP_INTERACTION ${firstState} ${secondState}`);
       }
 
+      if (process.env.AETHER_SMOKE_QUERY) {
+        const question = process.env.AETHER_SMOKE_QUERY;
+        await window.webContents.executeJavaScript(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', ctrlKey: true, bubbles: true }))`);
+        await new Promise((done) => setTimeout(done, 180));
+        const submitted = await window.webContents.executeJavaScript(`(() => {
+          const input = document.querySelector('[data-aether-query-input]');
+          if (!(input instanceof HTMLInputElement)) return false;
+          const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+          setter?.call(input, ${JSON.stringify(question)});
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          return true;
+        })()`);
+        if (submitted) {
+          await new Promise((done) => setTimeout(done, 250));
+          await window.webContents.executeJavaScript(`Array.from(document.querySelectorAll('button')).find((button) => button.getAttribute('aria-label') === 'Ask Aether')?.click()`);
+          await new Promise((done) => setTimeout(done, Number(process.env.AETHER_SMOKE_QUERY_WAIT_MS) || 18_000));
+        }
+        const queryState = await window.webContents.executeJavaScript(`JSON.stringify({
+          answer: document.querySelector('[data-aether-query-answer]')?.textContent || '',
+          answerNodes: document.querySelectorAll('[data-aether-query-answer]').length,
+          traceEdges: document.querySelectorAll('.visual-query-edge').length,
+          dimmedFiles: Array.from(document.querySelectorAll('.react-flow__node-fileCard')).filter((node) => Number(getComputedStyle(node).opacity) < 0.8).length
+        })`);
+        console.log(`AETHER_SMOKE_QUERY ${queryState}`);
+      }
+
       if (process.env.AETHER_SMOKE_DEBUG) {
         const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
           ribbons: document.querySelectorAll('.semantic-ribbon').length,
@@ -359,6 +390,15 @@ function registerIpcHandlers(): void {
   ipcMain.handle('aether:get-dashboard-insights', async (_event, kind: 'journey' | 'budget' | 'packing' | 'map', context: string) => {
     if (!['journey', 'budget', 'packing', 'map'].includes(kind) || typeof context !== 'string') throw new Error('Invalid dashboard insight request.');
     return generateDashboardInsights(kind, context);
+  });
+  ipcMain.handle('aether:ask-workspace', async (_event, question: string, fileIds: string[], dashboard) => {
+    if (typeof question !== 'string' || question.trim().length > 1_000) throw new Error('Ask a question under 1,000 characters.');
+    if (!Array.isArray(fileIds)) throw new Error('Aether expected workspace file IDs.');
+    const files = fileIds.flatMap((id) => {
+      const file = analyzedFiles.get(id);
+      return file ? [file] : [];
+    });
+    return answerWorkspaceQuestion(question, files, dashboard?.modules ? dashboard : null);
   });
 
   ipcMain.handle('aether:workspace-list', () => workspaces().list());
