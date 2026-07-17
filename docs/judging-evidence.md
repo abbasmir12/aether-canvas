@@ -95,6 +95,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Windows live-sync reliability:** Aether handles ordinary writes and atomic replacement saves, normalizes Windows path identity, detects edits made while closed, and retries transient analysis failures without escaping its API rate guard. Grounded Summary values refresh immediately while GPT relationship recompilation runs in the background.
 - **Persistence safety:** Workspace autosaves use serialized atomic replacement with validated backup recovery, preventing app shutdown during a write from truncating the user's living canvas.
 - **Visual explainability:** “Ask the canvas” renders GPT-5.6 answers as draggable spatial cards with animated traces to the exact Summary modules and source files used. Multi-source answers visibly combine semantic colors; source links focus the supporting artifact; low-confidence answers draw no misleading trace.
+- **Adaptive desktop navigation:** The sidebar can be resized within a controlled range, collapsed by control or gesture, previewed from the screen edge without shifting the canvas, and pinned open again. Title-bar canvas arrows provide smooth spatial movement and window chrome remains aligned with the chosen navigation width.
 - _Add before/after screenshots proving fidelity for the shell, nodes, ribbons, dashboard, and minimap._
 - _Add animation, loading, empty, error, accessibility, and keyboard-navigation evidence._
 - _Add demo timestamp showing the complete polished interaction loop._

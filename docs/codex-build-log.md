@@ -344,6 +344,26 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - A low-confidence two-file run correctly explained that trip duration was missing and drew no misleading source connectors.
 - A native close-and-restore run removed an arrival answer, reopened it from Recent Questions, and recovered one answer node plus its Journey trace from the local cache without re-querying GPT-5.6.
 
+### Adaptive sidebar and canvas navigation
+
+#### Codex contributions
+
+- Rebuilt the sidebar shell with pinned, hidden, and temporary hover-preview states plus animated transitions between each mode.
+- Added direct-manipulation resizing from 240–360px, a fixed minimum-width plateau, and drag-past-threshold collapse so the navigation never degrades into an unusably narrow rail.
+- Added explicit collapse/keep-open controls, left-edge reveal behavior, and persisted width/open preferences.
+- Wired the title-bar chevrons to smooth horizontal React Flow viewport movement and kept the title-bar navigation boundary aligned with the resized sidebar.
+- Removed the decorative status dot from the visual-query prompt icon.
+
+#### Human decisions
+
+- The human specified a desktop-native navigation model where the sidebar can disappear completely, preview on edge hover, be pinned from that preview, and expand only within a controlled horizontal range.
+
+#### Verification
+
+- `npm run lint`, renderer/main/preload production builds, and `git diff --check` pass.
+- A native Electron interaction run measured 308px initial width, verified hidden → 308px hover preview → pinned flow, resized to the 360px maximum, collapsed to 0px by dragging past the 190px threshold, and restored from the left edge.
+- The same run verified the top arrows moved the React Flow viewport from `x=-563` to `x=-863` and back to `x=-563`.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions

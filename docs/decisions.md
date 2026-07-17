@@ -548,6 +548,18 @@ A workspace question produces an ephemeral React Flow answer node rather than a 
 
 Follow-ups reuse stable graph edges with a traveling current animation; changed sources redraw while irrelevant traces fade. Low-confidence answers use an amber treatment and intentionally omit connectors. This turns explainability into a spatial interaction: users can see the path from local source file, through the generated mini-app, to the answer without accepting unverified model-authored UI.
 
+## 056. Pinned, preview, and hidden sidebar states
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The navigation sidebar supports three intentional states instead of continuously shrinking: pinned and layout-owning, temporarily overlaid after a left-edge hover, or completely hidden. Users can resize only within a usable 240–360px range; dragging below the minimum holds the width steady until a deliberate 190px collapse threshold is crossed.
+
+This preserves navigation legibility while supporting focused canvas work. Hover preview does not displace the canvas, the keep-open action converts it into a stable layout, and both width and pinned preference survive relaunches. The top-bar navigation boundary follows the pinned width so custom window chrome remains visually aligned.
+
 ## Decision Template
 
 ## NNN. Decision title

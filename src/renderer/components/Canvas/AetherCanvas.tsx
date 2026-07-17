@@ -105,6 +105,16 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     return () => cancelAnimationFrame(frame);
   }, [fitView, focusRequest]);
   useEffect(() => {
+    const panHorizontally = (event: Event) => {
+      const deltaX = Number((event as CustomEvent<number>).detail);
+      if (!Number.isFinite(deltaX)) return;
+      const viewport = getViewport();
+      void setViewport({ ...viewport, x: viewport.x + deltaX }, { duration: 320 });
+    };
+    window.addEventListener('aether:canvas-pan-horizontal', panHorizontally);
+    return () => window.removeEventListener('aether:canvas-pan-horizontal', panHorizontally);
+  }, [getViewport, setViewport]);
+  useEffect(() => {
     if (!dropError) return;
     const timeout = window.setTimeout(() => setDropError(null), 4_500);
     return () => window.clearTimeout(timeout);

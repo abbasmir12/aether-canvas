@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, Minus, Search, Square, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 function AetherMark() {
@@ -12,18 +13,24 @@ function AetherMark() {
 
 const windowButton = '[-webkit-app-region:no-drag] grid h-11 w-11 place-items-center text-[#58585D] transition-colors hover:bg-[#F0EFED] hover:text-[#252529]';
 
-export default function TopBar() {
+export default function TopBar({ navigationWidth = 240 }: { navigationWidth?: number }) {
   const [query, setQuery] = useState('');
+  const moveCanvas = (deltaX: number) => window.dispatchEvent(new CustomEvent('aether:canvas-pan-horizontal', { detail: deltaX }));
   return (
     <header className="relative z-30 flex h-12 shrink-0 select-none border-b border-[#F0EFED] bg-[#FAFAF9] text-[#242426] [-webkit-app-region:drag]">
-      <div className="flex w-[240px] shrink-0 items-center gap-3 border-r border-[#F0EFED] px-5">
+      <motion.div
+        animate={{ width: Math.max(180, navigationWidth) }}
+        className="flex shrink-0 items-center gap-3 border-r border-[#F0EFED] px-5"
+        initial={false}
+        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+      >
         <AetherMark />
         <span className="text-[18px] font-bold tracking-[-0.035em]">Aether</span>
-      </div>
+      </motion.div>
 
       <div className="ml-4 flex w-[82px] shrink-0 items-center justify-center gap-1 [-webkit-app-region:no-drag]">
-        <button aria-label="Back" className="grid h-8 w-8 place-items-center rounded-[8px] text-[#99999D] transition-colors hover:bg-[#F0EFED] hover:text-[#333337]" type="button"><ChevronLeft size={17} /></button>
-        <button aria-label="Forward" className="grid h-8 w-8 place-items-center rounded-[8px] text-[#C0C0C4] transition-colors hover:bg-[#F0EFED] hover:text-[#333337]" type="button"><ChevronRight size={17} /></button>
+        <button aria-label="Move canvas left" className="grid h-8 w-8 place-items-center rounded-[8px] text-[#8D8D92] transition-all hover:bg-[#F0EFED] hover:text-[#333337] active:scale-95" onClick={() => moveCanvas(-300)} title="Move canvas left" type="button"><ChevronLeft size={17} /></button>
+        <button aria-label="Move canvas right" className="grid h-8 w-8 place-items-center rounded-[8px] text-[#8D8D92] transition-all hover:bg-[#F0EFED] hover:text-[#333337] active:scale-95" onClick={() => moveCanvas(300)} title="Move canvas right" type="button"><ChevronRight size={17} /></button>
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-center px-5 py-2">

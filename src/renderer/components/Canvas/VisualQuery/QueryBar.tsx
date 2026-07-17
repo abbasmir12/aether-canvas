@@ -113,7 +113,6 @@ export default function QueryBar({ disabled, history, loading, onClear, onSelect
           transition={{ duration: loading ? 1.15 : 2.6, repeat: loading || expanded ? Infinity : 0, ease: 'easeInOut' }}
         >
           <MessageCircleQuestion size={16} strokeWidth={2.05} />
-          <span aria-hidden className="absolute right-[1px] top-[1px] h-[5px] w-[5px] rounded-full border border-white/80 bg-[#9B72CF] shadow-[0_0_5px_rgba(155,114,207,.75)]" />
         </motion.span>
         {expanded ? (
           <input

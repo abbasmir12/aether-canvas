@@ -251,6 +251,72 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         }
       }
 
+      if (process.env.AETHER_SMOKE_SIDEBAR) {
+        const initialSidebar = await window.webContents.executeJavaScript(`JSON.stringify({
+          width: Math.round(document.querySelector('[data-aether-sidebar]')?.getBoundingClientRect().width || 0),
+          pinned: document.querySelector('[data-aether-sidebar-shell]')?.getAttribute('data-pinned'),
+          viewport: document.querySelector('.react-flow__viewport')?.getAttribute('style') || ''
+        })`);
+        await window.webContents.executeJavaScript(`document.querySelector('button[aria-label="Collapse sidebar"]')?.click()`);
+        await new Promise((done) => setTimeout(done, 420));
+        await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 2, y: 280 });
+        await new Promise((done) => setTimeout(done, 420));
+        const previewSidebar = await window.webContents.executeJavaScript(`JSON.stringify({
+          width: Math.round(document.querySelector('[data-aether-sidebar]')?.getBoundingClientRect().width || 0),
+          preview: document.querySelector('[data-aether-sidebar]')?.getAttribute('data-preview'),
+          pinButton: Boolean(document.querySelector('button[aria-label="Keep sidebar open"]'))
+        })`);
+        await window.webContents.executeJavaScript(`document.querySelector('button[aria-label="Keep sidebar open"]')?.click()`);
+        await new Promise((done) => setTimeout(done, 420));
+        const resizer = await window.webContents.executeJavaScript(`(() => {
+          const node = document.querySelector('[data-aether-sidebar-resizer]');
+          if (!node) return null;
+          const rect = node.getBoundingClientRect();
+          return { x: rect.left + rect.width / 2, y: rect.top + 180 };
+        })()`);
+        if (resizer) {
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mousePressed', x: resizer.x, y: resizer.y, button: 'left', clickCount: 1 });
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseMoved', x: resizer.x + 72, y: resizer.y, button: 'left' });
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseReleased', x: resizer.x + 72, y: resizer.y, button: 'left', clickCount: 1 });
+          await new Promise((done) => setTimeout(done, 420));
+        }
+        const viewportBefore = await window.webContents.executeJavaScript(`document.querySelector('.react-flow__viewport')?.style.transform || ''`);
+        await window.webContents.executeJavaScript(`document.querySelector('button[aria-label="Move canvas left"]')?.click()`);
+        await new Promise((done) => setTimeout(done, 420));
+        const viewportAfterLeft = await window.webContents.executeJavaScript(`document.querySelector('.react-flow__viewport')?.style.transform || ''`);
+        await window.webContents.executeJavaScript(`document.querySelector('button[aria-label="Move canvas right"]')?.click()`);
+        await new Promise((done) => setTimeout(done, 420));
+        const collapseResizer = await window.webContents.executeJavaScript(`(() => {
+          const node = document.querySelector('[data-aether-sidebar-resizer]');
+          if (!node) return null;
+          const rect = node.getBoundingClientRect();
+          return { x: rect.left + rect.width / 2, y: rect.top + 180 };
+        })()`);
+        if (collapseResizer) {
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mousePressed', x: collapseResizer.x, y: collapseResizer.y, button: 'left', clickCount: 1 });
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 150, y: collapseResizer.y, button: 'left' });
+          await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 150, y: collapseResizer.y, button: 'left', clickCount: 1 });
+          await new Promise((done) => setTimeout(done, 420));
+        }
+        const dragCollapsed = await window.webContents.executeJavaScript(`JSON.stringify({
+          width: Math.round(document.querySelector('[data-aether-sidebar-shell]')?.getBoundingClientRect().width || 0),
+          sidebarVisible: Boolean(document.querySelector('[data-aether-sidebar]')),
+          pinned: document.querySelector('[data-aether-sidebar-shell]')?.getAttribute('data-pinned')
+        })`);
+        await window.webContents.debugger.sendCommand('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 2, y: 280 });
+        await new Promise((done) => setTimeout(done, 320));
+        await window.webContents.executeJavaScript(`document.querySelector('button[aria-label="Keep sidebar open"]')?.click()`);
+        await new Promise((done) => setTimeout(done, 320));
+        const finalSidebar = await window.webContents.executeJavaScript(`JSON.stringify({
+          width: Math.round(document.querySelector('[data-aether-sidebar]')?.getBoundingClientRect().width || 0),
+          pinned: document.querySelector('[data-aether-sidebar-shell]')?.getAttribute('data-pinned'),
+          viewportBefore: ${JSON.stringify(viewportBefore)},
+          viewportAfterLeft: ${JSON.stringify(viewportAfterLeft)},
+          viewportAfterRight: document.querySelector('.react-flow__viewport')?.style.transform || ''
+        })`);
+        console.log(`AETHER_SMOKE_SIDEBAR initial=${initialSidebar} preview=${previewSidebar} dragCollapsed=${dragCollapsed} final=${finalSidebar}`);
+      }
+
       if (process.env.AETHER_SMOKE_DEBUG) {
         const edgeDebug = await window.webContents.executeJavaScript(`JSON.stringify({
           ribbons: document.querySelectorAll('.semantic-ribbon').length,
