@@ -187,7 +187,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     setNodes((current) => current.map((node) => node.id === event.fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, syncStatus: 'deleted', syncCheckedAt: event.timestamp } } as FileCardNodeType : node));
     setToastMessage(`${event.filePath.split(/[\\/]/).pop() ?? 'Source file'} is no longer available`);
   }, [setNodes]);
-  const watchedSources = useMemo(() => hydratedWorkspaceId.current === workspace?.id ? nodes.filter((node): node is FileCardNodeType => node.type === 'fileCard' && Boolean(node.data.analysis) && node.data.watchEnabled !== false && node.data.syncStatus !== 'deleted').map((node) => ({ id: node.id, filePath: node.data.filePath, contentHash: node.data.analysis?.contentHash })) : [], [nodes, workspace?.id]);
+  const watchedSources = useMemo(() => hydratedWorkspaceId.current === workspace?.id ? nodes.filter((node): node is FileCardNodeType => node.type === 'fileCard' && Boolean(node.data.analysis) && node.data.watchEnabled !== false).map((node) => ({ id: node.id, filePath: node.data.filePath, contentHash: node.data.analysis?.contentHash })) : [], [nodes, workspace?.id]);
   useLiveFileSync({
     workspaceId: workspace?.id,
     sources: watchedSources,

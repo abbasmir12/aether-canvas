@@ -304,7 +304,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 #### Codex contributions
 
 - Distinguished unrelated VS Code updater output from Aether runtime failures, then hardened the real cross-platform watcher edge cases exposed by the report.
-- Added replacement-file `add` handling, Windows case-insensitive path identity, a four-second atomic-save grace period, and startup hash reconciliation for edits made while Aether was closed.
+- Added replacement-file `add` handling, Windows case-insensitive path identity, a four-second atomic-save grace period, late-recreation recovery for deleted sources, and startup hash reconciliation for edits made while Aether was closed.
 - Added two bounded automatic retries for transient GPT-5.6 re-analysis failures.
 - Made refreshed source analysis update the existing Summary Card immediately while slower relationship/dashboard replanning continues in the background.
 - Replaced direct workspace JSON overwrites with serialized atomic temp-file replacement and validated backup recovery so app shutdown cannot truncate the active workspace.
