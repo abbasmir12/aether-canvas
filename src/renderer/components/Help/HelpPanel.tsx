@@ -9,7 +9,6 @@ import {
   Image,
   Keyboard,
   Layers3,
-  LifeBuoy,
   Link2,
   Map,
   MousePointer2,
@@ -18,6 +17,8 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+
+import AetherLogo from '../Brand/AetherLogo';
 
 const guides = [
   { icon: FileText, color: '#4A90D9', title: 'Drop real files', copy: 'PDFs, spreadsheets, images, notes, Word files, and presentations can share one canvas.' },
@@ -57,7 +58,7 @@ export default function HelpPanel({ onClose }: { onClose: () => void }) {
   return (
     <motion.div animate={{ opacity: 1 }} className="absolute inset-0 z-[80] flex justify-end bg-[#252329]/18 backdrop-blur-[5px]" data-aether-help-panel initial={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <motion.section animate={{ x: 0 }} className="h-full w-[520px] max-w-[92vw] overflow-y-auto border-l border-white/80 bg-[#FAF9F8] px-7 py-6 shadow-[-20px_0_60px_rgba(28,25,32,.18)]" initial={{ x: 70 }} transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
-        <header className="flex items-start gap-3"><span className="grid h-10 w-10 place-items-center rounded-[13px] bg-[linear-gradient(145deg,#4A90D9,#8064A3)] text-white shadow-[0_7px_16px_rgba(74,100,145,.24)]"><LifeBuoy size={19} /></span><div className="min-w-0 flex-1"><p className="text-[9px] font-semibold uppercase tracking-[.15em] text-[#9B72CF]">Aether Guide</p><h1 className="mt-0.5 text-[23px] font-semibold tracking-[-.045em] text-[#2D2A31]">Build with your files</h1><p className="mt-1 text-[10px] text-[#8E8A92]">Everything needed to turn a blank space into a living workspace.</p></div><button aria-label="Close help" className="grid h-8 w-8 place-items-center rounded-full border border-[#E3E0E4] bg-white text-[#858189] transition hover:rotate-90 hover:text-[#343137]" onClick={onClose} type="button"><X size={15} /></button></header>
+        <header className="flex items-start gap-3"><AetherLogo alt="" size={40} /><div className="min-w-0 flex-1"><p className="text-[9px] font-semibold uppercase tracking-[.15em] text-[#9B72CF]">Aether Guide</p><h1 className="mt-0.5 text-[23px] font-semibold tracking-[-.045em] text-[#2D2A31]">Build with your files</h1><p className="mt-1 text-[10px] text-[#8E8A92]">Everything needed to turn a blank space into a living workspace.</p></div><button aria-label="Close help" className="grid h-8 w-8 place-items-center rounded-full border border-[#E3E0E4] bg-white text-[#858189] transition hover:rotate-90 hover:text-[#343137]" onClick={onClose} type="button"><X size={15} /></button></header>
 
         <label className="mt-5 flex h-10 items-center gap-2 rounded-[11px] border border-[#E2DFE3] bg-white px-3 shadow-[0_2px_8px_rgba(25,25,30,.04)] focus-within:border-[#4A90D9]"><Search size={14} className="text-[#95919A]" /><input className="min-w-0 flex-1 bg-transparent text-[11px] text-[#49454D] outline-none placeholder:text-[#AAA6AD]" onChange={(event) => setQuery(event.target.value)} placeholder="Search help and concepts…" value={query} /></label>
 

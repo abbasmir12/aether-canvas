@@ -584,6 +584,18 @@ The generic React Flow minimap did not communicate Aether's file → semantic hu
 
 All geometry is rendered through a bounded SVG clip path inside an overflow-hidden shell. The overview supports click/drag recentering and fit-to-content, turning it into a useful spatial navigator rather than decorative chrome.
 
+## 059. One canonical brand asset across product and packaging
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human-supplied identity, Codex implementation
+
+The supplied Aether logo is the single source of visual identity for application chrome, onboarding, product surfaces, browser metadata, Electron windows, and packaged releases. A reusable renderer component prevents divergent hand-built marks, while a cropped 512px public derivative keeps small UI placements crisp and avoids shipping the source asset's excess transparent padding.
+
+Functional Lucide icons remain in place for actions and semantic concepts; the logo appears only where the product itself is speaking. This preserves icon clarity while making the application immediately recognizable.
+
 ## Decision Template
 
 ## NNN. Decision title

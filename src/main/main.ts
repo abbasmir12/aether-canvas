@@ -583,12 +583,16 @@ function registerIpcHandlers(): void {
 }
 
 function createWindow(): BrowserWindow {
+  const appIcon = process.env.VITE_DEV_SERVER_URL
+    ? resolve('public/aether-logo.png')
+    : join(currentDirectory, '../dist/aether-logo.png');
   const window = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 1000,
     minHeight: 700,
     title: 'Aether Canvas',
+    icon: appIcon,
     backgroundColor: '#F4F1E9',
     frame: false,
     titleBarStyle: 'hidden',

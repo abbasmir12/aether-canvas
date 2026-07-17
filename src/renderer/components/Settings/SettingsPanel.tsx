@@ -19,6 +19,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import type { AetherSettings, AetherSettingsUpdate, AIReasoningEffort, CanvasTone } from '../../../shared/types';
+import AetherLogo from '../Brand/AetherLogo';
 
 type SettingsTab = 'appearance' | 'intelligence' | 'behavior' | 'about';
 
@@ -105,7 +106,7 @@ export default function SettingsPanel({ settings, onClose, onUpdate }: { setting
     <motion.div animate={{ opacity: 1 }} className="absolute inset-0 z-[80] flex justify-end bg-[#252329]/18 backdrop-blur-[5px]" data-aether-settings-panel initial={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <motion.section animate={{ x: 0 }} className="flex h-full w-[620px] max-w-[92vw] overflow-hidden border-l border-white/80 bg-[#F8F7F6] shadow-[-20px_0_60px_rgba(28,25,32,.18)]" initial={{ x: 70 }} transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}>
         <aside className="flex w-[154px] shrink-0 flex-col border-r border-[#E7E4E6] bg-[#F2F0F1]/90 px-3 py-4">
-          <div className="mb-5 flex items-center gap-2 px-2"><span className="grid h-8 w-8 place-items-center rounded-[10px] bg-[linear-gradient(145deg,#2C2931,#68537A)] text-white shadow-[0_4px_10px_rgba(52,43,62,.22)]"><Sparkles size={15} /></span><div><p className="text-[12px] font-semibold text-[#302D34]">Aether</p><p className="text-[8px] uppercase tracking-[.12em] text-[#9B979F]">Preferences</p></div></div>
+          <div className="mb-5 flex items-center gap-2 px-2"><AetherLogo alt="" size={32} /><div><p className="text-[12px] font-semibold text-[#302D34]">Aether</p><p className="text-[8px] uppercase tracking-[.12em] text-[#9B979F]">Preferences</p></div></div>
           <nav className="space-y-1">{tabs.map(({ id, label, Icon }) => <button className={`flex h-9 w-full items-center gap-2 rounded-[9px] px-2.5 text-left text-[11px] font-medium transition ${tab === id ? 'bg-white text-[#37313D] shadow-[0_2px_7px_rgba(32,28,36,.07)]' : 'text-[#817E86] hover:bg-white/60 hover:text-[#48444C]'}`} key={id} onClick={() => setTab(id)} type="button"><Icon size={15} /><span>{label}</span>{tab === id && <ChevronRight className="ml-auto text-[#9B72CF]" size={12} />}</button>)}</nav>
           <div className="mt-auto rounded-[11px] border border-[#E4DFE8] bg-white/70 p-2.5"><div className="flex items-center gap-1.5 text-[9px] font-semibold text-[#5A5360]"><ShieldCheck className="text-[#34A853]" size={12} />Local-first</div><p className="mt-1 text-[8px] leading-3.5 text-[#96919A]">Workspace data stays in your OS application directory.</p></div>
         </aside>
@@ -150,7 +151,7 @@ export default function SettingsPanel({ settings, onClose, onUpdate }: { setting
 
             {tab === 'about' && <motion.div animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 6 }} key="about">
               <SectionTitle copy="A generative desktop where space becomes the prompt." eyebrow="Aether Canvas" title="Built for your real files" />
-              <div className="overflow-hidden rounded-[16px] bg-[linear-gradient(145deg,#302C35,#675477)] p-5 text-white shadow-[0_12px_28px_rgba(50,42,58,.2)]"><Sparkles size={20} /><h3 className="mt-5 text-[20px] font-semibold tracking-[-.04em]">Space is the prompt.</h3><p className="mt-2 text-[10px] leading-5 text-white/65">Files become living, traceable mini-apps through GPT-5.6 understanding and Codex-built spatial interaction.</p><div className="mt-5 flex gap-2"><span className="rounded-full bg-white/10 px-2.5 py-1 text-[8px] font-semibold">Build Week 2026</span><span className="rounded-full bg-white/10 px-2.5 py-1 text-[8px] font-semibold">v0.1.0</span></div></div>
+              <div className="relative overflow-hidden rounded-[16px] bg-[linear-gradient(145deg,#302C35,#675477)] p-5 text-white shadow-[0_12px_28px_rgba(50,42,58,.2)]"><div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/[.055] blur-2xl" /><AetherLogo alt="" className="relative" size={44} /><h3 className="relative mt-5 text-[20px] font-semibold tracking-[-.04em]">Space is the prompt.</h3><p className="relative mt-2 text-[10px] leading-5 text-white/65">Files become living, traceable mini-apps through GPT-5.6 understanding and Codex-built spatial interaction.</p><div className="relative mt-5 flex gap-2"><span className="rounded-full bg-white/10 px-2.5 py-1 text-[8px] font-semibold">Build Week 2026</span><span className="rounded-full bg-white/10 px-2.5 py-1 text-[8px] font-semibold">v0.1.0</span></div></div>
               <div className="mt-4 rounded-[13px] border border-[#E6E3E7] bg-white p-3.5"><p className="text-[9px] font-semibold uppercase tracking-[.1em] text-[#9B979F]">Settings storage</p><p className="mt-2 break-all text-[9px] leading-4 text-[#6D6971]">{settings.settingsPath}</p></div>
             </motion.div>}
           </AnimatePresence>

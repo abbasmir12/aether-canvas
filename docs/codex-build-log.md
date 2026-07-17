@@ -386,6 +386,23 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - The isolated settings smoke test switched 18 semantic edges to exactly one SVG path each and confirmed `ribbonMode: "simple"` persisted to disk.
 - The custom minimap rendered 27 node shapes and all 18 connector groups from the loaded workspace, reported a real `1150 × 1515` topology viewBox, and retained `overflow: hidden` clipping.
 
+### Unified Aether application identity
+
+#### Codex contributions
+
+- Prepared the human-supplied high-resolution Aether mark as a tightly cropped, optimized 512px public asset while preserving the original in `agent_assets/`.
+- Added one reusable brand component and replaced improvised marks in the custom title bar, empty-canvas invitation, Settings navigation/About surface, and Help header.
+- Wired the same canonical asset into the HTML favicon, Electron BrowserWindow, electron-builder package metadata, and README.
+
+#### Human decisions
+
+- The human supplied `aetherlogo.png` as the definitive application logo and directed that it replace temporary identity marks wherever branding is appropriate.
+
+#### Verification
+
+- Strict renderer/main TypeScript checks and all three Vite production bundles pass.
+- A native Electron capture verified the logo remains legible at the 32px title-bar size and reads as a premium focal point in the 62px empty-canvas state.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions

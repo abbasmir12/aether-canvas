@@ -1,5 +1,7 @@
 # Aether Canvas
 
+<img src="public/aether-logo.png" alt="Aether Canvas logo" width="88" />
+
 > Space is the prompt.
 
 Aether Canvas is a generative desktop where spatially grouping ordinary files creates the mini-app you need. Drop PDFs, images, spreadsheets, and notes onto an infinite local canvas; Aether understands their contents, draws explainable semantic relationships, and turns coherent clusters into useful summary dashboards.

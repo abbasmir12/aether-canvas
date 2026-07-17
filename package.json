@@ -19,6 +19,7 @@
   "build": {
     "appId": "com.aether.canvas",
     "productName": "Aether Canvas",
+    "icon": "public/aether-logo.png",
     "linux": {
       "target": [
         "AppImage"

@@ -2,14 +2,7 @@ import { ChevronLeft, ChevronRight, Minus, Search, Square, X } from 'lucide-reac
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-function AetherMark() {
-  return (
-    <span aria-hidden="true" className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[9px] bg-[#2D2D2F] shadow-[0_2px_5px_rgba(0,0,0,0.16)]">
-      <span className="absolute h-[18px] w-[5px] -translate-x-[4px] -rotate-[28deg] rounded-full bg-white/95" />
-      <span className="absolute h-[13px] w-[4px] translate-x-[5px] translate-y-[3px] -rotate-[28deg] rounded-full bg-white/75" />
-    </span>
-  );
-}
+import AetherLogo from '../Brand/AetherLogo';
 
 const windowButton = '[-webkit-app-region:no-drag] grid h-11 w-11 place-items-center text-[#58585D] transition-colors hover:bg-[#F0EFED] hover:text-[#252529]';
 
@@ -24,7 +17,7 @@ export default function TopBar({ navigationWidth = 240 }: { navigationWidth?: nu
         initial={false}
         transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
       >
-        <AetherMark />
+        <AetherLogo alt="" size={32} />
         <span className="text-[18px] font-bold tracking-[-0.035em]">Aether</span>
       </motion.div>
 
