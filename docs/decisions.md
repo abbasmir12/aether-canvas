@@ -510,6 +510,18 @@ Files on a canvas remain references to their real local sources rather than froz
 
 The cached analysis is never discarded while a source is updating or missing. Cards communicate pending, syncing, synced, paused, deleted, and unwatched states; deleted sources can be relocated, retained as cached evidence, or removed from the canvas without touching disk. This makes the workspace reactive while preserving user trust, cost control, and local-first behavior.
 
+## 053. Semantic endpoint invariants across AI regeneration
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human bug report, Codex implementation
+
+GPT-5.6 remains free to choose and revise a dashboard's visual modules, but the renderer guarantees one Summary Card endpoint for every semantic hub grounded in the current files. If an otherwise-valid regenerated plan omits COST, DATES, PLACE, or TASKS presentation, Aether supplements it with the corresponding grounded fallback module rather than leaving a ribbon without a destination.
+
+Dynamic section handles are remeasured after both React's DOM commit and Framer Motion's layout settlement. This separates AI presentation variability from graph-topology correctness and keeps living-file updates visually continuous.
+
 ## Decision Template
 
 ## NNN. Decision title

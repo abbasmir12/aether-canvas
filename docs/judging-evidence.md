@@ -91,6 +91,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Quality of Idea:** The workspace model shows that users do not need to pre-organize files into folders. Aether locally preserves the evolving canvas, its AI analysis cache, and its semantic workspace identity, so the product organizes itself around the user’s projects.
 - **Visual verification:** A live five-file GPT-5.6 Electron capture on July 15 shows blue, green, coral, and purple tributaries converging into semantic hubs, then heavier trunks entering their matching dashboard sections. This is captured from the actual native drag/drop and analysis flow, not a static design mockup.
 - **Demo reliability:** Summary section handles are explicitly remeasured after their Framer Motion entrance, preventing hub-to-dashboard ribbons from anchoring at the card’s pre-animation offset.
+- **Reactive topology reliability:** After live GPT-5.6 regeneration, Aether preserves a grounded Summary endpoint for every active semantic hub and remeasures it after layout settles. A native Stay-price edit changed both source and dashboard totals while the COST stream remained continuously attached to Budget.
 - _Add before/after screenshots proving fidelity for the shell, nodes, ribbons, dashboard, and minimap._
 - _Add animation, loading, empty, error, accessibility, and keyboard-navigation evidence._
 - _Add demo timestamp showing the complete polished interaction loop._

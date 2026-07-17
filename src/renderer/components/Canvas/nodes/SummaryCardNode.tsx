@@ -40,6 +40,28 @@ function fallbackPlan(files: AnalyzedFile[], cluster: SuggestedCluster): Dashboa
   return { title: cluster.name, subtitle: cluster.dateRange, category: cluster.category, headerIcon: cluster.category === 'travel' ? 'map' : cluster.category === 'education' ? 'book-open' : 'sparkles', headerAccent: cluster.category === 'travel' ? 'place' : 'neutral', modules: modules.map((module) => ({ ...module, compact: compactFor(module, files) })) };
 }
 
+/**
+ * GPT decides how the dashboard is presented, but its plan must preserve the
+ * semantic endpoints already represented by canvas hubs. A refreshed plan can
+ * legitimately change its visual vocabulary; it must not strand a COST, DATES,
+ * PLACE, or TASKS ribbon by omitting the corresponding module.
+ */
+function preserveSemanticEndpoints(plan: DashboardPlan, groundedPlan: DashboardPlan): DashboardPlan {
+  const represented = new Set(
+    plan.modules
+      .map((module) => relationshipFor(module.kind))
+      .filter((relationship): relationship is RelationshipType => relationship !== null),
+  );
+  const missingGroundedModules = groundedPlan.modules.filter((module) => {
+    const relationship = relationshipFor(module.kind);
+    return relationship !== null && !represented.has(relationship);
+  });
+
+  return missingGroundedModules.length
+    ? { ...plan, modules: [...plan.modules, ...missingGroundedModules] }
+    : plan;
+}
+
 function CompactPreview({ module, color }: { module: DashboardModule; color: string }) {
   const compact = module.compact;
 
@@ -122,7 +144,8 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
   const [newItem, setNewItem] = useState('');
   const dashboard = data.dashboard ?? {};
   const fallback = fallbackPlan(data.files, data.cluster);
-  const plan = data.dashboardPlan?.modules.every((module) => Boolean(module.visual) && Array.isArray(module.interactions) && Boolean(module.compact)) ? data.dashboardPlan : fallback;
+  const generatedPlan = data.dashboardPlan?.modules.every((module) => Boolean(module.visual) && Array.isArray(module.interactions) && Boolean(module.compact)) ? data.dashboardPlan : fallback;
+  const plan = generatedPlan === fallback ? fallback : preserveSemanticEndpoints(generatedPlan, fallback);
   const HeaderIcon = iconForPlan[plan.headerIcon] ?? SparklesIcon;
   const Sparkles = HeaderIcon;
   const headerColor = plan.headerAccent === 'dates' ? COLORS.dates : plan.headerAccent === 'cost' ? COLORS.cost : plan.headerAccent === 'place' ? COLORS.place : plan.headerAccent === 'tasks' ? COLORS.tasks : '#7B57A9';
@@ -183,7 +206,28 @@ export default function SummaryCardNode({ id, data, selected }: NodeProps<Summar
     }
     return module;
   });
-  useEffect(() => { requestAnimationFrame(() => updateNodeInternals(id)); }, [id, openModule, updateNodeInternals]);
+  const moduleGeometrySignature = JSON.stringify(displayModules.map((module) => ({
+    id: module.id,
+    kind: module.kind,
+    visual: module.visual,
+    composition: module.composition?.primitives.map((primitive) => primitive.type),
+    compact: module.compact,
+  })));
+  useEffect(() => {
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      updateNodeInternals(id);
+      secondFrame = requestAnimationFrame(() => updateNodeInternals(id));
+    });
+    // Framer Motion may still be settling layout after the DOM frames above.
+    // A final measurement keeps semantic ribbons attached to their section.
+    const settledLayout = window.setTimeout(() => updateNodeInternals(id), 420);
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+      window.clearTimeout(settledLayout);
+    };
+  }, [id, moduleGeometrySignature, openModule, updateNodeInternals]);
 
   const content = (module: DashboardModule) => {
     const moduleSources = sourceFiles(module);

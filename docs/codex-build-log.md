@@ -276,6 +276,23 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Reopening the persisted workspace and editing the budget again triggered one analysis without re-dropping; the card moved to `$980` Flights / `$2,360` total and the Summary Card to `$1,620` spent.
 - Rewriting the watched budget with byte-identical content produced `calls=0`, directly verifying SHA-256 suppression before GPT-5.6.
 
+### Live-sync semantic endpoint regression
+
+#### Codex contributions
+
+- Fixed a live-refresh race that could leave the COST hub visually disconnected after a source price changed and GPT-5.6 regenerated the dashboard plan.
+- Added a renderer invariant that preserves a grounded Summary Card endpoint for every active semantic hub even when a regenerated AI plan changes or omits a presentation module.
+- Added staged React Flow handle remeasurement after the refreshed DOM and Framer Motion layout settle, keeping ribbon geometry attached to moving Budget, Journey, Packing, and Map sections.
+
+#### Human decisions
+
+- The human identified the regression by changing the Stay price to `$140` in the real source file and required semantic connections to remain stable throughout reactive updates.
+
+#### Verification
+
+- `npm run lint`, the renderer/main/preload Vite production build, and electron-builder's Linux AppImage packaging pass.
+- A native Electron live-sync run changed Stay from `$140` to `$180`; GPT-5.6 re-analysis updated `budget.csv` to `$2,000`, the Summary Budget to `$1,260 spent / $740 remaining`, and the green COST ribbon remained attached to the Budget section after layout settled.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions
