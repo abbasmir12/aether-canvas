@@ -63,6 +63,12 @@ Start Aether:
 npm run dev
 ```
 
+If a Windows terminal prints VS Code messages such as `StorageMainService`,
+`update#setState`, or extension-host output after the Electron bundles build,
+the editor was launched instead of Aether. The current Vite configuration
+removes inherited VS Code Electron overrides automatically; stop the stale
+process, pull the latest commit, and run `npm run dev` again.
+
 Production workflow:
 
 ```bash

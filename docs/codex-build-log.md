@@ -405,6 +405,23 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - A follow-up native capture verified the reusable rounded overscan mask removes the supplied image's peripheral side strokes at both sizes. The same empty-state check confirmed Ask the Canvas stays hidden until a source file exists.
 - The public/package icon now has that cleanup baked into its alpha channel with an inset rounded mask, so Windows taskbar and Electron surfaces that bypass renderer CSS receive the same clean silhouette. A stable Windows AppUserModelID prevents the taskbar from grouping Aether under a generic Electron identity.
 
+### Windows development-launch isolation
+
+#### Codex contributions
+
+- Traced intermittent “live sync not working” reports to a launcher failure rather than the watcher: the terminal output belonged to VS Code's `StorageMainService`, updater, and extension host, proving `Code.exe` had launched in place of Aether.
+- Sanitized `ELECTRON_OVERRIDE_DIST_PATH` and `ELECTRON_RUN_AS_NODE` before `vite-plugin-electron` resolves its executable, ensuring Aether always uses the repository's installed Electron runtime.
+
+#### Human decisions
+
+- The human supplied the Windows console output after observing that live synchronization had stopped working.
+
+#### Verification
+
+- A native Electron run deliberately supplied an invalid `ELECTRON_OVERRIDE_DIST_PATH` plus `ELECTRON_RUN_AS_NODE=1`; Aether still launched through the repository runtime rather than VS Code.
+- In that same run, two files were analyzed and watched. Changing Flights from `$820` to `$950` externally produced exactly one additional GPT call, returned both cards to `synced`, updated the source total to `$2,200`, and refreshed the Summary Budget to `$2,200 planned / $740 remaining`.
+- Chokidar remains an external main-process dependency, removing the irrelevant Rollup unused-type warning while preserving its normal runtime loading.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions

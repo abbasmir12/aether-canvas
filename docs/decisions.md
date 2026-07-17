@@ -596,6 +596,18 @@ The supplied Aether logo is the single source of visual identity for application
 
 Functional Lucide icons remain in place for actions and semantic concepts; the logo appears only where the product itself is speaking. This preserves icon clarity while making the application immediately recognizable.
 
+## 060. Isolate Aether's development launcher from host Electron variables
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human Windows report, Codex diagnosis
+
+VS Code is an Electron application and may expose `ELECTRON_OVERRIDE_DIST_PATH` or `ELECTRON_RUN_AS_NODE` inside an integrated terminal. The Electron Vite plugin respects those variables while resolving its runtime; when inherited, it can start `Code.exe` instead of Aether. The resulting window has no Aether IPC handlers or file watcher even though the TypeScript bundles built successfully.
+
+Aether deletes both host-only variables at Vite configuration startup. Development therefore resolves the repository's pinned Electron binary deterministically, independent of which editor or terminal launched npm.
+
 ## Decision Template
 
 ## NNN. Decision title
