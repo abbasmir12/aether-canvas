@@ -27,6 +27,7 @@ import { createSettingsService, type SettingsService } from './services/settings
 if (process.env.AETHER_SMOKE_USER_DATA_DIR) {
   app.setPath('userData', resolve(process.env.AETHER_SMOKE_USER_DATA_DIR));
 }
+app.setAppUserModelId('com.aether.canvas');
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const authorizedFilePaths = new Set<string>();
