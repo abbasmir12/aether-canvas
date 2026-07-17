@@ -166,6 +166,36 @@ export interface DashboardPlan {
   modules: DashboardModule[];
 }
 
+export interface VisualQueryBreakdownItem {
+  label: string;
+  value: string;
+}
+
+export interface VisualQueryAnswer {
+  headline: string;
+  detail: string;
+  value: string | null;
+  valueLabel: string | null;
+  breakdown: VisualQueryBreakdownItem[];
+}
+
+export interface VisualQuerySource {
+  type: 'section' | 'file';
+  sectionId: string | null;
+  sectionLabel: string | null;
+  fileId: string | null;
+  fileName: string | null;
+  relevance: string;
+  color: string;
+}
+
+export interface VisualQueryResult {
+  answer: VisualQueryAnswer;
+  sources: VisualQuerySource[];
+  confidence: number;
+  followUpSuggestions: string[];
+}
+
 export interface AetherFile {
   id: string;
   name: string;
@@ -329,6 +359,7 @@ export interface AetherBridge {
   openExternal: (url: string) => Promise<void>;
   saveTextFile: (defaultName: string, contents: string) => Promise<boolean>;
   getDashboardInsights: (kind: DashboardInsightKind, context: string) => Promise<DashboardAiInsight[]>;
+  askWorkspace: (question: string, fileIds: string[], dashboard: DashboardPlan | null) => Promise<VisualQueryResult>;
   hydrateAnalyzedFiles: (files: AnalyzedFile[]) => Promise<void>;
   fileWatcher: {
     watch: (filePath: string, fileId: string, contentHash?: string) => Promise<string | null>;

@@ -536,6 +536,18 @@ Source analysis is applied immediately to the existing generated mini-app; GPT-5
 
 Workspace and index JSON use serialized temp-file replacement rather than in-place overwrite. A parseable previous version is retained as a backup and restored automatically if the primary is incomplete. This ensures live synchronization cannot trade filesystem reactivity for persistence safety.
 
+## 055. Visual explainable AI
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+A workspace question produces an ephemeral React Flow answer node rather than a detached chat response. GPT-5.6 returns a strict structured answer, calculation breakdown, confidence, follow-ups, and exact file/module provenance. Aether validates those IDs against local state and draws animated semantic traces from the contributing Summary Card sections into the answer.
+
+Follow-ups reuse stable graph edges with a traveling current animation; changed sources redraw while irrelevant traces fade. Low-confidence answers use an amber treatment and intentionally omit connectors. This turns explainability into a spatial interaction: users can see the path from local source file, through the generated mini-app, to the answer without accepting unverified model-authored UI.
+
 ## Decision Template
 
 ## NNN. Decision title

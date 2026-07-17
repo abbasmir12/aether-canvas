@@ -21,6 +21,7 @@ const aetherBridge: AetherBridge = {
   openExternal: (url) => ipcRenderer.invoke('aether:open-external', url),
   saveTextFile: (defaultName, contents) => ipcRenderer.invoke('aether:save-text-file', defaultName, contents),
   getDashboardInsights: (kind, context) => ipcRenderer.invoke('aether:get-dashboard-insights', kind, context),
+  askWorkspace: (question, fileIds, dashboard) => ipcRenderer.invoke('aether:ask-workspace', question, fileIds, dashboard),
   hydrateAnalyzedFiles: (files) => ipcRenderer.invoke('aether:hydrate-analyzed-files', files),
   fileWatcher: {
     watch: (filePath, fileId, contentHash) => ipcRenderer.invoke('aether:file-watcher-watch', filePath, fileId, contentHash),

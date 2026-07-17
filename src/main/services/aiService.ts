@@ -1,13 +1,18 @@
 import OpenAI from 'openai';
 import type { Responses } from 'openai/resources/responses/responses';
+import { promises as fs } from 'node:fs';
 
 import type {
   AnalyzedFile,
+  DashboardModule,
+  DashboardPlan,
   FileAnalysis,
   RelationshipDiscovery,
   DashboardAiInsight,
   DashboardInsightKind,
   SmartPreviewType,
+  VisualQueryResult,
+  VisualQuerySource,
 } from '../../shared/types';
 import type { PreparedFile } from './fileReader';
 
@@ -270,6 +275,55 @@ const DASHBOARD_INSIGHT_SCHEMA = {
   },
 } as const;
 
+const VISUAL_QUERY_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['answer', 'sources', 'confidence', 'followUpSuggestions'],
+  properties: {
+    answer: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['headline', 'detail', 'value', 'valueLabel', 'breakdown'],
+      properties: {
+        headline: { type: 'string' },
+        detail: { type: 'string' },
+        value: { type: ['string', 'null'] },
+        valueLabel: { type: ['string', 'null'] },
+        breakdown: {
+          type: 'array',
+          maxItems: 6,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['label', 'value'],
+            properties: { label: { type: 'string' }, value: { type: 'string' } },
+          },
+        },
+      },
+    },
+    sources: {
+      type: 'array',
+      maxItems: 12,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['type', 'sectionId', 'sectionLabel', 'fileId', 'fileName', 'relevance', 'color'],
+        properties: {
+          type: { type: 'string', enum: ['section', 'file'] },
+          sectionId: { type: ['string', 'null'] },
+          sectionLabel: { type: ['string', 'null'] },
+          fileId: { type: ['string', 'null'] },
+          fileName: { type: ['string', 'null'] },
+          relevance: { type: 'string' },
+          color: { type: 'string', enum: ['#4A90D9', '#34A853', '#EA4335', '#9B72CF', '#8B7AA8'] },
+        },
+      },
+    },
+    confidence: { type: 'number', minimum: 0, maximum: 1 },
+    followUpSuggestions: { type: 'array', minItems: 2, maxItems: 3, items: { type: 'string' } },
+  },
+} as const;
+
 const DASHBOARD_COMPACT_RULES = `Aether renders generated workspaces through a safe visual grammar. Every module must include both:
 1. compact: three short grounded fallback strings (primary, secondary, tertiary).
 2. composition: a layout plus 1–3 reusable visual primitives. The composition is the preferred compact presentation; the legacy visual field controls detailed behavior when the module is opened.
@@ -492,4 +546,157 @@ export async function generateDashboardInsights(kind: DashboardInsightKind, cont
   });
   const parsed = parseJSON<{ items?: DashboardAiInsight[] }>(response.output_text, `${kind} insights`);
   return Array.isArray(parsed.items) ? parsed.items.filter((item) => typeof item.title === 'string' && typeof item.body === 'string') : [];
+}
+
+const ACCENT_COLORS = {
+  dates: '#4A90D9',
+  cost: '#34A853',
+  place: '#EA4335',
+  tasks: '#9B72CF',
+  neutral: '#8B7AA8',
+} as const;
+
+async function queryFileContext(file: AnalyzedFile): Promise<Record<string, unknown>> {
+  let contentExcerpt = '';
+  if (file.mimeType.startsWith('text/') || /(?:csv|json|xml|markdown)/i.test(file.mimeType)) {
+    try { contentExcerpt = (await fs.readFile(file.filePath, 'utf8')).slice(0, 2_000); } catch { /* Cached analysis remains queryable. */ }
+  }
+  return {
+    id: file.id,
+    fileName: file.fileName,
+    title: file.title,
+    category: file.category,
+    summary: file.summary,
+    entities: file.entities,
+    smartPreview: file.smartPreview,
+    intelligence: file.intelligence,
+    contentExcerpt,
+  };
+}
+
+export async function answerWorkspaceQuestion(question: string, analyzedFiles: AnalyzedFile[], dashboard: DashboardPlan | null): Promise<VisualQueryResult> {
+  const cleanQuestion = question.trim();
+  if (!cleanQuestion) throw new Error('Ask a question about this workspace.');
+  if (!analyzedFiles.length) throw new Error('Add files before asking the canvas.');
+
+  const files = await Promise.all(analyzedFiles.map(queryFileContext));
+  const dashboardContext = dashboard ? {
+    title: dashboard.title,
+    category: dashboard.category,
+    modules: dashboard.modules.map((module) => ({
+      id: module.id,
+      kind: module.kind,
+      label: module.title,
+      summary: module.summary,
+      accent: module.accent,
+      compact: module.compact,
+      composition: module.composition,
+      sourceFileIds: module.sourceFileIds,
+    })),
+  } : null;
+  const response = await client().responses.create({
+    model: configuredModel(),
+    reasoning: { effort: configuredReasoningEffort() },
+    input: [{
+      role: 'user',
+      content: [{
+        type: 'input_text',
+        text: `You are the grounded visual-query engine inside Aether Canvas, a spatial file workspace.
+
+Answer using ONLY the supplied file analysis, content excerpts, and dashboard data. Be precise. Perform calculations when the inputs support them. Never use outside facts or invent missing values.
+
+Every source that materially contributed must be included:
+- section sources must use an exact dashboard module id.
+- file sources must use an exact file id.
+- use the module's semantic color: dates #4A90D9, cost #34A853, place #EA4335, tasks #9B72CF, neutral #8B7AA8.
+- use an empty breakdown when a calculation/comparison is not useful.
+- use null value/valueLabel when there is no single key fact.
+- below 0.5 confidence, explain what is missing and avoid pretending the answer is known.
+- write 2–3 follow-up questions answerable from this same workspace.
+
+WORKSPACE:
+${JSON.stringify({ dashboard: dashboardContext, files })}
+
+USER QUESTION:
+${JSON.stringify(cleanQuestion)}
+
+Return the schema-constrained visual answer.`,
+      }],
+    }],
+    text: {
+      format: {
+        type: 'json_schema',
+        name: 'aether_visual_query',
+        description: 'A grounded answer with traceable dashboard and file sources.',
+        schema: VISUAL_QUERY_SCHEMA,
+        strict: true,
+      },
+      verbosity: 'low',
+    },
+  });
+
+  const parsed = parseJSON<VisualQueryResult>(response.output_text, 'visual query');
+  const filesById = new Map(analyzedFiles.map((file) => [file.id, file]));
+  const modulesById = new Map(dashboard?.modules.map((module) => [module.id, module]) ?? []);
+  const seen = new Set<string>();
+  const sources: VisualQuerySource[] = [];
+  for (const source of Array.isArray(parsed.sources) ? parsed.sources : []) {
+    if (source.type === 'section' && source.sectionId && modulesById.has(source.sectionId)) {
+      const module = modulesById.get(source.sectionId)!;
+      const key = `section:${module.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      sources.push({ ...source, sectionId: module.id, sectionLabel: module.title, fileId: null, fileName: null, color: ACCENT_COLORS[module.accent] });
+      continue;
+    }
+    if (source.type === 'file' && source.fileId && filesById.has(source.fileId)) {
+      const file = filesById.get(source.fileId)!;
+      const key = `file:${file.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const color = file.entities.costs.length ? ACCENT_COLORS.cost : file.entities.dates.length ? ACCENT_COLORS.dates : file.entities.locations.length ? ACCENT_COLORS.place : file.entities.tasks.length ? ACCENT_COLORS.tasks : ACCENT_COLORS.neutral;
+      sources.push({ ...source, sectionId: null, sectionLabel: null, fileId: file.id, fileName: file.fileName, color });
+    }
+  }
+
+  // Structured generation can occasionally cite the raw file while omitting the
+  // dashboard module that visibly presents the same fact. Recover that section
+  // deterministically so the explainability trace remains file → module → answer.
+  const selectedFileIds = new Set(sources.flatMap((source) => source.fileId ? [source.fileId] : []));
+  const answerIntent = `${cleanQuestion} ${parsed.answer.headline} ${parsed.answer.detail} ${parsed.answer.valueLabel ?? ''}`.toLowerCase();
+  const moduleVocabulary: Record<DashboardModule['accent'], string[]> = {
+    dates: ['journey', 'date', 'arrival', 'arrive', 'departure', 'depart', 'flight', 'timeline', 'schedule', 'duration', 'trip period'],
+    cost: ['budget', 'cost', 'spend', 'spending', 'expense', 'money', 'price', 'fare', 'financial'],
+    place: ['map', 'place', 'location', 'where', 'destination', 'direction', 'nearby'],
+    tasks: ['packing', 'pack', 'task', 'checklist', 'item', 'todo', 'complete'],
+    neutral: ['overview', 'summary', 'source', 'key point'],
+  };
+  for (const module of dashboard?.modules ?? []) {
+    const key = `section:${module.id}`;
+    if (seen.has(key)) continue;
+    const sharesSelectedFile = module.sourceFileIds.some((fileId) => selectedFileIds.has(fileId));
+    const vocabulary = [
+      module.title.toLowerCase(),
+      module.kind.toLowerCase(),
+      ...moduleVocabulary[module.accent],
+    ];
+    if (!sharesSelectedFile || !vocabulary.some((term) => term.length > 2 && answerIntent.includes(term))) continue;
+    seen.add(key);
+    sources.push({
+      type: 'section',
+      sectionId: module.id,
+      sectionLabel: module.title,
+      fileId: null,
+      fileName: null,
+      relevance: `Presents the ${module.title.toLowerCase()} data used in this answer.`,
+      color: ACCENT_COLORS[module.accent],
+    });
+  }
+
+  return {
+    answer: parsed.answer,
+    sources,
+    confidence: Math.max(0, Math.min(1, parsed.confidence)),
+    followUpSuggestions: parsed.followUpSuggestions.slice(0, 3),
+  };
 }
