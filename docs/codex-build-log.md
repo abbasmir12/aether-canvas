@@ -402,6 +402,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 - Strict renderer/main TypeScript checks and all three Vite production bundles pass.
 - A native Electron capture verified the logo remains legible at the 32px title-bar size and reads as a premium focal point in the 62px empty-canvas state.
+- A follow-up native capture verified the reusable rounded overscan mask removes the supplied image's peripheral side strokes at both sizes. The same empty-state check confirmed Ask the Canvas stays hidden until a source file exists.
 
 ## Day 5 — July 18, 2026
 
