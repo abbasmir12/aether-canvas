@@ -28,6 +28,7 @@ export function useLiveFileSync(options: LiveFileSyncOptions): void {
   const running = useRef(new Set<string>());
   const lastRun = useRef(new Map<string, number>());
   const callTimes = useRef<number[]>([]);
+  const retryCounts = useRef(new Map<string, number>());
   const fileTimers = useRef(new Map<string, number>());
   const batchTimer = useRef<number | null>(null);
   const watchedSources = useRef(new Map<string, WatchedSource>());
@@ -114,12 +115,22 @@ export function useLiveFileSync(options: LiveFileSyncOptions): void {
         ]);
         const change = previous ? describeAnalysisChange(previous, analysis) : undefined;
         optionsRef.current.onAnalysis(fileId, analysis, thumbnailUrl, change);
+        retryCounts.current.delete(fileId);
         optionsRef.current.onStatus(fileId, 'synced', Date.now());
         optionsRef.current.onMessage(`${analysis.fileName} updated`);
         scheduleBatch();
       } catch {
-        optionsRef.current.onStatus(fileId, 'paused');
-        optionsRef.current.onMessage('Couldn’t sync this file right now');
+        const attempt = (retryCounts.current.get(fileId) ?? 0) + 1;
+        retryCounts.current.set(fileId, attempt);
+        if (attempt <= 2) {
+          pending.current.set(fileId, event);
+          optionsRef.current.onStatus(fileId, 'pending', event.timestamp);
+          optionsRef.current.onMessage('Sync delayed — retrying automatically');
+        } else {
+          retryCounts.current.delete(fileId);
+          optionsRef.current.onStatus(fileId, 'paused');
+          optionsRef.current.onMessage('Couldn’t sync this file right now');
+        }
       } finally {
         running.current.delete(fileId);
         lastRun.current.set(fileId, Date.now());
@@ -131,6 +142,8 @@ export function useLiveFileSync(options: LiveFileSyncOptions): void {
     };
 
     const unlistenChanged = window.aether.fileWatcher.onFileChanged((event) => {
+      const queued = pending.current.get(event.fileId);
+      if (!queued || queued.contentHash !== event.contentHash) retryCounts.current.delete(event.fileId);
       pending.current.set(event.fileId, event);
       optionsRef.current.onStatus(event.fileId, 'pending', event.timestamp);
       const existing = fileTimers.current.get(event.fileId);

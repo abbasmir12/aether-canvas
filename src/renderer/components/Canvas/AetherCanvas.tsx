@@ -170,7 +170,17 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const acceptLiveAnalysis = useCallback((fileId: string, analysis: AnalyzedFile, thumbnailUrl: string | null, syncChange?: FileSyncChange) => {
     analyzedFiles.current.set(fileId, analysis);
     setQuickPreview((current) => current?.id === fileId ? analysis : current);
-    setNodes((current) => current.map((node) => node.id === fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null, syncStatus: 'synced', syncCheckedAt: Date.now(), syncChange, syncChangedAt: Date.now() } } as FileCardNodeType : node));
+    setNodes((current) => current.map((node) => {
+      if (node.id === fileId && node.type === 'fileCard') {
+        return { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null, syncStatus: 'synced', syncCheckedAt: Date.now(), syncChange, syncChangedAt: Date.now() } } as FileCardNodeType;
+      }
+      // Existing module structure can consume the refreshed grounded values
+      // immediately; relationship/dashboard replanning continues as a batch.
+      if (node.type === 'summaryCard') {
+        return { ...node, data: { ...node.data, files: node.data.files.map((file) => file.id === fileId ? analysis : file) } } as SummaryCardNodeType;
+      }
+      return node;
+    }));
     window.setTimeout(() => setNodes((current) => current.map((node) => node.id === fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, syncChange: undefined, syncChangedAt: undefined } } as FileCardNodeType : node)), 4_000);
   }, [setNodes]);
   const handleSourceDeleted = useCallback((event: FileDeletedEvent) => {

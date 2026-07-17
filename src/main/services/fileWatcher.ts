@@ -7,6 +7,7 @@ import chokidar, { type FSWatcher } from 'chokidar';
 import type { FileChangedEvent, FileDeletedEvent } from '../../shared/types';
 
 type WatchRegistration = {
+  filePath: string;
   fileIds: Set<string>;
   contentHash: string;
   deletionTimer: NodeJS.Timeout | null;
@@ -28,6 +29,11 @@ export class FileWatcherService {
 
   constructor(private readonly events: FileWatcherEvents) {}
 
+  private pathKey(filePath: string): string {
+    const normalized = resolve(filePath);
+    return process.platform === 'win32' ? normalized.toLocaleLowerCase('en-US') : normalized;
+  }
+
   private ensureWatcher(): FSWatcher {
     if (this.watcher) return this.watcher;
     this.watcher = chokidar.watch([], {
@@ -40,35 +46,50 @@ export class FileWatcherService {
       },
     });
     this.watcher.on('change', (filePath) => { void this.handleChange(filePath); });
+    // Editors on Windows commonly save by atomically replacing the original.
+    // Chokidar reports the replacement as `add`, not `change`.
+    this.watcher.on('add', (filePath) => { void this.handleChange(filePath); });
     this.watcher.on('unlink', (filePath) => { this.handleUnlink(filePath); });
     return this.watcher;
   }
 
   async watch(filePath: string, fileId: string, knownHash?: string): Promise<string> {
     const normalized = resolve(filePath);
-    const contentHash = knownHash || await hashFile(normalized);
-    const existing = this.registrations.get(normalized);
+    const key = this.pathKey(normalized);
+    const diskHash = await hashFile(normalized);
+    const existing = this.registrations.get(key);
     if (existing) {
       existing.fileIds.add(fileId);
-      existing.contentHash = contentHash;
+      existing.filePath = normalized;
       if (existing.deletionTimer) clearTimeout(existing.deletionTimer);
       existing.deletionTimer = null;
-      return contentHash;
+      if (existing.contentHash !== diskHash) {
+        existing.contentHash = diskHash;
+        const timestamp = Date.now();
+        for (const watchedFileId of existing.fileIds) this.events.changed({ fileId: watchedFileId, filePath: normalized, contentHash: diskHash, timestamp });
+      }
+      return diskHash;
     }
-    this.registrations.set(normalized, { fileIds: new Set([fileId]), contentHash, deletionTimer: null });
+    this.registrations.set(key, { filePath: normalized, fileIds: new Set([fileId]), contentHash: diskHash, deletionTimer: null });
     this.ensureWatcher().add(normalized);
-    return contentHash;
+    // Catch edits made while Aether was closed. ignoreInitial prevents Chokidar
+    // from reporting these, so compare the persisted analysis hash ourselves.
+    if (knownHash && knownHash !== diskHash) {
+      queueMicrotask(() => this.events.changed({ fileId, filePath: normalized, contentHash: diskHash, timestamp: Date.now() }));
+    }
+    return diskHash;
   }
 
   async unwatch(filePath: string, fileId?: string): Promise<void> {
     const normalized = resolve(filePath);
-    const registration = this.registrations.get(normalized);
+    const key = this.pathKey(normalized);
+    const registration = this.registrations.get(key);
     if (!registration) return;
     if (fileId) registration.fileIds.delete(fileId);
     if (fileId && registration.fileIds.size > 0) return;
     if (registration.deletionTimer) clearTimeout(registration.deletionTimer);
-    this.registrations.delete(normalized);
-    await this.watcher?.unwatch(normalized);
+    this.registrations.delete(key);
+    await this.watcher?.unwatch(registration.filePath);
   }
 
   async stopAll(): Promise<void> {
@@ -81,29 +102,29 @@ export class FileWatcherService {
   }
 
   private async handleChange(filePath: string): Promise<void> {
-    const normalized = resolve(filePath);
-    const registration = this.registrations.get(normalized);
+    const registration = this.registrations.get(this.pathKey(filePath));
     if (!registration) return;
+    if (registration.deletionTimer) clearTimeout(registration.deletionTimer);
+    registration.deletionTimer = null;
     try {
-      const nextHash = await hashFile(normalized);
+      const nextHash = await hashFile(registration.filePath);
       if (nextHash === registration.contentHash) return;
       registration.contentHash = nextHash;
       const timestamp = Date.now();
-      for (const fileId of registration.fileIds) this.events.changed({ fileId, filePath: normalized, contentHash: nextHash, timestamp });
+      for (const fileId of registration.fileIds) this.events.changed({ fileId, filePath: registration.filePath, contentHash: nextHash, timestamp });
     } catch {
-      this.handleUnlink(normalized);
+      this.handleUnlink(registration.filePath);
     }
   }
 
   private handleUnlink(filePath: string): void {
-    const normalized = resolve(filePath);
-    const registration = this.registrations.get(normalized);
+    const registration = this.registrations.get(this.pathKey(filePath));
     if (!registration || registration.deletionTimer) return;
     registration.deletionTimer = setTimeout(() => {
       registration.deletionTimer = null;
-      void fs.stat(normalized).then(() => this.handleChange(normalized)).catch(() => {
-        for (const fileId of registration.fileIds) this.events.deleted({ fileId, filePath: normalized, timestamp: Date.now() });
+      void fs.stat(registration.filePath).then(() => this.handleChange(registration.filePath)).catch(() => {
+        for (const fileId of registration.fileIds) this.events.deleted({ fileId, filePath: registration.filePath, timestamp: Date.now() });
       });
-    }, 800);
+    }, 4_000);
   }
 }

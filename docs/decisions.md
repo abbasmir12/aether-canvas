@@ -522,6 +522,20 @@ GPT-5.6 remains free to choose and revise a dashboard's visual modules, but the 
 
 Dynamic section handles are remeasured after both React's DOM commit and Framer Motion's layout settlement. This separates AI presentation variability from graph-topology correctness and keeps living-file updates visually continuous.
 
+## 054. Replacement-aware live sync and crash-safe workspace persistence
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human Windows reliability report, Codex implementation
+
+Windows editors may save by replacing a source file instead of modifying it in place, and path casing can vary between registration and filesystem events. Aether treats Chokidar `add` as a possible replacement change, uses case-insensitive watch identity on Windows, delays true deletion for four seconds, and reconciles the current disk hash against cached analysis whenever a workspace starts watching. Transient AI failures receive two bounded retries under the existing global rate guard.
+
+Source analysis is applied immediately to the existing generated mini-app; GPT-5.6 relationship and layout recompilation remains a debounced background phase. This keeps live values responsive without sacrificing semantic regeneration.
+
+Workspace and index JSON use serialized temp-file replacement rather than in-place overwrite. A parseable previous version is retained as a backup and restored automatically if the primary is incomplete. This ensures live synchronization cannot trade filesystem reactivity for persistence safety.
+
 ## Decision Template
 
 ## NNN. Decision title

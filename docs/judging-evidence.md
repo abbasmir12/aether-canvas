@@ -92,6 +92,8 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Visual verification:** A live five-file GPT-5.6 Electron capture on July 15 shows blue, green, coral, and purple tributaries converging into semantic hubs, then heavier trunks entering their matching dashboard sections. This is captured from the actual native drag/drop and analysis flow, not a static design mockup.
 - **Demo reliability:** Summary section handles are explicitly remeasured after their Framer Motion entrance, preventing hub-to-dashboard ribbons from anchoring at the card’s pre-animation offset.
 - **Reactive topology reliability:** After live GPT-5.6 regeneration, Aether preserves a grounded Summary endpoint for every active semantic hub and remeasures it after layout settles. A native Stay-price edit changed both source and dashboard totals while the COST stream remained continuously attached to Budget.
+- **Windows live-sync reliability:** Aether handles ordinary writes and atomic replacement saves, normalizes Windows path identity, detects edits made while closed, and retries transient analysis failures without escaping its API rate guard. Grounded Summary values refresh immediately while GPT relationship recompilation runs in the background.
+- **Persistence safety:** Workspace autosaves use serialized atomic replacement with validated backup recovery, preventing app shutdown during a write from truncating the user's living canvas.
 - _Add before/after screenshots proving fidelity for the shell, nodes, ribbons, dashboard, and minimap._
 - _Add animation, loading, empty, error, accessibility, and keyboard-navigation evidence._
 - _Add demo timestamp showing the complete polished interaction loop._

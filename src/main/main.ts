@@ -108,7 +108,11 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         const contents = await fs.readFile(editPath, 'utf8');
         if (!contents.includes(before)) throw new Error(`Live-edit smoke value "${before}" was not found.`);
         const nextContents = contents.replace(before, after).replace(process.env.AETHER_SMOKE_LIVE_EDIT_FROM_2 ?? '__no_secondary_replacement__', process.env.AETHER_SMOKE_LIVE_EDIT_TO_2 ?? '__no_secondary_replacement__');
-        if (process.env.AETHER_SMOKE_LIVE_RAPID) {
+        if (process.env.AETHER_SMOKE_LIVE_ATOMIC) {
+          const replacementPath = `${editPath}.aether-smoke-replacement`;
+          await fs.writeFile(replacementPath, nextContents, 'utf8');
+          await fs.rename(replacementPath, editPath);
+        } else if (process.env.AETHER_SMOKE_LIVE_RAPID) {
           for (let index = 1; index <= 5; index += 1) {
             await fs.writeFile(editPath, index === 5 ? nextContents : `${nextContents}${'\n'.repeat(index)}`, 'utf8');
             await new Promise((done) => setTimeout(done, 120));

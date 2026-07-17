@@ -299,6 +299,27 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Preserved the existing ribbon material and curvature while using flat terminal cuts and non-rounded refraction-line endings that tuck beneath the hub surface.
 - Verified the DATES, COST, and PLACE junctions in a native Electron capture; source-card and Summary-section anchor ports remain unchanged.
 
+### Windows live-sync reliability hardening
+
+#### Codex contributions
+
+- Distinguished unrelated VS Code updater output from Aether runtime failures, then hardened the real cross-platform watcher edge cases exposed by the report.
+- Added replacement-file `add` handling, Windows case-insensitive path identity, a four-second atomic-save grace period, and startup hash reconciliation for edits made while Aether was closed.
+- Added two bounded automatic retries for transient GPT-5.6 re-analysis failures.
+- Made refreshed source analysis update the existing Summary Card immediately while slower relationship/dashboard replanning continues in the background.
+- Replaced direct workspace JSON overwrites with serialized atomic temp-file replacement and validated backup recovery so app shutdown cannot truncate the active workspace.
+
+#### Human decisions
+
+- The human reported that external edits updated inconsistently on Windows and supplied console output showing VS Code's updater mutex failures.
+
+#### Verification
+
+- `npm run lint` and the renderer/main/preload Vite production build pass.
+- A fresh native Electron run dropped the supplied flight and budget samples, replaced `budget.csv` atomically, and performed three analyses total: two initial files plus exactly one live update.
+- Stay changed from `$540` to `$140`; the source card updated to `$1,800` and the Summary Card immediately reconciled to `$1,060 spent / $740 remaining`.
+- The primary persisted workspace JSON and its validated backup both parsed successfully after Electron shutdown.
+
 ## Day 5 — July 18, 2026
 
 ### Codex contributions
