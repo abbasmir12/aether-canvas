@@ -340,3 +340,11 @@ The bridge includes `aether:read-file`, `aether:get-file-metadata`, `aether:get-
 `aether:get-dropped-file-path` is not a general path resolver. The preload obtains an OS-backed path from Electron `webUtils`, and the main handler authorizes it only after absolute-path normalization and a successful file stat. All subsequent file operations check the session authorization set. The native picker authorizes its returned paths through the same function.
 
 `aether:analyze-file` accepts only a session-authorized path, prepares Base64 in the main process, and keeps the API key out of the renderer. `aether:find-relationships` accepts file IDs and resolves them against the main process's analyzed-file cache, preventing the renderer from injecting arbitrary metadata into the relationship prompt.
+
+### Live file synchronization
+
+`src/main/services/fileWatcher.ts` owns a single cross-platform Chokidar watcher. Active workspace sources are registered through `aether:file-watcher-watch` only after the same absolute-path authorization used by drop and picker flows. Chokidar waits for 500 ms of write stability, then SHA-256 hashing suppresses metadata-only or identical saves before any renderer event or model call.
+
+The preload exposes subscription-based `aether:file-changed` and `aether:file-deleted` events with explicit cleanup functions. On workspace hydration, `aether:hydrate-analyzed-files` restores the main-process relationship cache before paths are watched; this ensures a changed file is recompiled alongside every unchanged neighbor after an app restart.
+
+The renderer's `useLiveFileSync` controller applies a three-second same-file cooldown, queues another read when a save arrives during analysis, permits at most ten watcher-triggered analyses per minute, and waits two seconds after the final completed analysis before one relationship/dashboard rebuild. The source card retains its cached preview while syncing. Missing files remain visible with Relocate, Keep cached, and non-destructive Remove controls.

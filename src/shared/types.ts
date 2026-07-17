@@ -64,6 +64,32 @@ export interface AnalyzedFile extends FileAnalysis {
   fileName: string;
   mimeType: string;
   fileSize: number;
+  contentHash?: string;
+}
+
+export type FileSyncStatus = 'unwatched' | 'synced' | 'pending' | 'syncing' | 'deleted' | 'paused';
+
+export interface FileSyncChange {
+  kind: 'number' | 'text' | 'items';
+  label: string;
+  before?: string;
+  after?: string;
+  delta?: number;
+  added?: number;
+  removed?: number;
+}
+
+export interface FileChangedEvent {
+  fileId: string;
+  filePath: string;
+  contentHash: string;
+  timestamp: number;
+}
+
+export interface FileDeletedEvent {
+  fileId: string;
+  filePath: string;
+  timestamp: number;
 }
 
 export interface DiscoveredRelationship {
@@ -303,6 +329,13 @@ export interface AetherBridge {
   openExternal: (url: string) => Promise<void>;
   saveTextFile: (defaultName: string, contents: string) => Promise<boolean>;
   getDashboardInsights: (kind: DashboardInsightKind, context: string) => Promise<DashboardAiInsight[]>;
+  hydrateAnalyzedFiles: (files: AnalyzedFile[]) => Promise<void>;
+  fileWatcher: {
+    watch: (filePath: string, fileId: string, contentHash?: string) => Promise<string | null>;
+    unwatch: (filePath: string, fileId?: string) => Promise<void>;
+    onFileChanged: (callback: (event: FileChangedEvent) => void) => () => void;
+    onFileDeleted: (callback: (event: FileDeletedEvent) => void) => () => void;
+  };
   fs: {
     addPinnedFolder: () => Promise<PinnedFolder | null>;
     removePinnedFolder: (folderPath: string) => Promise<void>;

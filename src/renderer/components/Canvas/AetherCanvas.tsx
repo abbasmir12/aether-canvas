@@ -3,8 +3,9 @@ import { Background, BackgroundVariant, MiniMap, Panel, ReactFlow, useEdgesState
 import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 
-import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardPlan, DashboardState, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
+import type { AnalyzedFile, DashboardAiInsight, DashboardInsightKind, DashboardPlan, DashboardState, FileDeletedEvent, FileSyncChange, FileSyncStatus, RelationshipDiscovery, RelationshipType, SuggestedCluster, WorkspaceData } from '../../../shared/types';
 import { calculateAutoLayout, categoriesForFile } from '../../hooks/useAutoLayout';
+import { useLiveFileSync } from '../../hooks/useLiveFileSync';
 import SmartSuggestion from './SmartSuggestion';
 import CanvasContextMenu, { type CanvasMenuTarget } from './CanvasContextMenu';
 import FileQuickPreview from './FileQuickPreview';
@@ -110,9 +111,9 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   const edgeTypes = useMemo<EdgeTypes>(() => ({ semanticRibbon: SemanticRibbonEdge }), []);
   const importPaths = useCallback(async (paths: string[]) => {
     const base = screenToFlowPosition({ x: 460, y: 240 });
-    const entries = await Promise.all(paths.map(async (filePath, index) => { const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`; return { id, filePath, node: { id, type: 'fileCard' as const, position: { x: base.x + index * 28, y: base.y + index * 72 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } }; }));
+    const entries = await Promise.all(paths.map(async (filePath, index) => { const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`; return { id, filePath, node: { id, type: 'fileCard' as const, position: { x: base.x + index * 28, y: base.y + index * 72 }, data: { fileName: metadata.name, mimeType: metadata.type, filePath, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null, syncStatus: 'pending' as const, watchEnabled: true } } }; }));
     setNodes((current) => [...current, ...entries.map((entry) => entry.node)]);
-    await Promise.all(entries.map(async ({ id, filePath }) => { const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(filePath, id), window.aether.getThumbnail(filePath)]); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null } } as FileCardNodeType : node)); analyzedFiles.current.set(id, analysis); }));
+    await Promise.all(entries.map(async ({ id, filePath }) => { const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(filePath, id), window.aether.getThumbnail(filePath)]); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null, syncStatus: 'synced', syncCheckedAt: Date.now() } } as FileCardNodeType : node)); analyzedFiles.current.set(id, analysis); }));
     await applyDiscoveryRef.current();
   }, [screenToFlowPosition, setNodes]);
 
@@ -163,6 +164,32 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
   }, [onWorkspaceSnapshot, setEdges, setNodes, workspace]);
   useEffect(() => { applyDiscoveryRef.current = applyDiscovery; }, [applyDiscovery]);
 
+  const updateSyncStatus = useCallback((fileId: string, syncStatus: FileSyncStatus, syncCheckedAt?: number) => {
+    setNodes((current) => current.map((node) => node.id === fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, syncStatus, syncCheckedAt: syncCheckedAt ?? node.data.syncCheckedAt } } as FileCardNodeType : node));
+  }, [setNodes]);
+  const acceptLiveAnalysis = useCallback((fileId: string, analysis: AnalyzedFile, thumbnailUrl: string | null, syncChange?: FileSyncChange) => {
+    analyzedFiles.current.set(fileId, analysis);
+    setQuickPreview((current) => current?.id === fileId ? analysis : current);
+    setNodes((current) => current.map((node) => node.id === fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null, syncStatus: 'synced', syncCheckedAt: Date.now(), syncChange, syncChangedAt: Date.now() } } as FileCardNodeType : node));
+    window.setTimeout(() => setNodes((current) => current.map((node) => node.id === fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, syncChange: undefined, syncChangedAt: undefined } } as FileCardNodeType : node)), 4_000);
+  }, [setNodes]);
+  const handleSourceDeleted = useCallback((event: FileDeletedEvent) => {
+    setNodes((current) => current.map((node) => node.id === event.fileId && node.type === 'fileCard' ? { ...node, data: { ...node.data, syncStatus: 'deleted', syncCheckedAt: event.timestamp } } as FileCardNodeType : node));
+    setToastMessage(`${event.filePath.split(/[\\/]/).pop() ?? 'Source file'} is no longer available`);
+  }, [setNodes]);
+  const watchedSources = useMemo(() => hydratedWorkspaceId.current === workspace?.id ? nodes.filter((node): node is FileCardNodeType => node.type === 'fileCard' && Boolean(node.data.analysis) && node.data.watchEnabled !== false && node.data.syncStatus !== 'deleted').map((node) => ({ id: node.id, filePath: node.data.filePath, contentHash: node.data.analysis?.contentHash })) : [], [nodes, workspace?.id]);
+  useLiveFileSync({
+    workspaceId: workspace?.id,
+    sources: watchedSources,
+    analyzedFiles: [...analyzedFiles.current.values()],
+    getFile: (fileId) => analyzedFiles.current.get(fileId),
+    onStatus: updateSyncStatus,
+    onAnalysis: acceptLiveAnalysis,
+    onDeleted: handleSourceDeleted,
+    onBatchComplete: () => applyDiscoveryRef.current(),
+    onMessage: setToastMessage,
+  });
+
   const previewFile = useCallback((id: string) => { const file = analyzedFiles.current.get(id); if (file) setQuickPreview(file); }, []);
   const openOriginal = useCallback(async (id: string) => { const file = analyzedFiles.current.get(id); if (!file) return; try { await window.aether.openOriginalFile(file.filePath); } catch (error) { setDropError(readableError(error)); } }, []);
   const revealOriginal = useCallback(async (id: string) => { const file = analyzedFiles.current.get(id); if (!file) return; try { await window.aether.revealFile(file.filePath); } catch (error) { setDropError(readableError(error)); } }, []);
@@ -173,18 +200,57 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     try {
       const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(fileNode.data.filePath, id), window.aether.getThumbnail(fileNode.data.filePath)]);
       analyzedFiles.current.set(id, analysis); setQuickPreview(analysis);
-      setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null } } as FileCardNodeType : node));
+      setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null, syncStatus: 'synced', syncCheckedAt: Date.now() } } as FileCardNodeType : node));
       await applyDiscoveryRef.current();
     } catch (error) { const message = readableError(error); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'error', errorMessage: message } } as FileCardNodeType : node)); setDropError(message); }
   }, [setNodes]);
   const removeFromCanvas = useCallback(async (id: string) => {
     const file = analyzedFiles.current.get(id);
     if (file && !window.confirm(`Remove “${file.fileName}” from this canvas? The original file stays untouched.`)) return;
+    if (file) await window.aether.fileWatcher.unwatch(file.filePath, id);
     analyzedFiles.current.delete(id); pendingFiles.current.delete(id); candidateIds.current.delete(id); setQuickPreview(null);
     if (analyzedFiles.current.size < 2) { setCluster(null); setEdges([]); setNodes((current) => current.filter((node) => node.type === 'fileCard' && node.id !== id)); return; }
     setNodes((current) => current.filter((node) => node.id !== id));
     await applyDiscoveryRef.current();
   }, [setEdges, setNodes]);
+  useEffect(() => {
+    const relocate = (event: Event) => {
+      const oldPath = String((event as CustomEvent<string>).detail ?? '');
+      const node = nodesRef.current.find((item): item is FileCardNodeType => item.type === 'fileCard' && item.data.filePath === oldPath);
+      if (!node) return;
+      void window.aether.openFileDialog().then(async (selection) => {
+        const filePath = selection.filePaths[0];
+        if (selection.canceled || !filePath) return;
+        updateSyncStatus(node.id, 'syncing', Date.now());
+        try {
+          const metadata = await window.aether.getFileMetadata(filePath);
+          const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(filePath, node.id), window.aether.getThumbnail(filePath)]);
+          await window.aether.fileWatcher.unwatch(oldPath, node.id);
+          analyzedFiles.current.set(node.id, analysis);
+          setNodes((current) => current.map((item) => item.id === node.id && item.type === 'fileCard' ? { ...item, data: { ...item.data, filePath, fileName: metadata.name, mimeType: metadata.type, analysis, thumbnailUrl, status: 'ready', errorMessage: null, syncStatus: 'synced', syncCheckedAt: Date.now(), watchEnabled: true } } as FileCardNodeType : item));
+          await applyDiscoveryRef.current();
+          setToastMessage(`${metadata.name} reconnected`);
+        } catch (error) { setDropError(readableError(error)); updateSyncStatus(node.id, 'deleted'); }
+      });
+    };
+    const keepCached = (event: Event) => {
+      const filePath = String((event as CustomEvent<string>).detail ?? '');
+      const node = nodesRef.current.find((item): item is FileCardNodeType => item.type === 'fileCard' && item.data.filePath === filePath);
+      if (!node) return;
+      void window.aether.fileWatcher.unwatch(filePath, node.id);
+      setNodes((current) => current.map((item) => item.id === node.id && item.type === 'fileCard' ? { ...item, data: { ...item.data, syncStatus: 'unwatched', watchEnabled: false } } as FileCardNodeType : item));
+      setToastMessage('Cached analysis kept');
+    };
+    const removeRequested = (event: Event) => {
+      const filePath = String((event as CustomEvent<string>).detail ?? '');
+      const node = nodesRef.current.find((item): item is FileCardNodeType => item.type === 'fileCard' && item.data.filePath === filePath);
+      if (node) void removeFromCanvas(node.id);
+    };
+    window.addEventListener('aether:file-relocate', relocate);
+    window.addEventListener('aether:file-keep-cached', keepCached);
+    window.addEventListener('aether:file-remove-request', removeRequested);
+    return () => { window.removeEventListener('aether:file-relocate', relocate); window.removeEventListener('aether:file-keep-cached', keepCached); window.removeEventListener('aether:file-remove-request', removeRequested); };
+  }, [removeFromCanvas, setNodes, updateSyncStatus]);
   const highlightFlow = useCallback((type: RelationshipType) => setSemanticFocus(type), []);
   const reorganizeCanvas = useCallback(async () => { setSemanticFocus(null); await applyDiscoveryRef.current(); }, []);
   const focusSourceFile = useCallback((id: string) => {
@@ -313,7 +379,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     const nearCluster = Boolean(clusterRef.current && clusterFileNodes.some((node) => Math.hypot(node.position.x - basePosition.x, node.position.y - basePosition.y) < 240));
     const registrations = await Promise.allSettled(droppedFiles.map(async (file, index) => {
       const filePath = await window.aether.getDroppedFilePath(file); const metadata = await window.aether.getFileMetadata(filePath); const id = `file:${crypto.randomUUID()}`;
-      return { id, filePath, nearCluster, node: { id, type: 'fileCard' as const, position: { x: basePosition.x + index * 24, y: basePosition.y + index * 64 }, style: { willChange: 'transform' }, data: { fileName: metadata.name, mimeType: metadata.type, filePath: metadata.path, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null } } };
+      return { id, filePath, nearCluster, node: { id, type: 'fileCard' as const, position: { x: basePosition.x + index * 24, y: basePosition.y + index * 64 }, style: { willChange: 'transform' }, data: { fileName: metadata.name, mimeType: metadata.type, filePath: metadata.path, status: 'loading' as const, analysis: null, thumbnailUrl: null, errorMessage: null, syncStatus: 'pending' as const, watchEnabled: true } } };
     }));
     const accepted = registrations.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
     if (accepted.length) setNodes((current) => [...current, ...accepted.map(({ node }) => node)]);
@@ -321,7 +387,7 @@ export default function AetherCanvas({ focusRequest = 0, workspace, onWorkspaceS
     await Promise.allSettled(accepted.map(async ({ filePath, id, nearCluster: candidate }) => {
       try {
         const [analysis, thumbnailUrl] = await Promise.all([window.aether.analyzeFile(filePath, id), window.aether.getThumbnail(filePath)]);
-        setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null } } as FileCardNodeType : node));
+        setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'ready', analysis, thumbnailUrl, errorMessage: null, syncStatus: 'synced', syncCheckedAt: Date.now() } } as FileCardNodeType : node));
         if (candidate && clusterRef.current) { pendingFiles.current.set(id, analysis); candidateIds.current.add(id); setSuggestion({ fileId: id, category: analysis.category, clusterName: clusterRef.current.name }); return; }
         analyzedFiles.current.set(id, analysis); await applyDiscovery();
       } catch (error) { const message = readableError(error); setNodes((current) => current.map((node) => node.id === id ? { ...node, data: { ...node.data, status: 'error', errorMessage: message } } as FileCardNodeType : node)); setDropError(message); }

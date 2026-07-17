@@ -1,8 +1,9 @@
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
-import { File, FileText, Image, Table } from 'lucide-react';
+import { AlertTriangle, File, FileText, Image, MapPin, Table, Trash2 } from 'lucide-react';
 
-import type { AnalyzedFile } from '../../../../shared/types';
+import type { AnalyzedFile, FileSyncChange, FileSyncStatus } from '../../../../shared/types';
+import FileSyncIndicator from './FileSyncIndicator';
 import BudgetPreview from './previews/BudgetPreview';
 import ChecklistPreview from './previews/ChecklistPreview';
 import DocumentPreview from './previews/DocumentPreview';
@@ -19,6 +20,11 @@ export type FileCardNodeData = {
   analysis: AnalyzedFile | null;
   thumbnailUrl: string | null;
   errorMessage: string | null;
+  syncStatus?: FileSyncStatus;
+  syncCheckedAt?: number;
+  syncChange?: FileSyncChange;
+  syncChangedAt?: number;
+  watchEnabled?: boolean;
 };
 
 export type FileCardNodeType = Node<FileCardNodeData, 'fileCard'>;
@@ -75,6 +81,8 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
   const FileIcon = kind.Icon;
   const preview = data.analysis?.smartPreview;
   const portColor = connectionColor(data);
+  const syncStatus = data.syncStatus ?? 'unwatched';
+  const recentlyChanged = Boolean(data.syncChangedAt && Date.now() - data.syncChangedAt < 4_000);
 
   const smartPreview = preview ? (() => {
     switch (preview.type) {
@@ -83,7 +91,7 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
       case 'hotel':
         return <HotelPreview preview={preview} thumbnailUrl={data.thumbnailUrl} />;
       case 'budget':
-        return <BudgetPreview preview={preview} />;
+        return <BudgetPreview preview={preview} syncChange={data.syncChange} />;
       case 'checklist':
         return <ChecklistPreview preview={preview} />;
       case 'guide':
@@ -99,16 +107,17 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
 
   return (
     <motion.article
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      className={`relative w-[220px] rounded-[12px] border bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow] ${
+      animate={{ opacity: 1, scale: 1, y: 0, boxShadow: syncStatus === 'syncing' ? '0 0 0 3px rgba(74,144,217,.14), 0 5px 18px rgba(74,144,217,.18)' : selected ? '0 5px 18px rgba(74,144,217,.18)' : '0 2px 8px rgba(0,0,0,.08)' }}
+      className={`relative w-[220px] rounded-[12px] border bg-white transition-[border-color,box-shadow] ${syncStatus === 'deleted' ? 'border-dashed border-[#EA4335]/70' :
         selected
           ? 'border-[#4A90D9] shadow-[0_5px_18px_rgba(74,144,217,0.18)]'
-          : 'border-[#D8D8DC]'
+          : syncStatus === 'syncing' || syncStatus === 'pending' ? 'border-[#4A90D9]/60' : 'border-[#D8D8DC]'
       }`}
       initial={{ opacity: 0, scale: 0.8, y: 6 }}
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="overflow-hidden rounded-[11px]">
+      <AnimatePresence>{recentlyChanged && <motion.span animate={{ opacity: 0 }} className="pointer-events-none absolute inset-0 z-10 rounded-[11px] bg-[#F7D96C]/20" exit={{ opacity: 0 }} initial={{ opacity: 0.75 }} transition={{ delay: 0.35, duration: 1.1 }} />}</AnimatePresence>
       <div className="flex items-center gap-2 px-3 py-2.5">
         <span
           className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold text-white shadow-sm"
@@ -122,9 +131,11 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
             {data.fileName}
           </p>
         </div>
-        {data.status === 'loading' && (
+        {data.syncChange && recentlyChanged && <motion.span animate={{ opacity: 1, scale: 1 }} className={`ml-auto rounded-full px-1.5 py-0.5 text-[8px] font-semibold ${data.syncChange.kind === 'number' && (data.syncChange.delta ?? 0) > 0 ? 'bg-[#FDE8E5] text-[#B83E35]' : 'bg-[#E6F4E9] text-[#2D8242]'}`} initial={{ opacity: 0, scale: 0.8 }}>{data.syncChange.kind === 'number' ? `${(data.syncChange.delta ?? 0) > 0 ? '+' : ''}${data.syncChange.delta}` : data.syncChange.kind === 'items' ? `+${data.syncChange.added ?? 0} / −${data.syncChange.removed ?? 0}` : 'Updated'}</motion.span>}
+        {data.status === 'loading' && data.syncStatus !== 'syncing' && (
           <span className="ml-auto h-1.5 w-1.5 animate-pulse rounded-full bg-[#4A90D9]" />
         )}
+        {(data.analysis || data.syncStatus) && <FileSyncIndicator filePath={data.filePath} status={syncStatus} timestamp={data.syncCheckedAt} />}
       </div>
       {data.status === 'loading' && <LoadingPreview />}
       {data.status === 'ready' && smartPreview}
@@ -133,6 +144,7 @@ export default function FileCardNode({ data, selected }: NodeProps<FileCardNodeT
           {data.errorMessage ?? 'Aether could not analyze this file.'}
         </div>
       )}
+      {syncStatus === 'deleted' && <div className="mx-2.5 mb-2.5 rounded-[9px] border border-[#F1C7C2] bg-[#FFF7F5] p-2.5"><p className="flex items-center gap-1.5 text-[9px] font-semibold text-[#A93A32]"><AlertTriangle size={12} />Source file was deleted or moved</p><div className="mt-2 flex gap-1"><button className="nodrag flex items-center gap-1 rounded-[6px] bg-[#EA4335] px-2 py-1 text-[8px] font-semibold text-white" onClick={() => window.dispatchEvent(new CustomEvent('aether:file-relocate', { detail: data.filePath }))} type="button"><MapPin size={9} />Relocate</button><button className="nodrag rounded-[6px] border border-[#E5C9C5] bg-white px-2 py-1 text-[8px] font-medium text-[#7D5C58]" onClick={() => window.dispatchEvent(new CustomEvent('aether:file-keep-cached', { detail: data.filePath }))} type="button">Keep cached</button><button aria-label="Remove from canvas" className="nodrag ml-auto grid h-5 w-5 place-items-center rounded-[6px] text-[#B44A41] hover:bg-[#F8E3E0]" onClick={() => window.dispatchEvent(new CustomEvent('aether:file-remove-request', { detail: data.filePath }))} type="button"><Trash2 size={10} /></button></div></div>}
       </div>
       <Handle
         className="!z-20 !h-[18px] !w-[18px] !border-2 !border-white !opacity-100 !shadow-[0_2px_8px_rgba(0,0,0,0.14)]"
