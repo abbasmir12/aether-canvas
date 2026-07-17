@@ -217,14 +217,19 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
   const isDimmed = Boolean(focus && ribbon?.relationshipType !== focus);
   const isSummary = ribbon?.phase === 'summary';
   const index = ribbon?.index ?? 0;
+  // React Flow terminates at the mathematical handle center. The hub pill has
+  // a white border/ring above the edge layer, so extend the ribbon a few pixels
+  // underneath that surface to guarantee a seamless visual insertion.
+  const visualSourceX = isSummary ? sourceX - 8 : sourceX;
+  const visualTargetX = isSummary ? targetX : targetX + 8;
 
   // Every ribbon carries a different weight, like strands of unequal flow.
   const baseWidth = isSummary ? [22, 26, 20, 24][index % 4] : [24, 30, 20, 33, 26][index % 5];
   const geometry = useMemo(
-    () => isDragging ? null : buildGeometry(sourceX, sourceY, targetX, targetY, baseWidth, index, isSummary),
-    [baseWidth, index, isDragging, isSummary, sourceX, sourceY, targetX, targetY],
+    () => isDragging ? null : buildGeometry(visualSourceX, sourceY, visualTargetX, targetY, baseWidth, index, isSummary),
+    [baseWidth, index, isDragging, isSummary, sourceY, targetY, visualSourceX, visualTargetX],
   );
-  const litePath = useMemo(() => buildLitePath(sourceX, sourceY, targetX, targetY, index), [index, sourceX, sourceY, targetX, targetY]);
+  const litePath = useMemo(() => buildLitePath(visualSourceX, sourceY, visualTargetX, targetY, index), [index, sourceY, targetY, visualSourceX, visualTargetX]);
   const safeId = String(id).replace(/[^a-z0-9]/gi, '');
   const gradientId = `aether-ribbon-ramp-${safeId}`;
   const satGradientId = `aether-ribbon-sat-ramp-${safeId}`;
@@ -240,13 +245,13 @@ export default function SemanticRibbonEdge({ id, sourceX, sourceY, targetX, targ
       {!isDragging && geometry && <>
       <defs>
         {/* Opacity ramps from a near-transparent source to strong color at the hub. */}
-        <linearGradient gradientUnits="userSpaceOnUse" id={gradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
+        <linearGradient gradientUnits="userSpaceOnUse" id={gradientId} x1={visualSourceX} x2={visualTargetX} y1={sourceY} y2={targetY}>
           <stop offset="0%" stopColor={color} stopOpacity={0.05} />
           <stop offset="55%" stopColor={color} stopOpacity={0.14} />
           <stop offset="86%" stopColor={color} stopOpacity={0.3} />
           <stop offset="100%" stopColor={color} stopOpacity={0.46} />
         </linearGradient>
-        <linearGradient gradientUnits="userSpaceOnUse" id={satGradientId} x1={sourceX} x2={targetX} y1={sourceY} y2={targetY}>
+        <linearGradient gradientUnits="userSpaceOnUse" id={satGradientId} x1={visualSourceX} x2={visualTargetX} y1={sourceY} y2={targetY}>
           <stop offset="0%" stopColor={color} stopOpacity={0.07} />
           <stop offset="55%" stopColor={color} stopOpacity={0.2} />
           <stop offset="86%" stopColor={color} stopOpacity={0.42} />

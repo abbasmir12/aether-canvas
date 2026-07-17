@@ -297,6 +297,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 - Removed the accumulated semicircular SVG caps that appeared as white liquid bulbs where ribbons entered and exited category hubs.
 - Preserved the existing ribbon material and curvature while using flat terminal cuts and non-rounded refraction-line endings that tuck beneath the hub surface.
+- Added an eight-pixel hidden underlap at both sides of semantic hubs so their white outer ring can never expose a visual gap between the ribbon and pill.
 - Verified the DATES, COST, and PLACE junctions in a native Electron capture; source-card and Summary-section anchor ports remain unchanged.
 
 ### Windows live-sync reliability hardening
