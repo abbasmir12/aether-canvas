@@ -25,6 +25,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - _Structured-output contract:_ Codex designed and implemented the Dashboard Visual System v2 schema, prompt, TypeScript contract, and local primitive renderer. A live five-file GPT-5.6 call returned schema-valid Journey, Budget, Packing, and Places compositions and persisted them into the local workspace.
 - _Source intelligence contract:_ Codex added a bounded GPT-5.6 contract for grounded file takeaways, semantic facts, highlights, and next steps, plus type-aware local rendering and backward-compatible entity fallbacks.
 - _Add an example showing iterative debugging based on real app behavior._
+- _Live synchronization:_ Files dropped onto the canvas are actively watched. External edits trigger content-hashed, rate-guarded GPT-5.6 re-analysis with animated source and dashboard transitions. A five-save burst produced one re-analysis, and reopening a persisted workspace resumed watching without another drop.
 
 ### GPT-5.6 runtime integration
 
@@ -100,6 +101,8 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 
 Aether addresses the repeated work of reconstructing context from personal files scattered across downloads, folders, screenshots, PDFs, notes, and spreadsheets. It is aimed at people managing everyday projects—travel, household spending, study, moves, purchases—who need outcomes without first designing a productivity system.
 
+Files remain useful after the initial “wow” moment: users can keep working in Excel, Preview, or their editor and see Aether stay current automatically. The reactive workspace removes manual re-import and stale-dashboard work from ordinary project maintenance.
+
 ### Evidence to collect
 
 - _User quote or observation validating the pain point._
@@ -112,6 +115,8 @@ Aether addresses the repeated work of reconstructing context from personal files
 ### What is novel
 
 “Space is the prompt” makes physical arrangement part of the model input. Unlike a folder, file graph, or chat attachment list, proximity expresses evolving intent; semantic ribbons explain why artifacts relate; and a cluster compiles into a functional workspace rather than merely receiving a label or summary.
+
+“Living files” extend that idea beyond import: the canvas is a reactive mirror of the user's actual filesystem. Source changes propagate through multimodal understanding, semantic relationships, and generated mini-app state while preserving traceability to the original artifact.
 
 ### Evidence to collect
 

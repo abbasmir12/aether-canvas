@@ -21,6 +21,21 @@ const aetherBridge: AetherBridge = {
   openExternal: (url) => ipcRenderer.invoke('aether:open-external', url),
   saveTextFile: (defaultName, contents) => ipcRenderer.invoke('aether:save-text-file', defaultName, contents),
   getDashboardInsights: (kind, context) => ipcRenderer.invoke('aether:get-dashboard-insights', kind, context),
+  hydrateAnalyzedFiles: (files) => ipcRenderer.invoke('aether:hydrate-analyzed-files', files),
+  fileWatcher: {
+    watch: (filePath, fileId, contentHash) => ipcRenderer.invoke('aether:file-watcher-watch', filePath, fileId, contentHash),
+    unwatch: (filePath, fileId) => ipcRenderer.invoke('aether:file-watcher-unwatch', filePath, fileId),
+    onFileChanged: (callback) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: Parameters<typeof callback>[0]) => callback(payload);
+      ipcRenderer.on('aether:file-changed', listener);
+      return () => ipcRenderer.removeListener('aether:file-changed', listener);
+    },
+    onFileDeleted: (callback) => {
+      const listener = (_event: Electron.IpcRendererEvent, payload: Parameters<typeof callback>[0]) => callback(payload);
+      ipcRenderer.on('aether:file-deleted', listener);
+      return () => ipcRenderer.removeListener('aether:file-deleted', listener);
+    },
+  },
   fs: {
     addPinnedFolder: () => ipcRenderer.invoke('aether:pinned-folder-add'),
     removePinnedFolder: (folderPath) => ipcRenderer.invoke('aether:pinned-folder-remove', folderPath),

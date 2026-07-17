@@ -256,15 +256,25 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 ### Codex contributions
 
-_Record what Codex built or proposed, including affected files._
+- Added a cross-platform Chokidar service in the Electron main process with 500 ms write stability, atomic-save handling, SHA-256 content suppression, delayed deletion confirmation, path authorization, and clean shutdown.
+- Extended the typed preload bridge with live change/deletion subscriptions, watcher lifecycle calls, and active-workspace analysis-cache hydration.
+- Built a renderer sync controller with a three-second same-file cooldown, queued saves during in-flight analysis, ten-analysis/minute rate guard, parallel independent file updates, and one relationship/dashboard recompile after a two-second batch settle.
+- Added persistent card sync states, subtle status tooltips, old-data shimmer/glow during analysis, change/delta feedback, animated budget rows and totals, plus cached-source deletion recovery actions.
+- Fixed a watcher-registration race discovered during testing by changing workspace path updates from bulk teardown/re-add to differential reconciliation.
 
 ### Human decisions
 
-_Record choices, overrides, constraints, and product direction from the human._
+- The human prioritized “living files” as a headline demo capability: editing the real source outside Aether must automatically update both its card and the generated mini-app without manual import.
 
 ### Verification
 
-_Record commands run, tests passed, and observable behavior._
+- `npm run lint`, `npx vite build`, `git diff --check`, and the full `npm run build` Electron/AppImage packaging path pass.
+- `npm audit --omit=dev` reports zero production vulnerabilities after adding Chokidar.
+- A native Electron headless-Ozone run dropped temporary copies of `flight-ticket.txt` and `budget.csv`, changed Flights from `$820` to `$950`, and observed the source card update to `$2,330` while the Summary Card updated to `$1,590 spent / $740 remaining`.
+- Deleting the watched flight source produced one `deleted` card with Relocate, Keep cached, and Remove actions while preserving cached analysis.
+- Five writes in 600 ms produced exactly one watcher re-analysis: the smoke counter reported three total analyses (two initial drops plus one final update).
+- Reopening the persisted workspace and editing the budget again triggered one analysis without re-dropping; the card moved to `$980` Flights / `$2,360` total and the Summary Card to `$1,620` spent.
+- Rewriting the watched budget with byte-identical content produced `calls=0`, directly verifying SHA-256 suppression before GPT-5.6.
 
 ## Day 5 — July 18, 2026
 

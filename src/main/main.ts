@@ -21,10 +21,21 @@ import {
 } from './services/fileReader';
 import { createWorkspaceStore } from './services/workspaceService';
 import { createPinnedFolderStore } from './services/pinnedFolderService';
+import { FileWatcherService, hashFile } from './services/fileWatcher';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const authorizedFilePaths = new Set<string>();
 const analyzedFiles = new Map<string, AnalyzedFile>();
+let smokeAnalyzeCalls = 0;
+const broadcast = (channel: string, payload: unknown) => {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) window.webContents.send(channel, payload);
+  }
+};
+const fileWatcher = new FileWatcherService({
+  changed: (event) => broadcast('aether:file-changed', event),
+  deleted: (event) => broadcast('aether:file-deleted', event),
+});
 
 function normalizedPath(filePath: string): string {
   if (typeof filePath !== 'string' || !isAbsolute(filePath)) {
@@ -89,6 +100,37 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
         await new Promise((done) => setTimeout(done, 900));
       }
       await new Promise((done) => setTimeout(done, Number(process.env.AETHER_SMOKE_WAIT_MS) || 9000));
+
+      if (process.env.AETHER_SMOKE_LIVE_EDIT_FILE) {
+        const editPath = resolve(process.env.AETHER_SMOKE_LIVE_EDIT_FILE);
+        const before = process.env.AETHER_SMOKE_LIVE_EDIT_FROM ?? '820';
+        const after = process.env.AETHER_SMOKE_LIVE_EDIT_TO ?? '950';
+        const contents = await fs.readFile(editPath, 'utf8');
+        if (!contents.includes(before)) throw new Error(`Live-edit smoke value "${before}" was not found.`);
+        const nextContents = contents.replace(before, after).replace(process.env.AETHER_SMOKE_LIVE_EDIT_FROM_2 ?? '__no_secondary_replacement__', process.env.AETHER_SMOKE_LIVE_EDIT_TO_2 ?? '__no_secondary_replacement__');
+        if (process.env.AETHER_SMOKE_LIVE_RAPID) {
+          for (let index = 1; index <= 5; index += 1) {
+            await fs.writeFile(editPath, index === 5 ? nextContents : `${nextContents}${'\n'.repeat(index)}`, 'utf8');
+            await new Promise((done) => setTimeout(done, 120));
+          }
+        } else {
+          await fs.writeFile(editPath, nextContents, 'utf8');
+        }
+        await new Promise((done) => setTimeout(done, Number(process.env.AETHER_SMOKE_LIVE_WAIT_MS) || 15_000));
+        const liveState = await window.webContents.executeJavaScript(`JSON.stringify({
+          sync: Array.from(document.querySelectorAll('[data-sync-status]')).map((node) => node.getAttribute('data-sync-status')),
+          budgetCard: Array.from(document.querySelectorAll('.react-flow__node-fileCard')).find((node) => /budget/i.test(node.textContent || ''))?.textContent || '',
+          summary: document.querySelector('.react-flow__node-summaryCard')?.textContent || ''
+        })`);
+        console.log(`AETHER_SMOKE_LIVE_SYNC calls=${smokeAnalyzeCalls} ${liveState}`);
+      }
+
+      if (process.env.AETHER_SMOKE_LIVE_DELETE_FILE) {
+        await fs.unlink(resolve(process.env.AETHER_SMOKE_LIVE_DELETE_FILE));
+        await new Promise((done) => setTimeout(done, 2_200));
+        const deletedState = await window.webContents.executeJavaScript(`JSON.stringify({ deleted: document.querySelectorAll('[data-sync-status="deleted"]').length, actions: Array.from(document.querySelectorAll('.react-flow__node-fileCard button')).map((button) => (button.textContent || button.getAttribute('aria-label') || '').trim()).filter(Boolean) })`);
+        console.log(`AETHER_SMOKE_LIVE_DELETE ${deletedState}`);
+      }
 
       if (process.env.AETHER_SMOKE_PREVIEW) {
         const target = await window.webContents.executeJavaScript(`(() => {
@@ -230,9 +272,14 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     'aether:analyze-file',
     async (_event, filePath: string, fileId: string) => {
+      if (process.env.AETHER_SMOKE_LIVE_EDIT_FILE) smokeAnalyzeCalls += 1;
       const normalized = requireAuthorizedFile(filePath);
       const preparedFile = prepareFileForAPI(normalized);
-      const analysis = await analyzeFile(preparedFile, fileId, normalized);
+      const [analysisResult, contentHash] = await Promise.all([
+        analyzeFile(preparedFile, fileId, normalized),
+        hashFile(normalized),
+      ]);
+      const analysis = { ...analysisResult, contentHash };
       analyzedFiles.set(fileId, analysis);
       return analysis;
     },
@@ -250,6 +297,26 @@ function registerIpcHandlers(): void {
 
     return findRelationships(files);
   });
+
+  ipcMain.handle('aether:hydrate-analyzed-files', async (_event, files: AnalyzedFile[]) => {
+    if (!Array.isArray(files)) throw new Error('Aether expected analyzed workspace files.');
+    analyzedFiles.clear();
+    await Promise.all(files.map(async (file) => {
+      if (!file?.id || !file.filePath) return;
+      analyzedFiles.set(file.id, file);
+      try { await authorizeFile(file.filePath); } catch { /* Cached analysis remains available for missing sources. */ }
+    }));
+  });
+
+  ipcMain.handle('aether:file-watcher-watch', async (_event, filePath: string, fileId: string, contentHash?: string) => {
+    try {
+      const normalized = await authorizeFile(filePath);
+      return fileWatcher.watch(normalized, fileId, contentHash);
+    } catch {
+      return null;
+    }
+  });
+  ipcMain.handle('aether:file-watcher-unwatch', (_event, filePath: string, fileId?: string) => fileWatcher.unwatch(normalizedPath(filePath), fileId));
 
   ipcMain.handle('aether:window-minimize', (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize();
@@ -357,4 +424,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('before-quit', () => {
+  void fileWatcher.stopAll();
 });

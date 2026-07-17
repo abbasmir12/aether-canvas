@@ -8,7 +8,7 @@ Built for the OpenAI Build Week **Apps for Your Life** track.
 
 ## Status
 
-The Phase 1 desktop shell is runnable. It includes a secure Electron main/preload boundary, a React + Tailwind renderer, a polished collapsible sidebar, an infinite React Flow canvas, custom zoom controls, a minimap, and real OS file drop that creates typed FileCard nodes at the drop position.
+The complete hackathon product loop is runnable: secure OS file drop, GPT-5.6 native file analysis, semantic hub ribbons, generated interactive dashboard modules, persisted local workspaces, pinned folders, source intelligence, and live source-file synchronization. Chokidar watches active workspace files; external saves are content-hashed, coalesced, re-analyzed, and reflected in file cards and dashboard metrics without re-importing.
 
 Development currently runs on a headless AWS EC2 Linux instance over SSH. Linux/Xvfb checks validate the engineering path, while the human's local Windows PC is the primary product UX and release-test environment. Windows File Explorer drag-and-drop, display scaling, native modules, and packaging must be verified on Windows before submission.
 
@@ -95,6 +95,7 @@ These exercise GPT-5.6 native file analysis and relationship discovery before ri
 - Vite, vite-plugin-electron, React, and TypeScript
 - React Flow (`@xyflow/react`) for the infinite canvas
 - Leaflet + Carto light tiles for generated, interactive location modules
+- Chokidar for cross-platform live source-file synchronization
 - Tailwind CSS and Framer Motion
 - OpenAI GPT-5.6 Responses API for native PDF, spreadsheet, document, text, and image understanding
 - `sharp` only for local UI thumbnails
@@ -113,13 +114,15 @@ File Drop → Authorized local read → GPT-5.6 native file input
                       Smart preview React Flow node
                                       ↓
                    Metadata-only relationship discovery
+                                      ▲
+External save → Chokidar → SHA-256 diff → guarded re-analysis
 ```
 
 See [`docs/product-spec.md`](docs/product-spec.md) for scope and [`docs/architecture.md`](docs/architecture.md) for the process boundary, IPC design, component tree, and proposed SQLite schema.
 
 ## Current Interaction
 
-Drag one or more local files from the operating-system file explorer onto the canvas. Aether authorizes only those explicit paths through the preload bridge, reads their metadata in the main process, and creates FileCard nodes at the spatial drop point. Pan by dragging the open canvas, scroll to pan, use the inset controls to zoom or fit content, and use the minimap to navigate larger spaces.
+Drag one or more local files from the operating-system file explorer onto the canvas. Aether authorizes only those explicit paths through the preload bridge, reads their metadata in the main process, and creates FileCard nodes at the spatial drop point. After analysis, the original path remains watched: saving that file in Excel, a text editor, or another desktop app updates Aether automatically. Pan by dragging the open canvas, scroll to pan, use the inset controls to zoom or fit content, and use the minimap to navigate larger spaces.
 
 ## Screenshots
 
@@ -137,7 +140,7 @@ This separation is deliberate: the final submission will show where Codex accele
 
 ## How GPT-5.6 Powers the Runtime
 
-GPT-5.6 receives the actual file through the Responses API. PDFs contribute extracted text and page images, spreadsheets use native spreadsheet augmentation, text documents are extracted by the API, and images use vision input. JSON Schema output supplies entities, preview content, summaries, and a grounded source-intelligence brief; a second metadata-only call discovers relationships and possible clusters. That call also compiles each dashboard module into a strict, bounded visual composition—such as route plus timeline or progress plus ranked list—which Aether renders through its own safe local component library. This avoids local content parsers and arbitrary model-generated UI while keeping local thumbnail generation and explicit path authorization on-device.
+GPT-5.6 receives the actual file through the Responses API. PDFs contribute extracted text and page images, spreadsheets use native spreadsheet augmentation, text documents are extracted by the API, and images use vision input. JSON Schema output supplies entities, preview content, summaries, and a grounded source-intelligence brief; a second metadata-only call discovers relationships and possible clusters. That call also compiles each dashboard module into a strict, bounded visual composition—such as route plus timeline or progress plus ranked list—which Aether renders through its own safe local component library. External source edits reuse the same analysis contract only after a SHA-256 content change, with cooldown, write-stability, batching, and rate guards to keep runtime cost predictable. This avoids local content parsers and arbitrary model-generated UI while keeping local thumbnail generation and explicit path authorization on-device.
 
 Runtime OpenAI calls will remain in the Electron main process so credentials never enter the renderer. Durable metadata and workspace state stay local in SQLite.
 

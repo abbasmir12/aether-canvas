@@ -498,6 +498,18 @@ Missing actual spending is unknown, not equal to the planned estimate. GPT-5.6 n
 
 The Budget detail is a local interactive component rather than model-authored markup: the model supplies grounded financial data, while Aether owns health status, variance, editing, persistence, and export. This keeps live values trustworthy and the generated mini-app consistent with the design system.
 
+## 052. Live file sync with intelligent re-analysis
+
+**Status:** Accepted
+
+**Date:** July 17, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+Files on a canvas remain references to their real local sources rather than frozen imports. A main-process Chokidar watcher detects stable external writes, SHA-256 hashing suppresses identical saves, and GPT-5.6 reuses the same structured analysis contract for genuinely changed content. A bounded renderer queue provides per-file cooldown, in-flight coalescing, a ten-analysis/minute rate guard, and a single debounced relationship/dashboard refresh after batch updates.
+
+The cached analysis is never discarded while a source is updating or missing. Cards communicate pending, syncing, synced, paused, deleted, and unwatched states; deleted sources can be relocated, retained as cached evidence, or removed from the canvas without touching disk. This makes the workspace reactive while preserving user trust, cost control, and local-first behavior.
+
 ## Decision Template
 
 ## NNN. Decision title
