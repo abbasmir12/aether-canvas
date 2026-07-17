@@ -330,6 +330,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Added precise dashed React Flow traces from the exact Summary Card modules used in an answer, including animated drawing, reused-connection current pulses, multi-source color treatment, and temporary source-file dimming.
 - Added deterministic provenance recovery: when GPT cites a raw file but omits the relevant on-screen module, Aether restores the grounded file → module → answer trace using the module's declared source IDs and semantic vocabulary.
 - Kept query artifacts deliberately ephemeral by excluding answer nodes and trace edges from workspace autosave and hydration.
+- Reworked Recent Questions into an independently collapsible, twelve-entry cache; selecting a completed question restores its exact answer card and provenance traces without another GPT request.
 
 #### Human decisions
 
@@ -341,6 +342,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - `npx vite build` completes renderer, main, and preload production bundles.
 - A clean five-file Electron run answered “What is my estimated daily food budget?”, rendered a grounded calculation card, cited both raw files and dashboard modules, and drew two live traces from Budget and Journey.
 - A low-confidence two-file run correctly explained that trip duration was missing and drew no misleading source connectors.
+- A native close-and-restore run removed an arrival answer, reopened it from Recent Questions, and recovered one answer node plus its Journey trace from the local cache without re-querying GPT-5.6.
 
 ## Day 5 — July 18, 2026
 

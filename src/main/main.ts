@@ -227,6 +227,28 @@ async function runSmokeCapture(window: BrowserWindow): Promise<void> {
           dimmedFiles: Array.from(document.querySelectorAll('.react-flow__node-fileCard')).filter((node) => Number(getComputedStyle(node).opacity) < 0.8).length
         })`);
         console.log(`AETHER_SMOKE_QUERY ${queryState}`);
+        if (process.env.AETHER_SMOKE_QUERY_RESTORE) {
+          const openedHistory = await window.webContents.executeJavaScript(`(() => {
+            document.querySelector('[data-aether-query-answer] button[aria-label="Close answer"]')?.click();
+            const toggle = document.querySelector('button[aria-label="Toggle recent questions"]');
+            toggle?.click();
+            return Boolean(toggle);
+          })()`);
+          await new Promise((done) => setTimeout(done, 220));
+          const selectedHistory = await window.webContents.executeJavaScript(`(() => {
+            const history = document.querySelector('[data-aether-query-history]');
+            history?.click();
+            return Boolean(history);
+          })()`);
+          await new Promise((done) => setTimeout(done, 900));
+          const restoredState = await window.webContents.executeJavaScript(`JSON.stringify({
+            triggered: ${JSON.stringify(openedHistory && selectedHistory)},
+            answerNodes: document.querySelectorAll('[data-aether-query-answer]').length,
+            traceEdges: document.querySelectorAll('.visual-query-edge').length,
+            answer: document.querySelector('[data-aether-query-answer]')?.textContent || ''
+          })`);
+          console.log(`AETHER_SMOKE_QUERY_RESTORE ${restoredState}`);
+        }
       }
 
       if (process.env.AETHER_SMOKE_DEBUG) {

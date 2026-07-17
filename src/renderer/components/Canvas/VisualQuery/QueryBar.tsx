@@ -1,17 +1,19 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUp, Clock3, MessageCircleQuestion, Trash2, X } from 'lucide-react';
+import { ArrowUp, ChevronDown, Clock3, MessageCircleQuestion, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-type QueryHistoryItem = { id: string; question: string };
+type QueryHistoryItem = { id: string; question: string; answerHeadline?: string };
 
-export default function QueryBar({ disabled, history, loading, onClear, onSubmit }: {
+export default function QueryBar({ disabled, history, loading, onClear, onSelectHistory, onSubmit }: {
   disabled?: boolean;
   history: QueryHistoryItem[];
   loading: boolean;
   onClear: () => void;
+  onSelectHistory: (id: string) => void;
   onSubmit: (question: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -23,6 +25,7 @@ export default function QueryBar({ disabled, history, loading, onClear, onSubmit
         requestAnimationFrame(() => inputRef.current?.focus());
       }
       if (event.key === 'Escape' && expanded && !loading) {
+        setHistoryOpen(false);
         setExpanded(false);
         setQuestion('');
       }
@@ -49,18 +52,49 @@ export default function QueryBar({ disabled, history, loading, onClear, onSubmit
         {expanded && history.length > 0 && (
           <motion.div
             animate={{ opacity: 1, y: 0 }}
-            className="mb-2 max-h-[150px] overflow-y-auto rounded-[14px] border border-[#E3E1E5] bg-white/95 p-2 shadow-[0_12px_30px_rgba(28,28,34,.11)] backdrop-blur-xl"
+            className="mb-2 overflow-hidden rounded-[14px] border border-[#E3E1E5] bg-white/95 shadow-[0_12px_30px_rgba(28,28,34,.11)] backdrop-blur-xl"
             exit={{ opacity: 0, y: 5 }}
             initial={{ opacity: 0, y: 8 }}
           >
-            <div className="mb-1.5 flex items-center justify-between px-1.5">
-              <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#99979E]"><Clock3 size={11} />Recent questions</span>
-              <button aria-label="Clear query history" className="grid h-6 w-6 place-items-center rounded-full text-[#AAA8AE] transition hover:bg-[#F1F0F2] hover:text-[#66646B]" onClick={onClear} type="button"><Trash2 size={12} /></button>
+            <div className="flex h-9 items-center px-2">
+              <button
+                aria-label="Toggle recent questions"
+                aria-expanded={historyOpen}
+                className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[8px] px-1.5 py-1 text-left text-[9px] font-semibold uppercase tracking-[0.12em] text-[#85828B] transition hover:bg-[#F5F3F6]"
+                onClick={() => setHistoryOpen((open) => !open)}
+                type="button"
+              >
+                <Clock3 size={11} />
+                <span>Recent questions</span>
+                <span className="rounded-full bg-[#F0ECF4] px-1.5 py-0.5 text-[8px] tracking-normal text-[#806397]">{history.length}</span>
+                <ChevronDown className={`ml-auto transition-transform duration-200 ${historyOpen ? 'rotate-180' : ''}`} size={12} />
+              </button>
+              <button aria-label="Clear query history" className="ml-1 grid h-6 w-6 place-items-center rounded-full text-[#AAA8AE] transition hover:bg-[#F1F0F2] hover:text-[#66646B]" onClick={onClear} type="button"><Trash2 size={12} /></button>
             </div>
-            {history.slice(-3).reverse().map((item) => (
-              <button className="block w-full truncate rounded-[8px] px-2 py-1.5 text-left text-[11px] text-[#626168] transition hover:bg-[#F6F4F8] hover:text-[#4A3D58]" key={item.id} onClick={() => setQuestion(item.question)} type="button">{item.question}</button>
-            ))}
-            {history.length > 3 && <p className="px-2 pt-1 text-[9px] font-medium text-[#9B72CF]">{history.length - 3} previous answers</p>}
+            <AnimatePresence initial={false}>
+              {historyOpen && (
+                <motion.div
+                  animate={{ height: 'auto', opacity: 1 }}
+                  className="max-h-[210px] overflow-y-auto border-t border-[#EFEDF1] p-1.5"
+                  exit={{ height: 0, opacity: 0 }}
+                  initial={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  {history.slice().reverse().map((item) => (
+                    <button
+                      className="group block w-full rounded-[9px] px-2.5 py-2 text-left transition hover:bg-[#F6F4F8]"
+                      data-aether-query-history={item.id}
+                      key={item.id}
+                      onClick={() => { onSelectHistory(item.id); setHistoryOpen(false); }}
+                      type="button"
+                    >
+                      <span className="block truncate text-[11px] font-medium text-[#56535C] group-hover:text-[#3F3549]">{item.question}</span>
+                      <span className="mt-0.5 block truncate text-[9px] text-[#A09DA5]">{item.answerHeadline ?? 'Aether is preparing this answer…'}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
@@ -101,7 +135,7 @@ export default function QueryBar({ disabled, history, loading, onClear, onSubmit
           {expanded && question.trim() && !loading ? (
             <motion.button animate={{ opacity: 1, scale: 1 }} aria-label="Ask Aether" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#4A90D9] text-white shadow-[0_4px_10px_rgba(74,144,217,.3)] transition hover:bg-[#347FC8]" exit={{ opacity: 0, scale: 0.8 }} initial={{ opacity: 0, scale: 0.8 }} key="send" onClick={submit} type="button"><ArrowUp size={16} strokeWidth={2.6} /></motion.button>
           ) : expanded ? (
-            <button aria-label="Collapse query bar" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#A09EA5] transition hover:bg-[#F2F1F3] hover:text-[#66646B]" key="close" onClick={() => { if (!loading) { setExpanded(false); setQuestion(''); } }} type="button"><X size={14} /></button>
+            <button aria-label="Collapse query bar" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#A09EA5] transition hover:bg-[#F2F1F3] hover:text-[#66646B]" key="close" onClick={() => { if (!loading) { setHistoryOpen(false); setExpanded(false); setQuestion(''); } }} type="button"><X size={14} /></button>
           ) : (
             <span className="rounded-[6px] border border-[#E5E3E6] bg-[#F7F6F7] px-1.5 py-0.5 text-[9px] font-medium text-[#99979E]" key="shortcut">{navigator.platform.toLowerCase().includes('mac') ? '⌘ J' : 'Ctrl J'}</span>
           )}
