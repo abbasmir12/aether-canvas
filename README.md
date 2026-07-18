@@ -346,6 +346,12 @@ The first prompt to Codex did more than request code. It established the product
       <p>The user problem, core thesis, target audience, features, and hackathon scope.</p>
     </td>
   </tr>
+  <tr>
+    <td width="100%" valign="top" colspan="3">
+      <h3><a href="build-journey/README.md">Build documentary</a></h3>
+      <p>The prompts, milestone recordings, Codex working sessions, and progress screenshots captured throughout the build. The external documentary link will be added before judging.</p>
+    </td>
+  </tr>
 </table>
 
 ## Local-first, with an explicit AI boundary
@@ -392,6 +398,7 @@ agent_assets/
 └── sample-files/         Reproducible Tokyo Trip demo data
 
 docs/                     Build history, decisions, architecture, evidence
+build-journey/            Recorded prompts, milestones, and build documentary
 ```
 
 **Technology:** Electron, TypeScript, React 19, Vite, React Flow, Tailwind CSS, Framer Motion, OpenAI Responses API, Chokidar, Leaflet, Sharp, and electron-builder.

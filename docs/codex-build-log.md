@@ -433,11 +433,13 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Re-art-directed the README from a long technical document into a product landing page: centered product navigation, screenshot-led storytelling, three thesis cards, a five-step interaction rail, paired feature panels, a Codex-versus-human collaboration spread, compact evidence cards, and expandable implementation details.
 - Created a branded workflow illustration using Aether's exact semantic palette to explain how ordinary files flow through GPT-5.6 understanding into a living workspace without requiring judges to parse architecture prose first.
 - Migrated the canonical submission repository and README clone path from GitLab to the human's authenticated GitHub repository at `abbasmir12/aether-canvas`.
+- Added a dedicated `build-journey/` entry point for the prompt history, milestone recordings, Codex working sessions, and progress screenshots referenced in the demo video.
 
 ### Human decisions
 
 - The human completed and uploaded the under-three-minute demo, then prioritized a clear and memorable README over generic framework badges and boilerplate.
 - The human required the final handoff to explain the complete product, its strongest features, judge setup, Codex acceleration, human decisions, and GPT-5.6 runtime role.
+- The human recorded the build documentary throughout the hackathon and chose Google Drive as the external home for the full collection.
 
 ### Verification
 
@@ -445,6 +447,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Verified every Markdown and HTML README link, anchor target, media asset, and documented path against the repository.
 - Validated the custom workflow illustration as well-formed SVG and checked it at desktop and narrow README widths.
 - Verified all judge-facing repository URLs resolve to the canonical GitHub project and pushed the complete `main` history through the SSH remote.
+- Verified the repository documentary entry point links correctly to the build log, decision record, and judging evidence; the external Drive link remains intentionally pending.
 - `npm run lint` and Markdown whitespace/link checks pass.
 
 ## Day 6 — July 19, 2026
