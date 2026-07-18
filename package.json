@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run lint && vite build && electron-builder",
-    "build:win": "npm run lint && vite build && electron-builder --win nsis --x64",
+    "build:win": "npm run lint && vite build && electron-builder --win nsis --x64 --publish never",
     "start": "electron .",
     "lint": "tsc --noEmit && tsc --project tsconfig.node.json --noEmit",
     "postinstall": "electron-builder install-app-deps"
