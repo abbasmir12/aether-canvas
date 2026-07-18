@@ -44,7 +44,11 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/aether-workflow.svg" alt="Files flow through GPT-5.6 semantic understanding into an Aether workspace" width="100%" />
+  <img src="docs/media/aether-conceptual-workflow.png" alt="Conceptual diagram showing selected files flowing through GPT-5.6 understanding into a living Aether workspace" width="100%" />
+</p>
+
+<p align="center">
+  <sub><strong>Conceptual workflow diagram.</strong> This simplified explainer shows how selected files become understood context and then a generated workspace. It is not a screenshot of the application; the real interface is shown above and in the demo video.</sub>
 </p>
 
 <table>
