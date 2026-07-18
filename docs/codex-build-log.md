@@ -491,6 +491,11 @@ _Record commands run, tests passed, and observable behavior._
   Linux build host. The final NSIS artifact remains intentionally gated on a
   Windows 11 build and installed-app smoke test because the application ships
   native dependencies.
+- A Windows-native GitHub Actions run successfully produced the x64 NSIS
+  installer. Human smoke testing confirmed installation, launch, and the
+  packaged desktop icon; it also exposed an absolute renderer logo URL that
+  worked in development but not from Electron's production `file://` page.
+  Codex replaced it with a package-relative asset URL before the final tag.
 
 ## Deadline — July 21, 2026, 5:00 PM PT
 

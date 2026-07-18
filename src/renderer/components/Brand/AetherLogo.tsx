@@ -16,7 +16,7 @@ export default function AetherLogo({ alt = 'Aether', className = '', size = 32 }
         className="block h-full w-full scale-[1.045] object-cover"
         draggable={false}
         height={size}
-        src="/aether-logo.png"
+        src="./aether-logo.png"
         width={size}
       />
     </span>
