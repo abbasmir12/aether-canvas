@@ -10,7 +10,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Codex `/feedback` Session ID:** _Add from the core build session_
 - **Repository URL:** https://github.com/abbasmir12/aether-canvas
 - **Demo video URL:** _Published by the human; add the public YouTube URL here_
-- **Build documentary:** [`build-journey/README.md`](../build-journey/README.md) — Google Drive link pending
+- **Build documentary:** [Full visual build journey on Google Drive](https://drive.google.com/drive/folders/1xTtMr7guBLAf10U8bodRCJ9KBmqWjIpY?usp=drive_link), with a repository index at [`build-journey/README.md`](../build-journey/README.md)
 
 ## 1. Technological Implementation
 

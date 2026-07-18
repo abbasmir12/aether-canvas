@@ -440,6 +440,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - The human completed and uploaded the under-three-minute demo, then prioritized a clear and memorable README over generic framework badges and boilerplate.
 - The human required the final handoff to explain the complete product, its strongest features, judge setup, Codex acceleration, human decisions, and GPT-5.6 runtime role.
 - The human recorded the build documentary throughout the hackathon and chose Google Drive as the external home for the full collection.
+- The human published the complete documentary folder and provided the final judge-accessible Google Drive link.
 
 ### Verification
 
@@ -447,7 +448,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Verified every Markdown and HTML README link, anchor target, media asset, and documented path against the repository.
 - Validated the custom workflow illustration as well-formed SVG and checked it at desktop and narrow README widths.
 - Verified all judge-facing repository URLs resolve to the canonical GitHub project and pushed the complete `main` history through the SSH remote.
-- Verified the repository documentary entry point links correctly to the build log, decision record, and judging evidence; the external Drive link remains intentionally pending.
+- Connected the repository documentary entry point, README, and judging evidence directly to the published Google Drive collection.
 - `npm run lint` and Markdown whitespace/link checks pass.
 
 ## Day 6 — July 19, 2026

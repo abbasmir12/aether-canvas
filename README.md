@@ -352,8 +352,8 @@ The first prompt to Codex did more than request code. It established the product
   </tr>
   <tr>
     <td width="100%" valign="top" colspan="3">
-      <h3><a href="build-journey/README.md">Build documentary</a></h3>
-      <p>The prompts, milestone recordings, Codex working sessions, and progress screenshots captured throughout the build. The external documentary link will be added before judging.</p>
+      <h3><a href="https://drive.google.com/drive/folders/1xTtMr7guBLAf10U8bodRCJ9KBmqWjIpY?usp=drive_link">Build documentary</a></h3>
+      <p>Watch the prompts, milestone recordings, Codex working sessions, Windows testing, debugging, and progress screenshots captured throughout the build. A written index is also available in <a href="build-journey/README.md">the repository</a>.</p>
     </td>
   </tr>
 </table>

@@ -2,7 +2,9 @@
 
 We documented the entire Aether Canvas build from day one—including the major prompts, product milestones, screen recordings of Codex working, and progress screenshots captured as the application evolved.
 
-> **Full build documentary:** The Google Drive link will be added here before judging.
+> **[View the full Aether Canvas build documentary on Google Drive](https://drive.google.com/drive/folders/1xTtMr7guBLAf10U8bodRCJ9KBmqWjIpY?usp=drive_link)**
+
+The documentary follows the project from its first prompt through the major design and architecture decisions, Codex implementation sessions, Windows testing, debugging, and the completed product demo.
 
 Key written evidence is already available in the repository:
 
