@@ -148,6 +148,10 @@ The visual query system makes AI provenance part of the product language rather 
   uninstall path.
 - The README provides both a direct release-install path for judges and a
   source-build path that reaches the canvas in under five minutes.
+- The final x64 installer was produced on a native Windows GitHub Actions
+  runner and installed on Windows 11. The human verified the packaged
+  application logo, desktop icon, launch behavior, and core Aether workflow
+  before authorizing the `v1.0.0` release tag.
 
 ## Submission Checklist
 

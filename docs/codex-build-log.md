@@ -487,15 +487,17 @@ _Record commands run, tests passed, and observable behavior._
 
 ### Verification
 
-- Release configuration and strict TypeScript verification were checked on the
-  Linux build host. The final NSIS artifact remains intentionally gated on a
-  Windows 11 build and installed-app smoke test because the application ships
-  native dependencies.
+- Release configuration and strict TypeScript verification passed on the Linux
+  build host. GitHub Actions then built the x64 NSIS artifact on a native
+  Windows runner, and the human completed the installed-app smoke test on
+  Windows 11.
 - A Windows-native GitHub Actions run successfully produced the x64 NSIS
   installer. Human smoke testing confirmed installation, launch, and the
   packaged desktop icon; it also exposed an absolute renderer logo URL that
   worked in development but not from Electron's production `file://` page.
-  Codex replaced it with a package-relative asset URL before the final tag.
+  Codex replaced it with a package-relative asset URL; the corrected installer
+  was rebuilt and the human confirmed that the application logo, desktop icon,
+  installation, launch, and core product flow work as expected.
 
 ## Deadline — July 21, 2026, 5:00 PM PT
 
