@@ -469,15 +469,28 @@ _Record commands run, tests passed, and observable behavior._
 
 ### Codex contributions
 
-_Record what Codex built or proposed, including affected files._
+- Prepared the `v1.0.0` Windows release configuration: a reproducible x64 NSIS
+  build command, assisted installer, installation-directory choice, desktop
+  and Start menu shortcuts, native dependency rebuild, stable artifact naming,
+  and canonical branded PNG icon source.
+- Added a Windows-native GitHub Actions release pipeline. Manual runs produce a
+  downloadable smoke-test artifact; pushing a `v*` tag builds on Windows and
+  publishes the exact installer to the matching GitHub release.
+- Updated the judge-facing README with release installation, SmartScreen
+  guidance, and target-platform build notes.
 
 ### Human decisions
 
-_Record choices, overrides, constraints, and product direction from the human._
+- Chose to finish the hackathon submission with an installable Windows release
+  and GitHub release tag, while preserving the original PNG assets used across
+  the application and repository presentation.
 
 ### Verification
 
-_Record final build, packaging, demo rehearsal, README clone test, and submission checks._
+- Release configuration and strict TypeScript verification were checked on the
+  Linux build host. The final NSIS artifact remains intentionally gated on a
+  Windows 11 build and installed-app smoke test because the application ships
+  native dependencies.
 
 ## Deadline — July 21, 2026, 5:00 PM PT
 

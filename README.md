@@ -229,6 +229,17 @@ The default is `gpt-5.6-luna` with low reasoning for a responsive drop loop. Set
 
 ## Run Aether
 
+### Install the Windows release
+
+Download `Aether-Canvas-Setup-1.0.0-x64.exe` from the
+[GitHub Releases page](https://github.com/abbasmir12/aether-canvas/releases),
+run the assisted installer, and configure an OpenAI API key in
+**Settings → Intelligence**.
+
+> Windows SmartScreen may warn about this unsigned hackathon build. Select
+> **More info → Run anyway** after confirming the publisher repository and
+> release tag.
+
 ### Four commands to the canvas
 
 ```bash
@@ -286,10 +297,15 @@ sudo apt install build-essential python3
 | --- | --- |
 | `npm run dev` | Start Vite and Electron with live rebuilding |
 | `npm run lint` | Strictly type-check renderer, shared, main, preload, and configuration code |
-| `npm run build` | Type-check, build, rebuild native modules, and package the Linux AppImage |
+| `npm run build` | Type-check, build, rebuild native modules, and package for the current platform |
+| `npm run build:win` | Build the assisted 64-bit Windows NSIS installer |
 | `npm start` | Run the previously built Electron bundle |
 
-Development and product testing have been performed on Linux/EC2 and Windows 11. The committed electron-builder target is Linux AppImage; judges on Windows should use `npm run dev`.
+Development and product testing have been performed on Linux/EC2 and Windows 11.
+Windows release artifacts are built and smoke-tested on Windows because
+`better-sqlite3` and Sharp include platform-specific native binaries. Electron
+Builder generates the Windows icon set from the canonical 512×512
+`build/icon.png` source.
 
 The API key can also be entered in **Settings → Intelligence**. A key saved through the UI is protected with Electron `safeStorage`; if OS-backed encryption is unavailable, Aether refuses to persist it as plaintext.
 

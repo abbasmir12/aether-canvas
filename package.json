@@ -1,9 +1,14 @@
 {
   "name": "aether-canvas",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "author": "Aether Canvas Team",
   "description": "A generative desktop where spatially grouping ordinary files creates the mini-app you need.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abbasmir12/aether-canvas.git"
+  },
+  "homepage": "https://github.com/abbasmir12/aether-canvas#readme",
   "engines": {
     "node": ">=22.12.0",
     "npm": ">=10"
@@ -13,13 +18,35 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run lint && vite build && electron-builder",
+    "build:win": "npm run lint && vite build && electron-builder --win nsis --x64",
     "start": "electron .",
-    "lint": "tsc --noEmit && tsc --project tsconfig.node.json --noEmit"
+    "lint": "tsc --noEmit && tsc --project tsconfig.node.json --noEmit",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "appId": "com.aether.canvas",
     "productName": "Aether Canvas",
-    "icon": "public/aether-logo.png",
+    "icon": "build/icon.png",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Aether-Canvas-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Aether Canvas",
+      "deleteAppDataOnUninstall": false
+    },
     "linux": {
       "target": [
         "AppImage"

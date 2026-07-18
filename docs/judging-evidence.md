@@ -140,6 +140,15 @@ The visual query system makes AI provenance part of the product language rather 
 - **Implemented evidence:** A five-file runtime query calculated a daily food estimate from Budget and Journey, cited the contributing files, and drew separate green and blue source traces into the answer card.
 - **Judge-facing handoff:** The root README behaves like a visual product landing page rather than framework documentation. It leads with an authentic five-file runtime capture, then uses a hand-drawn three-part workflow whose panels link directly to the sample files, GPT-5.6 architecture, and reproducible product loop. Compact feature narratives separate runtime intelligence from Codex acceleration and human product judgment, while expandable technical sections preserve depth without overwhelming the first read.
 
+### Release readiness
+
+- Aether includes a reproducible 64-bit Windows NSIS release target, a
+  target-platform native dependency rebuild, branded installer/application
+  icons, configurable installation location, shortcuts, and a conventional
+  uninstall path.
+- The README provides both a direct release-install path for judges and a
+  source-build path that reaches the canvas in under five minutes.
+
 ## Submission Checklist
 
 - [x] Working project built with Codex using GPT-5.6

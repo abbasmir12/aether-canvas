@@ -620,6 +620,22 @@ The submission README is treated as a visual product surface rather than a linea
 
 Setup, sample data, privacy boundaries, platform status, GPT-5.6 runtime responsibilities, Codex acceleration, human product decisions, and verification records are all directly discoverable from one page. Dense reference material stays available inside expandable sections, keeping the first read closer to a product landing page while still serving technical evaluators.
 
+## 062. Native Windows release built on Windows
+
+**Status:** Accepted
+**Date:** July 18, 2026
+**Decision owner:** Human direction, Codex implementation
+
+**Decision:** Publish Aether Canvas as an assisted 64-bit NSIS installer, built
+and smoke-tested on Windows 11 from the tagged release commit.
+
+**Reasoning:** Aether includes platform-specific native dependencies
+(`better-sqlite3` and Sharp). Building on the target operating system avoids
+shipping incompatible binaries, while the assisted installer gives judges
+clear installation choices, Start menu and desktop shortcuts, and a normal
+Windows uninstall path. Electron Builder derives the complete Windows icon set
+from the canonical 512×512 Aether PNG.
+
 ## Decision Template
 
 ## NNN. Decision title
