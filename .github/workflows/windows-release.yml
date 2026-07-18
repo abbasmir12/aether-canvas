@@ -34,7 +34,17 @@ jobs:
         run: npm ci
 
       - name: Build Aether Canvas
-        run: npm run build:win
+        shell: pwsh
+        run: |
+          & npm run build:win 2>&1 | Tee-Object -FilePath windows-build.log
+          $buildExitCode = $LASTEXITCODE
+
+          if ($buildExitCode -ne 0) {
+            $tail = (Get-Content windows-build.log -Tail 30) -join " | "
+            $tail = $tail.Replace("%", "%25").Replace("`r", "%0D").Replace("`n", "%0A")
+            Write-Host "::error title=Windows packaging failed::$tail"
+            exit $buildExitCode
+          }
 
       - name: Upload installer for smoke testing
         uses: actions/upload-artifact@v4
