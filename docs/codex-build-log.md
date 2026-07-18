@@ -432,6 +432,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Captured a clean hero image from the real Electron application with five analyzed source cards, four semantic hubs, live ribbons, and the generated Tokyo Trip dashboard. The README no longer presents the design mockup as finished-product evidence.
 - Re-art-directed the README from a long technical document into a product landing page: centered product navigation, screenshot-led storytelling, three thesis cards, a five-step interaction rail, paired feature panels, a Codex-versus-human collaboration spread, compact evidence cards, and expandable implementation details.
 - Created a branded workflow illustration using Aether's exact semantic palette to explain how ordinary files flow through GPT-5.6 understanding into a living workspace without requiring judges to parse architecture prose first.
+- Migrated the canonical submission repository and README clone path from GitLab to the human's authenticated GitHub repository at `abbasmir12/aether-canvas`.
 
 ### Human decisions
 
@@ -443,6 +444,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Launched the actual Electron app against a clean five-file persisted workspace and visually inspected the final `1400 × 900` README capture.
 - Verified every Markdown and HTML README link, anchor target, media asset, and documented path against the repository.
 - Validated the custom workflow illustration as well-formed SVG and checked it at desktop and narrow README widths.
+- Verified all judge-facing repository URLs resolve to the canonical GitHub project and pushed the complete `main` history through the SSH remote.
 - `npm run lint` and Markdown whitespace/link checks pass.
 
 ## Day 6 — July 19, 2026

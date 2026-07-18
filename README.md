@@ -205,8 +205,8 @@ The default is `gpt-5.6-luna` with low reasoning for a responsive drop loop. Set
 ### Four commands to the canvas
 
 ```bash
-git clone https://gitlab.com/abbasmir12/aether-canva.git
-cd aether-canva
+git clone git@github.com:abbasmir12/aether-canvas.git
+cd aether-canvas
 nvm use
 npm install
 ```
@@ -405,7 +405,7 @@ docs/                     Build history, decisions, architecture, evidence
     <td><strong>Track</strong><br />Apps for Your Life</td>
     <td><strong>Built with</strong><br />Codex using GPT-5.6</td>
     <td><strong>Runtime brain</strong><br />GPT-5.6 Responses API</td>
-    <td><strong>Repository</strong><br /><a href="https://gitlab.com/abbasmir12/aether-canva">GitLab</a></td>
+    <td><strong>Repository</strong><br /><a href="https://github.com/abbasmir12/aether-canvas">GitHub</a></td>
   </tr>
 </table>
 

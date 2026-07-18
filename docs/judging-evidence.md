@@ -8,7 +8,7 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Deadline:** Tuesday, July 21, 2026 at 5:00 PM PT
 - **Core runtime model:** GPT-5.6
 - **Codex `/feedback` Session ID:** _Add from the core build session_
-- **Repository URL:** https://gitlab.com/abbasmir12/aether-canva
+- **Repository URL:** https://github.com/abbasmir12/aether-canvas
 - **Demo video URL:** _Published by the human; add the public YouTube URL here_
 
 ## 1. Technological Implementation
