@@ -608,6 +608,18 @@ VS Code is an Electron application and may expose `ELECTRON_OVERRIDE_DIST_PATH` 
 
 Aether deletes both host-only variables at Vite configuration startup. Development therefore resolves the repository's pinned Electron binary deterministically, independent of which editor or terminal launched npm.
 
+## 061. Treat the README as a product narrative and reproducible judge path
+
+**Status:** Accepted
+
+**Date:** July 18, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The submission README leads with the user problem and Aether's three differentiators—spatial intent, living files, and visual provenance—before introducing implementation details. It uses a capture from the running Electron product rather than presenting the north-star mockup as shipped evidence.
+
+Setup, sample data, privacy boundaries, platform status, GPT-5.6 runtime responsibilities, Codex acceleration, human product decisions, and verification records are all directly discoverable from one page. This makes the repository useful to both a product judge and a technical evaluator without falling back to a generic technology-first template.
+
 ## Decision Template
 
 ## NNN. Decision title

@@ -426,15 +426,21 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 ### Codex contributions
 
-_Record what Codex built or proposed, including affected files._
+- Replaced the scaffold-era README with a judge-facing product narrative centered on the three differentiators: spatial intent, living source files, and visible AI provenance.
+- Corrected stale technical claims so the handoff now describes the implemented atomic JSON workspace store, active GPT-5.6 runtime, explicit OpenAI data boundary, Windows development path, and current Linux packaging target accurately.
+- Added a reproducible five-file demo walkthrough, under-five-minute setup, supported-input list, runtime GPT architecture, Codex collaboration evidence, repository map, and direct links to the build record.
+- Captured a clean hero image from the real Electron application with five analyzed source cards, four semantic hubs, live ribbons, and the generated Tokyo Trip dashboard. The README no longer presents the design mockup as finished-product evidence.
 
 ### Human decisions
 
-_Record choices, overrides, constraints, and product direction from the human._
+- The human completed and uploaded the under-three-minute demo, then prioritized a clear and memorable README over generic framework badges and boilerplate.
+- The human required the final handoff to explain the complete product, its strongest features, judge setup, Codex acceleration, human decisions, and GPT-5.6 runtime role.
 
 ### Verification
 
-_Record commands run, tests passed, and observable behavior._
+- Launched the actual Electron app against a clean five-file persisted workspace and visually inspected the final `1400 × 900` README capture.
+- Verified every local README link and documented path against the repository.
+- `npm run lint` and Markdown whitespace/link checks pass.
 
 ## Day 6 — July 19, 2026
 

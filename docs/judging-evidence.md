@@ -8,8 +8,8 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Deadline:** Tuesday, July 21, 2026 at 5:00 PM PT
 - **Core runtime model:** GPT-5.6
 - **Codex `/feedback` Session ID:** _Add from the core build session_
-- **Repository URL:** _Add when available_
-- **Demo video URL:** _Add when published; must be under three minutes and include audio_
+- **Repository URL:** https://gitlab.com/abbasmir12/aether-canva
+- **Demo video URL:** _Published by the human; add the public YouTube URL here_
 
 ## 1. Technological Implementation
 
@@ -137,15 +137,16 @@ The visual query system makes AI provenance part of the product language rather 
 - _General-purpose evidence:_ The card renders only the sections grounded in discovered dates, costs, tasks, and locations. The same persisted interaction model supports trips, coursework, work projects, household jobs, and other clusters; travel is the visual demo dataset rather than a hard-coded data source.
 - _Evidence that the output remains grounded in and traceable to its source files._
 - **Implemented evidence:** A five-file runtime query calculated a daily food estimate from Budget and Journey, cited the contributing files, and drew separate green and blue source traces into the answer card.
+- **Judge-facing handoff:** The root README now leads with the product thesis, provides an authentic five-file runtime capture, documents the complete demo loop, and separates GPT-5.6 runtime intelligence from Codex build acceleration and human product judgment.
 
 ## Submission Checklist
 
-- [ ] Working project built with Codex using GPT-5.6
-- [ ] Apps for Your Life category selected
+- [x] Working project built with Codex using GPT-5.6
+- [x] Apps for Your Life category selected
 - [ ] Final project description
-- [ ] Under-three-minute YouTube demo with audio covering Codex and GPT-5.6
+- [x] Under-three-minute YouTube demo with audio covering Codex and GPT-5.6
 - [ ] Public repository or judge access configured
-- [ ] README includes setup instructions and sample data
-- [ ] Codex acceleration, human decisions, and runtime GPT-5.6 use are explicit
+- [x] README includes setup instructions and sample data
+- [x] Codex acceleration, human decisions, and runtime GPT-5.6 use are explicit
 - [ ] `/feedback` Codex Session ID included
 - [ ] Clean clone reaches a working app in under five minutes
