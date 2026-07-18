@@ -44,12 +44,35 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/aether-conceptual-workflow.png" alt="Conceptual diagram showing selected files flowing through GPT-5.6 understanding into a living Aether workspace" width="100%" />
+  <strong>CONCEPTUAL WORKFLOW · CLICK A CHAPTER</strong><br />
+  <sub>A hand-drawn explanation of the idea, not a screenshot of the application. Select any panel to inspect the real files, architecture, or product evidence behind it.</sub>
 </p>
 
-<p align="center">
-  <sub><strong>Conceptual workflow diagram.</strong> This simplified explainer shows how selected files become understood context and then a generated workspace. It is not a screenshot of the application; the real interface is shown above and in the demo video.</sub>
-</p>
+<table>
+  <tr>
+    <td width="33%" align="center" valign="top">
+      <a href="agent_assets/sample-files/">
+        <img src="docs/media/workflow-files-handdrawn.webp" alt="Hand-drawn collection of ordinary travel files" width="100%" />
+      </a>
+      <h3><a href="agent_assets/sample-files/">01 · Start with files</a></h3>
+      <p>Open the exact sample files used in the demo.</p>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <a href="docs/architecture.md#primary-data-flow">
+        <img src="docs/media/workflow-understand-handdrawn.webp" alt="Hand-drawn semantic streams emerging from GPT-5.6 understanding" width="100%" />
+      </a>
+      <h3><a href="docs/architecture.md#primary-data-flow">02 · Understand context</a></h3>
+      <p>Follow the implemented GPT-5.6 data flow.</p>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <a href="#see-aether-in-action">
+        <img src="docs/media/workflow-workspace-handdrawn.webp" alt="Hand-drawn living workspace with route, budget, packing, map, sync, and answer modules" width="100%" />
+      </a>
+      <h3><a href="#see-aether-in-action">03 · Become useful</a></h3>
+      <p>See the real workspace and reproducible product loop.</p>
+    </td>
+  </tr>
+</table>
 
 <table>
   <tr>

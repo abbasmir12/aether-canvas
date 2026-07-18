@@ -431,7 +431,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Added a reproducible five-file demo walkthrough, under-five-minute setup, supported-input list, runtime GPT architecture, Codex collaboration evidence, repository map, and direct links to the build record.
 - Captured a clean hero image from the real Electron application with five analyzed source cards, four semantic hubs, live ribbons, and the generated Tokyo Trip dashboard. The README no longer presents the design mockup as finished-product evidence.
 - Re-art-directed the README from a long technical document into a product landing page: centered product navigation, screenshot-led storytelling, three thesis cards, a five-step interaction rail, paired feature panels, a Codex-versus-human collaboration spread, compact evidence cards, and expandable implementation details.
-- Created a branded workflow illustration using Aether's exact semantic palette to explain how ordinary files flow through GPT-5.6 understanding into a living workspace without requiring judges to parse architecture prose first.
+- Replaced the flat workflow illustration with a hand-drawn editorial triptych. Each stage is independently clickable, taking judges from the visual story to the real sample files, implemented GPT-5.6 data flow, or reproducible product experience.
 - Migrated the canonical submission repository and README clone path from GitLab to the human's authenticated GitHub repository at `abbasmir12/aether-canvas`.
 - Added a dedicated `build-journey/` entry point for the prompt history, milestone recordings, Codex working sessions, and progress screenshots referenced in the demo video.
 
@@ -446,7 +446,7 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 
 - Launched the actual Electron app against a clean five-file persisted workspace and visually inspected the final `1400 × 900` README capture.
 - Verified every Markdown and HTML README link, anchor target, media asset, and documented path against the repository.
-- Validated the custom workflow illustration as well-formed SVG and checked it at desktop and narrow README widths.
+- Visually inspected all three generated workflow panels, converted the 6.7 MB source set into 242 KB of web-optimized assets, and verified every panel's image, destination, and accessible label.
 - Verified all judge-facing repository URLs resolve to the canonical GitHub project and pushed the complete `main` history through the SSH remote.
 - Connected the repository documentary entry point, README, and judging evidence directly to the published Google Drive collection.
 - `npm run lint` and Markdown whitespace/link checks pass.
