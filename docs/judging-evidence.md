@@ -137,7 +137,7 @@ The visual query system makes AI provenance part of the product language rather 
 - _General-purpose evidence:_ The card renders only the sections grounded in discovered dates, costs, tasks, and locations. The same persisted interaction model supports trips, coursework, work projects, household jobs, and other clusters; travel is the visual demo dataset rather than a hard-coded data source.
 - _Evidence that the output remains grounded in and traceable to its source files._
 - **Implemented evidence:** A five-file runtime query calculated a daily food estimate from Budget and Journey, cited the contributing files, and drew separate green and blue source traces into the answer card.
-- **Judge-facing handoff:** The root README now leads with the product thesis, provides an authentic five-file runtime capture, documents the complete demo loop, and separates GPT-5.6 runtime intelligence from Codex build acceleration and human product judgment.
+- **Judge-facing handoff:** The root README now behaves like a visual product landing page rather than framework documentation. It leads with an authentic five-file runtime capture, uses a custom semantic-flow illustration and compact feature narratives, documents the complete demo loop, and separates GPT-5.6 runtime intelligence from Codex build acceleration and human product judgment. Expandable technical sections keep setup and architecture accessible without overwhelming the first read.
 
 ## Submission Checklist
 

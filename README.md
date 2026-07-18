@@ -1,159 +1,178 @@
 <p align="center">
-  <img src="public/aether-logo.png" alt="Aether Canvas" width="82" />
+  <img src="public/aether-logo.png" alt="Aether Canvas" width="84" />
 </p>
 
 <h1 align="center">Aether Canvas</h1>
 
-<p align="center"><strong>Space is the prompt.</strong></p>
-
 <p align="center">
+  <strong>Space is the prompt.</strong><br />
   A generative desktop where grouping ordinary files creates the mini-app you need.
 </p>
 
 <p align="center">
-  <strong>OpenAI Build Week 2026 · Apps for Your Life</strong>
+  <strong>OpenAI Build Week 2026</strong> &nbsp;·&nbsp;
+  Apps for Your Life &nbsp;·&nbsp;
+  Built with Codex + GPT-5.6
 </p>
 
-![Aether Canvas turns five travel files into a living Tokyo Trip workspace](docs/media/aether-canvas-hero.png)
+<p align="center">
+  <a href="#see-aether-in-action"><strong>See the product</strong></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="#run-aether"><strong>Run Aether</strong></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="#how-gpt-56-powers-aether"><strong>GPT-5.6</strong></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="#how-codex-accelerated-the-build"><strong>Build story</strong></a>
+</p>
 
-<!-- Add the public YouTube demo URL here once supplied to the repository. -->
+<p align="center">
+  <img src="docs/media/aether-canvas-hero.png" alt="Aether Canvas turns five travel files into a living Tokyo Trip workspace" width="100%" />
+</p>
 
-## Your files already describe what you are trying to do
+<p align="center">
+  <sub>Five source files, four semantic streams, one GPT-generated interactive workspace—captured from the running Electron app.</sub>
+</p>
 
-A flight ticket, hotel confirmation, spreadsheet, packing list, and city guide are not five unrelated documents. Together, they describe a trip.
+<!-- Add the public YouTube demo URL beside the product navigation once supplied. -->
 
-Traditional file managers can store those files. Aether understands the goal behind them.
+<br />
 
-Drop files onto an infinite canvas and Aether uses GPT-5.6 to:
+<h2 align="center">Five files in. One living workspace out.</h2>
 
-1. read their text, tables, images, dates, costs, places, and tasks;
-2. show each file as a useful smart preview;
-3. organize shared meaning through **DATES**, **COST**, **PLACE**, and **TASKS** hubs;
-4. compile the cluster into an interactive mini-workspace; and
-5. keep that workspace current when the original files change.
+<p align="center">
+  A normal folder sees filenames. Aether sees the trip, project, course, budget, or plan they describe together.
+</p>
 
-Add another related file later and the workspace adapts—connections are recalculated and the generated dashboard is rebuilt around the new context.
+<p align="center">
+  <img src="docs/media/aether-workflow.svg" alt="Files flow through GPT-5.6 semantic understanding into an Aether workspace" width="100%" />
+</p>
 
-## Three ideas make Aether different
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>Space is the prompt</h3>
+      <p>Place files together to express intent—without inventing folders, tags, or a perfect prompt first.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>Files stay alive</h3>
+      <p>Edit the original spreadsheet or note. Aether detects the save, re-analyzes the change, and refreshes the workspace.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>Answers show their work</h3>
+      <p>Ask across the canvas and see animated traces to the dashboard sections and files that support the answer.</p>
+    </td>
+  </tr>
+</table>
 
-### Space is the prompt
+> **The product thesis:** personal files should not become useful only after someone manually reorganizes them. Aether compiles the context already present between them.
 
-Files placed together express intent without requiring folders, tags, or a carefully written prompt. Aether turns that spatial signal into a coherent workspace.
+## See Aether in action
 
-### Files stay alive
+<table>
+  <tr>
+    <td align="center" width="20%"><strong>01</strong><br /><sub>DROP</sub></td>
+    <td align="center" width="20%"><strong>02</strong><br /><sub>UNDERSTAND</sub></td>
+    <td align="center" width="20%"><strong>03</strong><br /><sub>CONNECT</sub></td>
+    <td align="center" width="20%"><strong>04</strong><br /><sub>COMPILE</sub></td>
+    <td align="center" width="20%"><strong>05</strong><br /><sub>STAY LIVE</sub></td>
+  </tr>
+  <tr>
+    <td valign="top">Add PDFs, sheets, documents, notes, or images.</td>
+    <td valign="top">GPT-5.6 extracts dates, costs, places, tasks, and grounded context.</td>
+    <td valign="top">Semantic ribbons reveal why the artifacts belong together.</td>
+    <td valign="top">The cluster becomes an interactive mini-workspace.</td>
+    <td valign="top">External file edits and canvas questions keep it useful.</td>
+  </tr>
+</table>
 
-Aether watches the original source files. Change a value in a spreadsheet or edit a note, save it, and the affected card and dashboard update through a guarded GPT-5.6 re-analysis flow.
+### The 90-second product loop
 
-### Answers show their work
+The repository includes a deterministic five-file Tokyo dataset in [`agent_assets/sample-files`](agent_assets/sample-files).
 
-**Ask the Canvas** answers questions across the entire workspace. Each answer becomes a movable canvas card with animated traces back to the exact dashboard sections and source files that supported it. Low-confidence answers deliberately avoid drawing misleading provenance.
+1. Create an empty space and drop in `flight-ticket.txt`, `hotel-booking.txt`, `budget.csv`, `packing-list.txt`, and `city-guide.txt`.
+2. Watch the file cards, semantic hubs, ribbons, and Tokyo Trip dashboard assemble.
+3. Open Journey, Budget, Packing, and Places—the generated card behaves like a mini-app, not a static summary.
+4. Change a value in `budget.csv` externally and save it. The source card and dashboard update without re-importing.
+5. Press `Ctrl/⌘ J` and ask **“How much can I spend on food each day?”**
+6. Follow the answer’s animated evidence trail back to the supporting files.
 
-## What you can do
+> **Demo line:** “Your files aren’t imported into Aether and forgotten. They stay alive.”
 
-| Experience | What it provides |
+## More than a beautiful graph
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Adaptive mini-workspaces</h3>
+      <p>GPT-5.6 plans the dashboard from the actual cluster. Journey, Budget, Packing, Map, Timeline, Progress, Key Points, Priorities, and other modules appear only when grounded in the files.</p>
+      <p><strong>Travel is the demo—not the architecture.</strong></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Interactive outcomes</h3>
+      <p>Edit actual expenses, check packing items, inspect timelines, navigate maps, export data, reveal contributing sources, and preserve those changes with the workspace.</p>
+      <p><strong>The output is usable, not merely readable.</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Living source files</h3>
+      <p>Chokidar watches added files. Stable-write detection, SHA-256 comparison, batching, per-file cooldowns, and request guards prevent partial reads and API storms.</p>
+      <p><strong>Aether reacts only to meaningful changes.</strong></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Visual explainable AI</h3>
+      <p>Answers render as draggable canvas cards. Their colored traces identify the exact generated modules and source files used; low-confidence answers draw no misleading provenance.</p>
+      <p><strong>Do not just trust the answer—see its path.</strong></p>
+    </td>
+  </tr>
+</table>
+
+### Built for more than Tokyo
+
+| Put these files together | Aether can compile |
 | --- | --- |
-| Native file drop | Securely add PDFs, spreadsheets, documents, notes, and images from the OS |
-| Smart file cards | See routes, costs, checklists, places, grounded takeaways, and source actions at a glance |
-| Semantic ribbons | Follow dates, costs, places, and tasks from raw artifacts into generated outcomes |
-| Adaptive dashboards | Get GPT-planned Journey, Budget, Packing, Map, Timeline, Progress, Key Points, and other relevant modules |
-| Interactive mini-apps | Edit expenses, check packing items, inspect timelines, explore maps, export data, and trace sources |
-| Live file sync | Reflect external edits with content hashing, write-stability guards, batching, and animated updates |
-| Visual workspace Q&A | Ask cross-file questions and see a visible evidence trail for every grounded answer |
-| Saved spaces | Persist multiple canvases, recent files, viewport state, analysis, relationships, and user edits locally |
-| Pinned folders | Keep selected folders close without turning Aether into another full-disk file browser |
-| Runtime controls | Choose GPT-5.6 model/reasoning settings and rich or lightweight connector rendering |
+| Lecture notes + syllabus + assignment + textbook | Topics, schedule, concepts, progress, resources |
+| Requirements + meeting notes + timeline + budget | Overview, milestones, tasks, team, budget |
+| Quotes + receipts + floor plan + inspiration | Contractors, spending, materials, timeline, references |
+| Recipes + pantry list + dietary notes | Ingredients, cooking timeline, shopping list |
+| Lab results + prescriptions + appointment notes | Timeline, medications, appointments, key results |
 
-Travel is the demo, not the architecture. The same dashboard grammar can compile study material, project documents, renovation files, medical records, recipes, or personal finances into goal-specific workspaces.
+## How GPT-5.6 powers Aether
 
-## The demo path
+GPT-5.6 is not a chat box beside the product. It is the **workspace compiler**.
 
-The repository includes five small files in [`agent_assets/sample-files`](agent_assets/sample-files):
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>GPT-5.6 decides</h3>
+      <ul>
+        <li>what each selected file means;</li>
+        <li>which entities and relationships matter;</li>
+        <li>what kind of workspace the cluster represents;</li>
+        <li>which dashboard modules belong in it;</li>
+        <li>how changed source data affects the result; and</li>
+        <li>which evidence supports a canvas answer.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Aether guarantees</h3>
+      <ul>
+        <li>secure, user-authorized file access;</li>
+        <li>schema validation and bounded inputs;</li>
+        <li>a tested local visual component grammar;</li>
+        <li>interaction, persistence, and animation;</li>
+        <li>provenance ID validation; and</li>
+        <li>predictable sync and rate limits.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-- `flight-ticket.txt`
-- `hotel-booking.txt`
-- `budget.csv`
-- `packing-list.txt`
-- `city-guide.txt`
+The model never sends executable interface code to the renderer. It returns a strict plan built from Aether’s local grammar—routes, rings, progress, maps, timelines, briefs, comparisons, priorities, and other tested primitives. GPT-5.6 chooses the information architecture; Aether owns every rendered pixel and interaction.
 
-Try this:
-
-1. Create an empty space.
-2. Drop all five files onto the canvas.
-3. Watch GPT-5.6 analyze them and Aether assemble the Tokyo Trip workspace.
-4. Open Journey, Budget, Packing, and Places.
-5. Edit `budget.csv` in an external editor and save it; Aether should update the living workspace.
-6. Press `Ctrl/⌘ J` and ask: **“How much can I spend on food each day?”**
-7. Follow the animated answer traces back to their sources.
-
-This is the core product loop shown in the public demo video.
-
-## Run it in under five minutes
-
-### Prerequisites
-
-- Node.js `>=22.12.0` (`.nvmrc` targets Node 22)
-- npm `>=10`
-- An OpenAI API key
-- A native build toolchain if npm cannot use prebuilt binaries
-
-Clone and install:
-
-```bash
-git clone https://gitlab.com/abbasmir12/aether-canva.git
-cd aether-canva
-nvm use
-npm install
-```
-
-Create the local environment file:
-
-```bash
-cp .env.example .env
-```
-
-On Windows PowerShell, use:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Then configure:
-
-```env
-OPENAI_API_KEY=sk-your-key-here
-AI_MODEL=gpt-5.6-luna
-AI_REASONING_EFFORT=low
-```
-
-Start Aether:
-
-```bash
-npm run dev
-```
-
-If native installation falls back to compilation on Debian/Kali:
-
-```bash
-sudo apt update
-sudo apt install build-essential python3
-```
-
-The API key can also be entered from **Settings → Intelligence**. A key saved from the UI is protected with Electron `safeStorage`; if OS-backed encryption is unavailable, Aether refuses to persist it as plaintext.
-
-### Commands
-
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start Vite and Electron with live rebuilding |
-| `npm run lint` | Strictly type-check renderer, shared, main, preload, and configuration code |
-| `npm run build` | Type-check, build, rebuild native modules, and package the Linux AppImage |
-| `npm start` | Run the previously built Electron bundle |
-
-Development and product testing have been performed on Linux/EC2 and Windows 11. The current electron-builder target committed in this repository is Linux AppImage; judges on Windows should use `npm run dev`.
-
-## How GPT-5.6 powers the product
-
-GPT-5.6 is not a chat box added beside the app. It is the workspace compiler.
+<details>
+  <summary><strong>Open the complete GPT-5.6 runtime flow</strong></summary>
+  <br />
 
 ```text
 User-approved file
@@ -170,71 +189,174 @@ Structured analysis ──── entities, preview, summary, source intelligence
         ├── relationship discovery ──► semantic hubs and ribbons
         │
         └── dashboard planning ──────► bounded local UI composition
+
+External save ──► stable write ──► SHA-256 diff ──► re-analysis
+Canvas question ──► validated context ──► answer + provenance
 ```
 
-At runtime, GPT-5.6:
+Files are sent directly through Responses `input_file` or `input_image`. Structured schemas drive previews, relationship discovery, generated modules, live refreshes, and grounded Q&A.
 
-- reads supported files directly through Responses `input_file` or `input_image`;
-- extracts structured entities and rich preview data through strict schemas;
-- discovers cross-file relationships from analyzed metadata;
-- plans the dashboard’s information architecture and visual composition;
-- re-analyzes source files after meaningful external changes; and
-- answers workspace questions with validated file and dashboard provenance.
+The default is `gpt-5.6-luna` with low reasoning for a responsive drop loop. Settings expose Terra and Sol plus the supported reasoning levels without requiring a rebuild.
 
-The model never sends executable UI code to the renderer. It returns a schema-constrained plan assembled from Aether’s local component grammar—routes, rings, progress, maps, timelines, briefs, comparisons, priorities, and other tested primitives. GPT-5.6 decides what the workspace needs; Aether retains control of rendering, interaction, persistence, and safety.
+</details>
 
-The default is `gpt-5.6-luna` with low reasoning for a responsive file-drop loop. Settings also expose Terra and Sol for stronger quality/cost trade-offs and the supported reasoning levels without requiring a rebuild.
+## Run Aether
 
-## How Codex accelerated the build
+### Four commands to the canvas
 
-The first Codex prompt established the product idea, design reference, technical constraints, hackathon requirements, documentation system, and the rule that every major milestone must separate **Codex contributions**, **human decisions**, and **verification**.
+```bash
+git clone https://gitlab.com/abbasmir12/aether-canva.git
+cd aether-canva
+nvm use
+npm install
+```
 
-Codex then accelerated the non-trivial engineering work:
+```bash
+cp .env.example .env
+```
 
-- Electron/Vite/React Flow scaffolding and secure IPC boundaries;
-- native file authorization and GPT-5.6 Responses integration;
-- schema-constrained analysis and dashboard compilation;
-- custom semantic ribbon rendering and drag-performance work;
-- local workspace persistence and recovery;
-- Chokidar live sync, SHA-256 diffing, batching, cooldowns, and Windows save handling;
-- visual query answer nodes and animated provenance edges;
-- native Electron smoke captures, regression checks, and Windows-specific debugging.
+On Windows PowerShell:
 
-The human remained the product owner and made the defining decisions. Examples include replacing local parsing libraries with GPT-5.6 native file input, replacing graph spaghetti with semantic mediator hubs, making source files live rather than imported copies, and turning Q&A provenance into a spatial visual interaction.
+```powershell
+Copy-Item .env.example .env
+```
 
-The evidence is intentionally inspectable:
+Add the API configuration:
 
-- [`docs/codex-build-log.md`](docs/codex-build-log.md) records what Codex built, what the human directed, and how each milestone was verified.
-- [`docs/decisions.md`](docs/decisions.md) preserves architectural and product choices—including superseded approaches and the reasoning behind changes.
-- [`docs/judging-evidence.md`](docs/judging-evidence.md) maps concrete implementation evidence to the hackathon’s four judging criteria.
-- [`docs/architecture.md`](docs/architecture.md) documents the Electron trust boundary, GPT data flow, local persistence, and renderer architecture.
-- [`docs/product-spec.md`](docs/product-spec.md) captures the problem, user, product thesis, and hackathon scope.
+```env
+OPENAI_API_KEY=sk-your-key-here
+AI_MODEL=gpt-5.6-luna
+AI_REASONING_EFFORT=low
+```
 
-This history makes it possible to see not just the finished code, but where Codex saved time, where human judgment changed direction, and how the implementation was tested.
+Then launch:
 
-## Local-first, with an explicit AI boundary
+```bash
+npm run dev
+```
 
-Aether does not move, rename, or modify source files. Workspace layouts, cached analysis, relationships, dashboard state, pinned folders, and preferences are persisted as atomic JSON in Electron’s OS-standard application-data directory.
+> **Expected time:** under five minutes on a machine with Node 22 and a working native dependency toolchain.
 
-For clarity: **local-first does not mean offline-only**. Files explicitly selected through drop or a native picker are sent to the OpenAI Responses API for analysis. Relationship discovery uses the resulting metadata. Local path access is authorized at the preload/main-process boundary, Node integration is disabled in the renderer, and the OpenAI credential never enters renderer code.
+<details>
+  <summary><strong>Prerequisites, commands, and platform notes</strong></summary>
+  <br />
 
-Live sync watches only files already added to a workspace. Chokidar waits for writes to stabilize; SHA-256 comparison skips no-op saves; batching, per-file cooldowns, and a global request guard prevent accidental API storms.
+**Prerequisites**
 
-## Supported file input
+- Node.js `>=22.12.0` (`.nvmrc` targets Node 22)
+- npm `>=10`
+- An OpenAI API key
+- A native build toolchain if npm cannot use prebuilt binaries
 
-Direct canvas analysis supports:
+If native installation falls back to compilation on Debian/Kali:
 
-- PDF
-- Excel (`.xlsx`, `.xls`)
-- CSV and TSV
-- Word (`.docx`)
-- PowerPoint (`.pptx`)
-- plain text and Markdown
-- PNG, JPEG, GIF, and WebP
+```bash
+sudo apt update
+sudo apt install build-essential python3
+```
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start Vite and Electron with live rebuilding |
+| `npm run lint` | Strictly type-check renderer, shared, main, preload, and configuration code |
+| `npm run build` | Type-check, build, rebuild native modules, and package the Linux AppImage |
+| `npm start` | Run the previously built Electron bundle |
+
+Development and product testing have been performed on Linux/EC2 and Windows 11. The committed electron-builder target is Linux AppImage; judges on Windows should use `npm run dev`.
+
+The API key can also be entered in **Settings → Intelligence**. A key saved through the UI is protected with Electron `safeStorage`; if OS-backed encryption is unavailable, Aether refuses to persist it as plaintext.
+
+</details>
+
+<details>
+  <summary><strong>Supported file input</strong></summary>
+  <br />
+
+| Documents | Data | Images |
+| --- | --- | --- |
+| PDF | Excel (`.xlsx`, `.xls`) | PNG |
+| Word (`.docx`) | CSV and TSV | JPEG |
+| PowerPoint (`.pptx`) | Plain text and Markdown | GIF and WebP |
 
 Files are limited to 50 MB for direct analysis. Sharp generates local image thumbnails; GPT-5.6 handles semantic understanding.
 
-## Architecture at a glance
+</details>
+
+## How Codex accelerated the build
+
+The first prompt to Codex did more than request code. It established the product thesis, visual north star, technical constraints, hackathon criteria, documentation system, and a rule: every major milestone must separate **Codex contributions**, **human decisions**, and **verification**.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Codex accelerated</h3>
+      <ul>
+        <li>Electron, Vite, and React Flow scaffolding;</li>
+        <li>secure IPC and native path authorization;</li>
+        <li>GPT-5.6 Responses and structured schemas;</li>
+        <li>dashboard compilation and custom ribbons;</li>
+        <li>atomic workspace persistence and recovery;</li>
+        <li>live sync, batching, and Windows save handling;</li>
+        <li>visual answer nodes and provenance edges; and</li>
+        <li>native smoke captures and regression debugging.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>The human directed</h3>
+      <ul>
+        <li>the “Space is the prompt” product thesis;</li>
+        <li>native GPT file understanding over parser libraries;</li>
+        <li>semantic hubs instead of graph spaghetti;</li>
+        <li>living files instead of static imports;</li>
+        <li>visual provenance instead of ordinary chat citations;</li>
+        <li>the interaction and design quality bar;</li>
+        <li>feature priorities and scope; and</li>
+        <li>acceptance testing on the real Windows workflow.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+> Codex made the week move faster. Human judgment determined what was worth building and repeatedly changed the implementation when the product did not yet express the idea clearly enough.
+
+### The build is inspectable
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <h3><a href="docs/codex-build-log.md">Build log</a></h3>
+      <p>What Codex contributed, what the human decided, and how each milestone was verified.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3><a href="docs/decisions.md">Decision record</a></h3>
+      <p>Architecture and product choices, including superseded approaches and why direction changed.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3><a href="docs/judging-evidence.md">Judging evidence</a></h3>
+      <p>Concrete proof mapped to implementation, design, impact, and quality of the idea.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top" colspan="1">
+      <h3><a href="docs/architecture.md">Architecture</a></h3>
+      <p>Electron trust boundaries, data flow, local persistence, and renderer structure.</p>
+    </td>
+    <td width="50%" valign="top" colspan="2">
+      <h3><a href="docs/product-spec.md">Product specification</a></h3>
+      <p>The user problem, core thesis, target audience, features, and hackathon scope.</p>
+    </td>
+  </tr>
+</table>
+
+## Local-first, with an explicit AI boundary
+
+> Aether does not move, rename, or modify source files. Workspace layouts, cached analysis, relationships, dashboard state, pinned folders, and preferences are stored locally as atomic JSON in Electron’s OS-standard application-data directory.
+
+**Local-first does not mean offline-only.** Files explicitly selected through drop or a native picker are sent to the OpenAI Responses API for analysis. Relationship discovery uses the resulting metadata. Local path access is authorized at the preload/main-process boundary, Node integration is disabled in the renderer, and the OpenAI credential never enters renderer code.
+
+<details>
+  <summary><strong>Architecture and repository map</strong></summary>
+  <br />
 
 ```text
 ┌──────────────── Electron main process ────────────────┐
@@ -251,19 +373,7 @@ Files are limited to 50 MB for direct analysis. Sharp generates local image thum
 │ React Flow canvas · local UI grammar · Framer Motion │
 │ workspaces · interactive dashboard · visual answers │
 └───────────────────────────────────────────────────────┘
-
-External save → Chokidar → stable write → SHA-256 diff
-              → GPT-5.6 re-analysis → dashboard refresh
-
-Canvas question → validated workspace context → GPT-5.6 answer
-                → provenance validation → spatial answer traces
 ```
-
-## Technology
-
-Electron, TypeScript, React 19, Vite, React Flow, Tailwind CSS, Framer Motion, OpenAI Responses API, Chokidar, Leaflet, Sharp, and electron-builder.
-
-## Repository map
 
 ```text
 src/
@@ -284,16 +394,25 @@ agent_assets/
 docs/                     Build history, decisions, architecture, evidence
 ```
 
-## Hackathon submission
+**Technology:** Electron, TypeScript, React 19, Vite, React Flow, Tailwind CSS, Framer Motion, OpenAI Responses API, Chokidar, Leaflet, Sharp, and electron-builder.
 
-- **Category:** Apps for Your Life
-- **Repository:** [gitlab.com/abbasmir12/aether-canva](https://gitlab.com/abbasmir12/aether-canva)
-- **Built with:** Codex using GPT-5.6
-- **Runtime intelligence:** OpenAI GPT-5.6 Responses API
+</details>
 
----
+## Submission
+
+<table>
+  <tr>
+    <td><strong>Track</strong><br />Apps for Your Life</td>
+    <td><strong>Built with</strong><br />Codex using GPT-5.6</td>
+    <td><strong>Runtime brain</strong><br />GPT-5.6 Responses API</td>
+    <td><strong>Repository</strong><br /><a href="https://gitlab.com/abbasmir12/aether-canva">GitLab</a></td>
+  </tr>
+</table>
+
+<br />
 
 <p align="center">
+  <img src="public/aether-logo.png" alt="" width="38" /><br /><br />
   <strong>Aether Canvas</strong><br />
-  Space is the prompt.
+  <sub>Space is the prompt.</sub>
 </p>

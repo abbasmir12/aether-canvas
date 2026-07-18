@@ -616,9 +616,9 @@ Aether deletes both host-only variables at Vite configuration startup. Developme
 
 **Decision owner:** Human direction, Codex implementation
 
-The submission README leads with the user problem and Aether's three differentiators—spatial intent, living files, and visual provenance—before introducing implementation details. It uses a capture from the running Electron product rather than presenting the north-star mockup as shipped evidence.
+The submission README is treated as a visual product surface rather than a linear technical document. It leads with the user problem and Aether's three differentiators—spatial intent, living files, and visual provenance—then uses an authentic runtime capture, a branded semantic-flow illustration, compact product cards, and progressive disclosure before introducing implementation details. It never presents the north-star mockup as shipped evidence.
 
-Setup, sample data, privacy boundaries, platform status, GPT-5.6 runtime responsibilities, Codex acceleration, human product decisions, and verification records are all directly discoverable from one page. This makes the repository useful to both a product judge and a technical evaluator without falling back to a generic technology-first template.
+Setup, sample data, privacy boundaries, platform status, GPT-5.6 runtime responsibilities, Codex acceleration, human product decisions, and verification records are all directly discoverable from one page. Dense reference material stays available inside expandable sections, keeping the first read closer to a product landing page while still serving technical evaluators.
 
 ## Decision Template
 

@@ -430,6 +430,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 - Corrected stale technical claims so the handoff now describes the implemented atomic JSON workspace store, active GPT-5.6 runtime, explicit OpenAI data boundary, Windows development path, and current Linux packaging target accurately.
 - Added a reproducible five-file demo walkthrough, under-five-minute setup, supported-input list, runtime GPT architecture, Codex collaboration evidence, repository map, and direct links to the build record.
 - Captured a clean hero image from the real Electron application with five analyzed source cards, four semantic hubs, live ribbons, and the generated Tokyo Trip dashboard. The README no longer presents the design mockup as finished-product evidence.
+- Re-art-directed the README from a long technical document into a product landing page: centered product navigation, screenshot-led storytelling, three thesis cards, a five-step interaction rail, paired feature panels, a Codex-versus-human collaboration spread, compact evidence cards, and expandable implementation details.
+- Created a branded workflow illustration using Aether's exact semantic palette to explain how ordinary files flow through GPT-5.6 understanding into a living workspace without requiring judges to parse architecture prose first.
 
 ### Human decisions
 
@@ -439,7 +441,8 @@ This log distinguishes Codex acceleration, human product judgment, and verified 
 ### Verification
 
 - Launched the actual Electron app against a clean five-file persisted workspace and visually inspected the final `1400 × 900` README capture.
-- Verified every local README link and documented path against the repository.
+- Verified every Markdown and HTML README link, anchor target, media asset, and documented path against the repository.
+- Validated the custom workflow illustration as well-formed SVG and checked it at desktop and narrow README widths.
 - `npm run lint` and Markdown whitespace/link checks pass.
 
 ## Day 6 — July 19, 2026

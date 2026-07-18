@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-labelledby="title description">
+  <title id="title">Aether Canvas workspace compilation flow</title>
+  <desc id="description">Five ordinary files flow through GPT-5.6 semantic understanding into a living interactive workspace.</desc>
+  <defs>
+    <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#D9D7D3" opacity=".46"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="7" stdDeviation="10" flood-color="#24242A" flood-opacity=".10"/>
+    </filter>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FBFAF8"/>
+    </linearGradient>
+    <linearGradient id="aether" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#27272B"/>
+      <stop offset="1" stop-color="#55555C"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="330" rx="22" fill="#F8F8FA"/>
+  <rect width="1200" height="330" rx="22" fill="url(#dots)"/>
+
+  <text x="42" y="43" fill="#929298" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.8">ORDINARY FILES</text>
+  <text x="487" y="43" fill="#929298" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.8">GPT-5.6 UNDERSTANDING</text>
+  <text x="944" y="43" fill="#929298" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.8">LIVING WORKSPACE</text>
+
+  <g filter="url(#shadow)" font-family="Inter,Segoe UI,Arial,sans-serif">
+    <g transform="translate(42 65)">
+      <rect width="230" height="42" rx="10" fill="url(#surface)" stroke="#E2E1E4"/>
+      <circle cx="23" cy="21" r="10" fill="#4A90D9"/>
+      <path d="M19 16h6l3 3v7h-9zM25 16v4h3" fill="none" stroke="#FFF" stroke-linejoin="round" stroke-width="1.4"/>
+      <text x="43" y="25" fill="#323238" font-size="13" font-weight="600">flight-ticket.txt</text>
+    </g>
+    <g transform="translate(42 113)">
+      <rect width="230" height="42" rx="10" fill="url(#surface)" stroke="#E2E1E4"/>
+      <circle cx="23" cy="21" r="10" fill="#4A90D9"/>
+      <path d="M18 18h10v7H18zM20 16h6" fill="none" stroke="#FFF" stroke-linecap="round" stroke-width="1.4"/>
+      <text x="43" y="25" fill="#323238" font-size="13" font-weight="600">hotel-booking.txt</text>
+    </g>
+    <g transform="translate(42 161)">
+      <rect width="230" height="42" rx="10" fill="url(#surface)" stroke="#E2E1E4"/>
+      <circle cx="23" cy="21" r="10" fill="#34A853"/>
+      <path d="M18 16h10v10H18zM18 20h10M22 16v10" fill="none" stroke="#FFF" stroke-width="1.2"/>
+      <text x="43" y="25" fill="#323238" font-size="13" font-weight="600">budget.csv</text>
+    </g>
+    <g transform="translate(42 209)">
+      <rect width="230" height="42" rx="10" fill="url(#surface)" stroke="#E2E1E4"/>
+      <circle cx="23" cy="21" r="10" fill="#9B72CF"/>
+      <path d="M18 17h3v3h-3zM23 18h5M18 23h3v3h-3zM23 24h5" fill="none" stroke="#FFF" stroke-linecap="round" stroke-width="1.3"/>
+      <text x="43" y="25" fill="#323238" font-size="13" font-weight="600">packing-list.txt</text>
+    </g>
+    <g transform="translate(42 257)">
+      <rect width="230" height="42" rx="10" fill="url(#surface)" stroke="#E2E1E4"/>
+      <circle cx="23" cy="21" r="10" fill="#EA4335"/>
+      <path d="M18 17l5-2 5 2v9l-5 2-5-2zM23 15v13" fill="none" stroke="#FFF" stroke-linejoin="round" stroke-width="1.2"/>
+      <text x="43" y="25" fill="#323238" font-size="13" font-weight="600">city-guide.txt</text>
+    </g>
+  </g>
+
+  <g fill="none" stroke-linecap="round">
+    <path d="M272 86 C350 86 371 98 449 111" stroke="#4A90D9" stroke-opacity=".16" stroke-width="18"/>
+    <path d="M272 134 C345 134 376 121 449 111" stroke="#4A90D9" stroke-opacity=".16" stroke-width="18"/>
+    <path d="M272 182 C350 182 374 165 449 165" stroke="#34A853" stroke-opacity=".18" stroke-width="18"/>
+    <path d="M272 230 C350 230 376 219 449 219" stroke="#9B72CF" stroke-opacity=".18" stroke-width="18"/>
+    <path d="M272 278 C350 278 373 273 449 273" stroke="#EA4335" stroke-opacity=".18" stroke-width="18"/>
+    <path d="M272 86 C350 86 371 98 449 111" stroke="#FFF" stroke-opacity=".72" stroke-width="2"/>
+    <path d="M272 134 C345 134 376 121 449 111" stroke="#FFF" stroke-opacity=".72" stroke-width="2"/>
+    <path d="M272 182 C350 182 374 165 449 165" stroke="#FFF" stroke-opacity=".72" stroke-width="2"/>
+    <path d="M272 230 C350 230 376 219 449 219" stroke="#FFF" stroke-opacity=".72" stroke-width="2"/>
+    <path d="M272 278 C350 278 373 273 449 273" stroke="#FFF" stroke-opacity=".72" stroke-width="2"/>
+  </g>
+
+  <g font-family="Inter,Segoe UI,Arial,sans-serif" filter="url(#shadow)">
+    <g transform="translate(449 89)">
+      <rect width="118" height="44" rx="22" fill="#4A90D9"/>
+      <text x="59" y="27" fill="#FFF" font-size="12" font-weight="700" text-anchor="middle">DATES</text>
+    </g>
+    <g transform="translate(449 143)">
+      <rect width="118" height="44" rx="22" fill="#34A853"/>
+      <text x="59" y="27" fill="#FFF" font-size="12" font-weight="700" text-anchor="middle">COST</text>
+    </g>
+    <g transform="translate(449 197)">
+      <rect width="118" height="44" rx="22" fill="#9B72CF"/>
+      <text x="59" y="27" fill="#FFF" font-size="12" font-weight="700" text-anchor="middle">TASKS</text>
+    </g>
+    <g transform="translate(449 251)">
+      <rect width="118" height="44" rx="22" fill="#EA4335"/>
+      <text x="59" y="27" fill="#FFF" font-size="12" font-weight="700" text-anchor="middle">PLACE</text>
+    </g>
+  </g>
+
+  <g fill="none" stroke-linecap="round">
+    <path d="M567 111 C674 111 702 101 802 105" stroke="#4A90D9" stroke-opacity=".20" stroke-width="22"/>
+    <path d="M567 165 C674 165 702 159 802 163" stroke="#34A853" stroke-opacity=".20" stroke-width="22"/>
+    <path d="M567 219 C674 219 702 215 802 221" stroke="#9B72CF" stroke-opacity=".20" stroke-width="22"/>
+    <path d="M567 273 C674 273 702 269 802 275" stroke="#EA4335" stroke-opacity=".20" stroke-width="22"/>
+    <path d="M567 111 C674 111 702 101 802 105" stroke="#FFF" stroke-opacity=".80" stroke-width="2.3"/>
+    <path d="M567 165 C674 165 702 159 802 163" stroke="#FFF" stroke-opacity=".80" stroke-width="2.3"/>
+    <path d="M567 219 C674 219 702 215 802 221" stroke="#FFF" stroke-opacity=".80" stroke-width="2.3"/>
+    <path d="M567 273 C674 273 702 269 802 275" stroke="#FFF" stroke-opacity=".80" stroke-width="2.3"/>
+  </g>
+
+  <g transform="translate(802 61)" filter="url(#shadow)" font-family="Inter,Segoe UI,Arial,sans-serif">
+    <rect width="356" height="238" rx="18" fill="url(#surface)" stroke="#D9D8DC"/>
+    <rect x="18" y="17" width="42" height="42" rx="12" fill="url(#aether)"/>
+    <path d="M29 47l10-20 10 20M34 40h10" fill="none" stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+    <text x="74" y="37" fill="#28282D" font-size="20" font-weight="700">Tokyo Trip</text>
+    <text x="74" y="53" fill="#99999F" font-size="10">JUL 18–25 · GENERATED FROM 5 FILES</text>
+
+    <g transform="translate(18 74)">
+      <rect width="320" height="36" rx="10" fill="#FBFCFE" stroke="#DFE8F2"/>
+      <circle cx="19" cy="18" r="9" fill="#4A90D9"/>
+      <text x="37" y="22" fill="#38383E" font-size="12" font-weight="600">Journey</text>
+      <text x="220" y="22" fill="#55555C" font-size="11" font-weight="600">JFK  →  HND</text>
+    </g>
+    <g transform="translate(18 117)">
+      <rect width="320" height="36" rx="10" fill="#FBFDFB" stroke="#DDEADF"/>
+      <circle cx="19" cy="18" r="9" fill="#34A853"/>
+      <text x="37" y="22" fill="#38383E" font-size="12" font-weight="600">Budget</text>
+      <rect x="219" y="14" width="77" height="7" rx="3.5" fill="#E5E7E5"/>
+      <rect x="219" y="14" width="55" height="7" rx="3.5" fill="#34A853"/>
+    </g>
+    <g transform="translate(18 160)">
+      <rect width="320" height="36" rx="10" fill="#FCFBFE" stroke="#E7DFF0"/>
+      <circle cx="19" cy="18" r="9" fill="#9B72CF"/>
+      <text x="37" y="22" fill="#38383E" font-size="12" font-weight="600">Packing</text>
+      <text x="250" y="22" fill="#6C4D96" font-size="11" font-weight="700">8 / 14</text>
+    </g>
+    <g transform="translate(18 203)">
+      <rect width="320" height="21" rx="8" fill="#FEFBFA" stroke="#F0DEDB"/>
+      <circle cx="17" cy="10.5" r="6" fill="#EA4335"/>
+      <text x="31" y="14" fill="#55555C" font-size="10" font-weight="600">Places · Shinjuku · Shibuya · Asakusa</text>
+    </g>
+  </g>
+</svg>
