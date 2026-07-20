@@ -448,6 +448,11 @@ build-journey/            Recorded prompts, milestones, and build documentary
 
 </details>
 
+## License
+
+Aether Canvas is open-source software available under the
+[MIT License](LICENSE).
+
 ## Submission
 
 <table>

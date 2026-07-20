@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "author": "Aether Canvas Team",
+  "license": "MIT",
   "description": "A generative desktop where spatially grouping ordinary files creates the mini-app you need.",
   "repository": {
     "type": "git",
