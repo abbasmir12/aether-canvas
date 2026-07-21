@@ -636,6 +636,25 @@ clear installation choices, Start menu and desktop shortcuts, and a normal
 Windows uninstall path. Electron Builder derives the complete Windows icon set
 from the canonical 512×512 Aether PNG.
 
+## 063. Representative multimodal samples instead of text-only fixtures
+
+**Status:** Accepted
+
+**Date:** July 21, 2026
+
+**Decision owner:** Human direction, Codex implementation
+
+The primary Tokyo demonstration preserves its known-good dates, costs,
+locations, tasks, and identifiers while expressing them through the formats a
+real personal project would contain: a flight PDF, hotel DOCX, budget XLSX,
+packing TXT, and city-guide PDF. This makes GPT-5.6's native document and
+spreadsheet understanding directly testable instead of asking judges to infer
+multimodal capability from text-only fixtures.
+
+Keeping the semantic facts unchanged preserves the established relationship,
+dashboard, and live-sync expectations. Each replacement is a genuine file
+format with structured content and presentation—not a renamed extension.
+
 ## Decision Template
 
 ## NNN. Decision title

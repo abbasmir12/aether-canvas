@@ -501,4 +501,26 @@ _Record commands run, tests passed, and observable behavior._
 
 ## Deadline — July 21, 2026, 5:00 PM PT
 
-_Record only final submission fixes, evidence capture, `/feedback` Session ID, and submission confirmation._
+### Codex contributions
+
+- Rebuilt the known-good Tokyo sample set as genuine mixed-format artifacts:
+  a one-page flight confirmation PDF, styled hotel-booking DOCX, formatted
+  budget XLSX, plain-text packing checklist, and two-page city-guide PDF.
+- Updated the judge-facing product loop to reference the new files without
+  changing any of the established trip facts or expected dashboard totals.
+
+### Human decisions
+
+- Replaced the text-heavy fixtures with representative real-world formats so
+  judges can directly see GPT-5.6 process documents and spreadsheets while
+  following the same deterministic Tokyo story.
+
+### Verification
+
+- Both PDFs validate as PDF 1.4 with the intended one-page and two-page
+  structures. The DOCX and XLSX pass ZIP package integrity checks; the workbook
+  was reopened with OpenPyXL and contains all six budget categories plus the
+  original `$2,200` estimate and `$1,460` actual total. Strict TypeScript checks
+  continue to pass.
+
+_Add the `/feedback` Session ID and final submission confirmation._

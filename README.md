@@ -116,10 +116,10 @@
 
 The repository includes a deterministic five-file Tokyo dataset in [`agent_assets/sample-files`](agent_assets/sample-files).
 
-1. Create an empty space and drop in `flight-ticket.txt`, `hotel-booking.txt`, `budget.csv`, `packing-list.txt`, and `city-guide.txt`.
+1. Create an empty space and drop in `flight-ticket.pdf`, `hotel-booking.docx`, `budget.xlsx`, `packing-list.txt`, and `city-guide.pdf`.
 2. Watch the file cards, semantic hubs, ribbons, and Tokyo Trip dashboard assemble.
 3. Open Journey, Budget, Packing, and Places—the generated card behaves like a mini-app, not a static summary.
-4. Change a value in `budget.csv` externally and save it. The source card and dashboard update without re-importing.
+4. Change a value in `budget.xlsx` externally and save it. The source card and dashboard update without re-importing.
 5. Press `Ctrl/⌘ J` and ask **“How much can I spend on food each day?”**
 6. Follow the answer’s animated evidence trail back to the supporting files.
 

@@ -31,6 +31,10 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 ### GPT-5.6 runtime integration
 
 - GPT-5.6 is the product's file-understanding layer: files are sent directly through Responses `input_file` or `input_image`; PDFs include actual page images, spreadsheets use native augmentation, and images use vision. This is not a wrapper around local text extraction.
+- The reproducible Tokyo dataset now exercises genuine PDF, DOCX, XLSX, and
+  TXT inputs while preserving the same grounded trip facts. Judges can verify
+  native multimodal file handling from the repository without sourcing their
+  own test documents.
 - Runtime selection is explicit and testable: Aether defaults to latency-efficient `gpt-5.6-luna` with low reasoning for the live file-drop loop, while environment configuration permits controlled Luna/Terra/Sol and reasoning-effort comparisons without rebuilding the desktop app.
 - _Show structured file understanding with input, JSON Schema, runtime-validated output, and visible smart preview result._
 - _Show relationship or cluster reasoning that cannot be reduced to file extensions._
