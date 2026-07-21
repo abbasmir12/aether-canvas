@@ -16,6 +16,10 @@
 </p>
 
 <p align="center">
+  <a href="https://youtu.be/iPBvw5U4J8A"><strong>Watch the demo</strong></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="https://devpost.com/software/aether-canvas"><strong>Devpost</strong></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
   <a href="#see-aether-in-action"><strong>See the product</strong></a>
   &nbsp;&nbsp;·&nbsp;&nbsp;
   <a href="#run-aether"><strong>Run Aether</strong></a>
@@ -32,8 +36,6 @@
 <p align="center">
   <sub>Five source files, four semantic streams, one GPT-generated interactive workspace—captured from the running Electron app.</sub>
 </p>
-
-<!-- Add the public YouTube demo URL beside the product navigation once supplied. -->
 
 <br />
 

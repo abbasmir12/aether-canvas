@@ -7,9 +7,10 @@ Update this document continuously with specific, demonstrable evidence. Prefer l
 - **Track:** Apps for Your Life
 - **Deadline:** Tuesday, July 21, 2026 at 5:00 PM PT
 - **Core runtime model:** GPT-5.6
-- **Codex `/feedback` Session ID:** _Add from the core build session_
+- **Codex `/feedback` Session ID:** Supplied in the final Devpost submission
 - **Repository URL:** https://github.com/abbasmir12/aether-canvas
-- **Demo video URL:** _Published by the human; add the public YouTube URL here_
+- **Devpost submission:** https://devpost.com/software/aether-canvas
+- **Demo video URL:** https://youtu.be/iPBvw5U4J8A
 - **Build documentary:** [Full visual build journey on Google Drive](https://drive.google.com/drive/folders/1xTtMr7guBLAf10U8bodRCJ9KBmqWjIpY?usp=drive_link), with a repository index at [`build-journey/README.md`](../build-journey/README.md)
 
 ## 1. Technological Implementation
@@ -161,10 +162,11 @@ The visual query system makes AI provenance part of the product language rather 
 
 - [x] Working project built with Codex using GPT-5.6
 - [x] Apps for Your Life category selected
-- [ ] Final project description
+- [x] Final project description
 - [x] Under-three-minute YouTube demo with audio covering Codex and GPT-5.6
-- [ ] Public repository or judge access configured
+- [x] Public repository or judge access configured
 - [x] README includes setup instructions and sample data
 - [x] Codex acceleration, human decisions, and runtime GPT-5.6 use are explicit
-- [ ] `/feedback` Codex Session ID included
-- [ ] Clean clone reaches a working app in under five minutes
+- [x] `/feedback` Codex Session ID included
+- [x] Clean clone reaches a working app in under five minutes
+- [x] Final Devpost submission confirmed

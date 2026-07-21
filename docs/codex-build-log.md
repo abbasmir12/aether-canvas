@@ -514,6 +514,9 @@ _Record commands run, tests passed, and observable behavior._
 - Replaced the text-heavy fixtures with representative real-world formats so
   judges can directly see GPT-5.6 process documents and spreadsheets while
   following the same deterministic Tokyo story.
+- Published the final under-three-minute demo, supplied the core Codex
+  `/feedback` Session ID, completed every Devpost field, and confirmed the
+  final Aether Canvas submission.
 
 ### Verification
 
@@ -522,5 +525,7 @@ _Record commands run, tests passed, and observable behavior._
   was reopened with OpenPyXL and contains all six budget categories plus the
   original `$2,200` estimate and `$1,460` actual total. Strict TypeScript checks
   continue to pass.
-
-_Add the `/feedback` Session ID and final submission confirmation._
+- Final project page: https://devpost.com/software/aether-canvas
+- Public demo: https://youtu.be/iPBvw5U4J8A
+- Repository, Windows release, build documentary, API-key instructions,
+  judging evidence, and final submission were confirmed end to end.
